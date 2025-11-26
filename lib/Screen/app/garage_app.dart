@@ -3,7 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/Screen/app/bloc/garage_bloc.dart';
 import 'package:garage/Screen/app/bloc/garage_event.dart';
 import 'package:garage/Screen/app/bloc/garage_state.dart';
+import 'package:garage/Screen/records/records_page.dart';
+import 'package:garage/Screen/settings/settings_page.dart';
+import 'package:garage/Screen/speed/speed_camera_page.dart';
 import 'package:garage/models/tabbar_type.dart';
+import 'package:garage/theme/app_theme.dart';
 
 class GarageApp extends StatelessWidget {
   const GarageApp({super.key});
@@ -12,10 +16,9 @@ class GarageApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '愛車管家',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: BlocProvider(
         create: (context) => GarageBloc(),
         child: const GarageHomePage(),
@@ -33,18 +36,40 @@ class GarageHomePage extends StatelessWidget {
       builder: (context, state) {
         return Scaffold(
           body: _buildBody(state.tabbarType),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: TabConfig.getTabIndex(state.tabbarType),
-            onTap: (index) {
-              context.read<GarageBloc>().add(
-                TabChanged(TabConfig.getTab(index)),
-              );
-            },
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.speed), label: '測速'),
-              BottomNavigationBarItem(icon: Icon(Icons.book), label: '紀錄'),
-              BottomNavigationBarItem(icon: Icon(Icons.settings), label: '設定'),
-            ],
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: BottomNavigationBar(
+              currentIndex: TabConfig.getTabIndex(state.tabbarType),
+              onTap: (index) {
+                context.read<GarageBloc>().add(
+                  TabChanged(TabConfig.getTab(index)),
+                );
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.speed_outlined),
+                  activeIcon: Icon(Icons.speed),
+                  label: '測速',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.book_outlined),
+                  activeIcon: Icon(Icons.book),
+                  label: '紀錄',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings_outlined),
+                  activeIcon: Icon(Icons.settings),
+                  label: '設定',
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -60,36 +85,5 @@ class GarageHomePage extends StatelessWidget {
       case SettingsTab():
         return const SettingsPage();
     }
-  }
-}
-
-
-// 測速頁面 (Placeholder)
-class SpeedCameraPage extends StatelessWidget {
-  const SpeedCameraPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('測速頁面'));
-  }
-}
-
-// 紀錄頁面 (Placeholder)
-class RecordsPage extends StatelessWidget {
-  const RecordsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('紀錄頁面'));
-  }
-}
-
-// 設定頁面 (Placeholder)
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('設定頁面'));
   }
 }
