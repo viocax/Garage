@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'car3d/car_3d_view.dart';
-import 'car3d/bloc/car_3d_bloc.dart';
+import '../car3d/car_3d_view.dart';
+import '../car3d/bloc/car_3d_bloc.dart';
 import 'bloc/speed_bloc.dart';
 import 'bloc/speed_state.dart';
 
@@ -34,23 +34,23 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => Car3DBloc()),
-        BlocProvider(create: (context) => SpeedBloc()),
-      ],
+    return BlocProvider(
+      create: (context) => SpeedBloc(),
       child: BlocListener<SpeedBloc, SpeedState>(
         listener: (context, state) {
-          // 監聽速度變化，更新道路動畫
-          _roadAnimationController.duration = state.animationDuration;
+          switch (state) {
+            case SpeedData(:final speed, :final animationDuration):
+              // 更新道路動畫時長
+              _roadAnimationController.duration = animationDuration;
 
-          // 如果速度為 0，停止動畫
-          if (state.speed == 0) {
-            _roadAnimationController.stop();
-          } else if (_roadAnimationController.isAnimating) {
-            // 如果動畫正在運行，重新啟動以應用新速度
-            _roadAnimationController.reset();
-            _roadAnimationController.repeat();
+              // 如果速度為 0，停止動畫
+              if (speed == 0) {
+                _roadAnimationController.stop();
+              } else if (_roadAnimationController.isAnimating) {
+                // 如果動畫正在運行，重新啟動以應用新速度
+                _roadAnimationController.reset();
+                _roadAnimationController.repeat();
+              }
           }
         },
         child: Scaffold(
@@ -70,12 +70,20 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                       flex: 2,
                       child: BlocBuilder<SpeedBloc, SpeedState>(
                         builder: (context, state) {
-                          return Speedometer(
-                            speed: state.speed.toInt().toString(),
-                            unit: 'km/h',
-                            lowerSpeed: '110',
-                            upperSpeed: '120',
-                          );
+                          return switch (state) {
+                            SpeedData(
+                              :final speed,
+                              :final unit,
+                              :final lowerSpeed,
+                              :final upperSpeed,
+                            ) =>
+                              Speedometer(
+                                speed: speed.toInt().toString(),
+                                unit: unit,
+                                lowerSpeed: lowerSpeed,
+                                upperSpeed: upperSpeed,
+                              ),
+                          };
                         },
                       ),
                     ),
@@ -183,7 +191,10 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               child: SizedBox(
                 width: carWidth,
                 height: carHeight,
-                child: const Car3DView(),
+                child: BlocProvider(
+                  create: (context) => Car3DBloc(),
+                  child: const Car3DView(),
+                ),
               ),
             ),
           ],

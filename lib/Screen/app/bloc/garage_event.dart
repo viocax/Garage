@@ -8,7 +8,7 @@ sealed class GarageEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class TabChanged extends GarageEvent {
+final class TabChanged extends GarageEvent {
   final TabbarType tabbarType;
 
   const TabChanged(this.tabbarType);

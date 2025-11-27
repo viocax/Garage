@@ -11,24 +11,6 @@ class RecordsPage extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // App Bar
-            SliverAppBar(
-              floating: true,
-              title: Text(
-                '紀錄',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              backgroundColor: theme.scaffoldBackgroundColor,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-
             // Car Info Header
             SliverToBoxAdapter(
               child: Padding(

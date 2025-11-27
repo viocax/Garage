@@ -5,14 +5,20 @@ import 'speed_state.dart';
 
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
   SpeedBloc()
-      : super(const SpeedState(
+      : super(const SpeedData(
           speed: 0.0,
           animationDuration: Duration(milliseconds: 5300),
+          unit: 'km/h',
+          lowerSpeed: '110',
+          upperSpeed: '120',
         )) {
     on<UpdateSpeed>(_onUpdateSpeed);
   }
 
   void _onUpdateSpeed(UpdateSpeed event, Emitter<SpeedState> emit) {
+    final currentState = state;
+    if (currentState is! SpeedData) return;
+
     final newSpeed = event.speed;
     final newDuration = _calculateDuration(newSpeed);
 
@@ -20,7 +26,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
       'SpeedBloc: update speed=$newSpeed, duration=$newDuration',
     );
 
-    emit(SpeedState(
+    emit(currentState.copyWith(
       speed: newSpeed,
       animationDuration: newDuration,
     ));

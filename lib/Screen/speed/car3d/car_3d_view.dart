@@ -81,32 +81,44 @@ class _Car3DViewState extends State<Car3DView>
       builder: (context, state) {
         return switch (state) {
           // 加載中
-          Car3DLoading() => const Center(
-              child: CircularProgressIndicator(color: Colors.black),
-            ),
+          Car3DLoading() => const SizedBox.shrink(),
 
           // 加載失敗
           Car3DLoadError() => Center(
-              child: Container(
-                width: 80,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.directions_car_filled,
-                  size: 60,
-                  color: Colors.black,
-                ),
+            child: Container(
+              width: 80,
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.directions_car_filled,
+                size: 60,
+                color: Colors.black,
               ),
             ),
+          ),
 
           // 模型已加載
           Car3DReady(:final modelSrc) || Car3DAnimating(:final modelSrc) =>
             _buildCarModel(modelSrc, carWidth, carHeight, cameraOrbit),
         };
       },
+    );
+  }
+
+  Widget _buildCarPlaceHolder(double carWidth, double carHeight) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: CustomPaint(
+          size: Size(carWidth, carHeight * 0.8),
+          painter: TrapezoidShadowPainter(),
+        ),
+      ),
     );
   }
 
@@ -117,60 +129,50 @@ class _Car3DViewState extends State<Car3DView>
     String cameraOrbit,
   ) {
     return AnimatedBuilder(
-          animation: _offsetAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _scaleAnimation.value,
-              child: Transform.translate(
-                offset: Offset(0, _offsetAnimation.value),
-                child: Stack(
-                  children: [
-                    // 梯形陰影
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: CustomPaint(
-                          size: Size(carWidth, carHeight * 0.8),
-                          painter: TrapezoidShadowPainter(),
-                        ),
-                      ),
+      animation: _offsetAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Transform.translate(
+            offset: Offset(0, _offsetAnimation.value),
+            child: Stack(
+              children: [
+                // 梯形陰影
+                _buildCarPlaceHolder(carWidth, carHeight),
+                Padding(
+                  padding: EdgeInsets.all(24),
+                  child: AbsorbPointer(
+                    child: ModelViewer(
+                      src: modelSrc,
+                      alt: "A 3D car model",
+                      autoRotate: false,
+                      cameraControls: false,
+                      backgroundColor: Colors.transparent,
+                      loading: Loading.eager, // 立即載入，隱藏載入指示器
+                      // 使用百分比让模型自动适配容器（180度让车尾朝前）
+                      cameraOrbit: cameraOrbit, // 相机更远，降低俯视角度
+                      cameraTarget: "0m 10mm 0m", // 对准车身上方，让车显示在画面下方
+                      fieldOfView: "30deg", // 增大视野让车看起来更小
+                      environmentImage: "neutral",
+                      exposure: 1.0,
+                      shadowIntensity: 0.8,
+                      shadowSoftness: 0.5,
+                      minCameraOrbit: cameraOrbit,
+                      maxCameraOrbit: cameraOrbit,
+                      disableZoom: true,
+                      disablePan: true,
+                      disableTap: true,
+                      touchAction: TouchAction.none, // 禁用所有触摸动作
+                      interactionPrompt: InteractionPrompt.none,
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(24),
-                      child: AbsorbPointer(
-                        child: ModelViewer(
-                          src: modelSrc,
-                          alt: "A 3D car model",
-                          autoRotate: false,
-                          cameraControls: false,
-                          backgroundColor: Colors.transparent,
-                          loading: Loading.eager, // 立即載入，隱藏載入指示器
-                          // 使用百分比让模型自动适配容器（180度让车尾朝前）
-                          cameraOrbit: cameraOrbit, // 相机更远，降低俯视角度
-                          cameraTarget: "0m 10mm 0m", // 对准车身上方，让车显示在画面下方
-                          fieldOfView: "30deg", // 增大视野让车看起来更小
-                          environmentImage: "neutral",
-                          exposure: 1.0,
-                          shadowIntensity: 0.8,
-                          shadowSoftness: 0.5,
-                          minCameraOrbit: cameraOrbit,
-                          maxCameraOrbit: cameraOrbit,
-                          disableZoom: true,
-                          disablePan: true,
-                          disableTap: true,
-                          touchAction: TouchAction.none, // 禁用所有触摸动作
-                          interactionPrompt: InteractionPrompt.none,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
+              ],
+            ),
+          ),
         );
+      },
+    );
   }
 }
 

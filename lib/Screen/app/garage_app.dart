@@ -5,7 +5,7 @@ import 'package:garage/Screen/app/bloc/garage_event.dart';
 import 'package:garage/Screen/app/bloc/garage_state.dart';
 import 'package:garage/Screen/records/records_page.dart';
 import 'package:garage/Screen/settings/settings_page.dart';
-import 'package:garage/Screen/speed/speed_camera_page.dart';
+import 'package:garage/Screen/speed/speedCamera/speed_camera_page.dart';
 import 'package:garage/models/tabbar_type.dart';
 import 'package:garage/theme/app_theme.dart';
 
