@@ -31,10 +31,9 @@ class _Car3DViewState extends State<Car3DView>
       vsync: this,
     );
 
-    // 設置動畫：從 0 移動到 -80（往上移）
     // 啟動：緩慢到快速（easeIn）
     // 煞車：快速到緩慢（easeOut）
-    _offsetAnimation = Tween<double>(begin: 0.0, end: -60.0).animate(
+    _offsetAnimation = Tween<double>(begin: 0.0, end: -40.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Cubic(0.5, 0, 0.5, 1), // 啟動時：慢到快

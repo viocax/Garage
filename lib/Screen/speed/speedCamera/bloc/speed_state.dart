@@ -9,6 +9,7 @@ final class SpeedData extends SpeedState {
   final String unit; // 速度單位
   final String? lowerSpeed; // 最低速限
   final String? upperSpeed; // 最高速限
+  final bool isOverSpeed; // 是否超速
 
   const SpeedData({
     required this.speed,
@@ -16,6 +17,7 @@ final class SpeedData extends SpeedState {
     required this.unit,
     this.lowerSpeed,
     this.upperSpeed,
+    this.isOverSpeed = false,
   });
 
   SpeedData copyWith({
@@ -24,6 +26,7 @@ final class SpeedData extends SpeedState {
     String? unit,
     String? lowerSpeed,
     String? upperSpeed,
+    bool? isOverSpeed,
   }) {
     return SpeedData(
       speed: speed ?? this.speed,
@@ -31,6 +34,7 @@ final class SpeedData extends SpeedState {
       unit: unit ?? this.unit,
       lowerSpeed: lowerSpeed ?? this.lowerSpeed,
       upperSpeed: upperSpeed ?? this.upperSpeed,
+      isOverSpeed: isOverSpeed ?? this.isOverSpeed,
     );
   }
 }

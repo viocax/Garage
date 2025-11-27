@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../car3d/car_3d_view.dart';
 import '../car3d/bloc/car_3d_bloc.dart';
+import '../car3d/bloc/car_3d_event.dart';
 import 'bloc/speed_bloc.dart';
 import 'bloc/speed_state.dart';
+import 'bloc/speed_event.dart';
 
 class SpeedCameraPage extends StatefulWidget {
   const SpeedCameraPage({super.key});
@@ -34,63 +37,128 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => SpeedBloc(),
-      child: BlocListener<SpeedBloc, SpeedState>(
-        listener: (context, state) {
-          switch (state) {
-            case SpeedData(:final speed, :final animationDuration):
-              // 更新道路動畫時長
-              _roadAnimationController.duration = animationDuration;
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => SpeedBloc()),
+        BlocProvider(create: (context) => Car3DBloc()),
+      ],
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<SpeedBloc, SpeedState>(
+            listener: (context, state) {
+              switch (state) {
+                case SpeedData(:final speed, :final animationDuration):
+                  // 更新道路動畫時長
+                  _roadAnimationController.duration = animationDuration;
 
-              // 如果速度為 0，停止動畫
-              if (speed == 0) {
-                _roadAnimationController.stop();
-              } else if (_roadAnimationController.isAnimating) {
-                // 如果動畫正在運行，重新啟動以應用新速度
-                _roadAnimationController.reset();
-                _roadAnimationController.repeat();
+                  // 如果速度為 0，停止動畫
+                  if (speed <= 0) {
+                    _roadAnimationController.stop();
+                    // 停止車輛動畫
+                    context.read<Car3DBloc>().add(const StopCar3DAnimation());
+                  } else {
+                    // 啟動車輛動畫
+                    context.read<Car3DBloc>().add(const StartCar3DAnimation());
+
+                    // 如果速度 > 0 且未在播放，或者需要更新速率，則重新播放
+                    if (!_roadAnimationController.isAnimating) {
+                      _roadAnimationController.repeat();
+                    } else {
+                      _roadAnimationController.repeat();
+                    }
+                  }
               }
-          }
-        },
+            },
+          ),
+        ],
         child: Scaffold(
           backgroundColor: Colors.black,
           body: Stack(
             children: [
-              // Background Gradient
+              // 1. Background Gradient
               _backgroundGradient(),
-              SafeArea(
-                child: Column(
-                  children: [
-                    // 1. Top Section: Map
-                    Expanded(flex: 2, child: _topMap()),
 
-                    // 2. Middle Section: Speedometer & Status
-                    Expanded(
-                      flex: 2,
-                      child: BlocBuilder<SpeedBloc, SpeedState>(
-                        builder: (context, state) {
-                          return switch (state) {
-                            SpeedData(
-                              :final speed,
-                              :final unit,
-                              :final lowerSpeed,
-                              :final upperSpeed,
-                            ) =>
-                              Speedometer(
-                                speed: speed.toInt().toString(),
-                                unit: unit,
-                                lowerSpeed: lowerSpeed,
-                                upperSpeed: upperSpeed,
-                              ),
-                          };
+              // 2. Grid Background (Top part)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: MediaQuery.of(context).size.height * 0.4,
+                child: CustomPaint(painter: MapGridPainter()),
+              ),
+
+              // 3. Speed Limit Overlay (Top Left)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 20,
+                left: 20,
+                child: BlocBuilder<SpeedBloc, SpeedState>(
+                  builder: (context, state) {
+                    return switch (state) {
+                      SpeedData(:final lowerSpeed, :final upperSpeed) =>
+                        _buildSpeedLimitOverlay(lowerSpeed, upperSpeed),
+                    };
+                  },
+                ),
+              ),
+
+              // 4. Speedometer (Center)
+              Positioned(
+                top: MediaQuery.of(context).size.height * 0.25,
+                left: 0,
+                right: 0,
+                child: BlocBuilder<SpeedBloc, SpeedState>(
+                  builder: (context, state) {
+                    return switch (state) {
+                      SpeedData(
+                        :final speed,
+                        :final unit,
+                        :final isOverSpeed,
+                      ) =>
+                        Speedometer(
+                          speed: speed.toInt().toString(),
+                          unit: unit,
+                          isOverSpeed: isOverSpeed,
+                        ),
+                    };
+                  },
+                ),
+              ),
+
+              // 5. Road & Car (Bottom)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: _roadPath(),
+              ),
+
+              // 6. Debug Slider (Right Side)
+              Positioned(
+                right: 20,
+                top: 100,
+                bottom: 100,
+                child: RotatedBox(
+                  quarterTurns: 3,
+                  child: BlocBuilder<SpeedBloc, SpeedState>(
+                    builder: (context, state) {
+                      final currentSpeed = switch (state) {
+                        SpeedData(:final speed) => speed,
+                      };
+                      return Slider(
+                        value: currentSpeed,
+                        min: 0,
+                        max: 300,
+                        activeColor: Colors.white,
+                        inactiveColor: Colors.white.withValues(alpha: 0.3),
+                        label: currentSpeed.round().toString(),
+                        divisions: 300,
+                        onChanged: (value) {
+                          context.read<SpeedBloc>().add(UpdateSpeed(value));
                         },
-                      ),
-                    ),
-
-                    // 3. Bottom Section: 3D Road & Car
-                    Expanded(flex: 3, child: _roadPath()),
-                  ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
@@ -100,67 +168,61 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     );
   }
 
-  Widget _topMap() {
-    final textTheme = Theme.of(context).textTheme;
-    return ShaderMask(
-      shaderCallback: (Rect bounds) {
-        return LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent, // 顶部透明
-            Colors.black, // 中间完全显示
-            Colors.black, // 中间完全显示
-            Colors.transparent, // 底部透明
-          ],
-          stops: const [0.0, 0.1, 0.9, 1.0], // 控制渐变位置
-        ).createShader(bounds);
-      },
-      blendMode: BlendMode.dstIn, // 透明度遮罩
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 5,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            // Map Grid Placeholder, 判斷地圖的載入
-            CustomPaint(size: Size.infinite, painter: MapGridPainter()),
+  Widget _buildSpeedLimitOverlay(String? lowerSpeed, String? upperSpeed) {
+    // if (lowerSpeed == null && upperSpeed == null)
+    //   return const SizedBox.shrink();
 
-            // Navigation Info Overlay
-            Positioned(
-              top: 20,
-              left: 20,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.turn_right, color: Colors.white, size: 32),
-                    const SizedBox(height: 4),
-                    Text(
-                      '200 m',
-                      style: textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 12,
+            children: [
+              if (upperSpeed != null) _speedLimitCircle(upperSpeed, Colors.red),
+              if (lowerSpeed != null)
+                _speedLimitCircle(lowerSpeed, Colors.grey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _speedLimitCircle(String limit, Color borderColor) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        border: Border.all(color: borderColor, width: 4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        limit,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
         ),
       ),
     );
@@ -181,20 +243,18 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             CustomPaint(
               size: Size.infinite,
               painter: RoadPainter(
-                activeLaneColor: Colors.grey.withValues(alpha: 0.5),
+                activeLaneColor: Colors.black.withValues(alpha: 0.15),
                 animationValue: _roadAnimationController.value,
               ),
             ),
 
             // Car Model (3D)
             Positioned(
+              bottom: 20,
               child: SizedBox(
                 width: carWidth,
                 height: carHeight,
-                child: BlocProvider(
-                  create: (context) => Car3DBloc(),
-                  child: const Car3DView(),
-                ),
+                child: const Car3DView(),
               ),
             ),
           ],
@@ -210,97 +270,198 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black, // Dark Gray
-            Colors.white,
+            Color(0xFF1C1C1E), // Dark top
+            Color(0xFFE5E5EA), // Light bottom
           ],
+          stops: [0.3, 1.0],
         ),
       ),
     );
   }
 }
 
-class Speedometer extends StatelessWidget {
+class Speedometer extends StatefulWidget {
   final String speed;
-  final String? lowerSpeed;
-  final String? upperSpeed;
   final String unit;
+  final bool isOverSpeed;
 
   const Speedometer({
     super.key,
     required this.speed,
-    this.lowerSpeed,
-    this.upperSpeed,
     required this.unit,
+    this.isOverSpeed = false,
   });
+
+  @override
+  State<Speedometer> createState() => _SpeedometerState();
+}
+
+class _SpeedometerState extends State<Speedometer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _blinkController;
+
+  @override
+  void initState() {
+    super.initState();
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+  }
+
+  @override
+  void didUpdateWidget(Speedometer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isOverSpeed && !oldWidget.isOverSpeed) {
+      _blinkController.repeat(reverse: true);
+    } else if (!widget.isOverSpeed && oldWidget.isOverSpeed) {
+      _blinkController.stop();
+      _blinkController.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _blinkController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // 速限区域：有速限显示，没有速限占位
-        if (lowerSpeed != null || upperSpeed != null)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 8,
-            children: [
-              if (upperSpeed != null)
-                _speedLimit(
-                  upperSpeed!,
-                  Border.all(color: Colors.red, width: 4),
-                  16,
-                ),
-              if (lowerSpeed != null)
-                _speedLimit(
-                  lowerSpeed!,
-                  Border.all(color: Colors.grey, width: 2),
-                  16,
-                ),
-            ],
-          )
-        else
-          const SizedBox(height: 48), // 固定高度占位
+    final double currentSpeed = double.tryParse(widget.speed) ?? 0;
+    final double maxSpeed = 240.0; // 假設最大速度
+    final double progress = (currentSpeed / maxSpeed).clamp(0.0, 1.0);
 
-        Text(
-          speed,
-          style: textTheme.displayLarge?.copyWith(
-            fontSize: 100,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            height: 1.0,
-            letterSpacing: -2,
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Arc Progress Bar
+        SizedBox(
+          width: 300,
+          height: 300,
+          child: CustomPaint(
+            painter: SpeedometerArcPainter(
+              progress: progress,
+              trackColor: Colors.grey.withValues(alpha: 0.2),
+              progressColor: _getProgressColor(currentSpeed),
+            ),
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          unit,
-          style: textTheme.titleMedium?.copyWith(
-            color: Colors.black,
-            letterSpacing: 1,
-          ),
+
+        // Speed Text & Unit
+        AnimatedBuilder(
+          animation: _blinkController,
+          builder: (context, child) {
+            final speedColor = widget.isOverSpeed
+                ? Color.lerp(
+                    Colors.red,
+                    Colors.red.withValues(alpha: 0.3),
+                    _blinkController.value,
+                  )!
+                : Colors.white;
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  widget.speed,
+                  style: textTheme.displayLarge?.copyWith(
+                    fontSize: 100,
+                    fontWeight: FontWeight.w400,
+                    color: speedColor,
+                    height: 1.0,
+                    letterSpacing: -4,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.unit,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: widget.isOverSpeed
+                        ? Colors.red.withValues(alpha: 0.9)
+                        : Colors.white.withValues(alpha: 0.7),
+                    fontSize: 20,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _speedLimit(String speedLimit, Border border, double fontSize) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: border,
-        color: Colors.white,
-      ),
-      child: Text(
-        speedLimit,
-        style: TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-          fontSize: fontSize,
-        ),
-      ),
+  Color _getProgressColor(double speed) {
+    if (speed < 60) return Colors.green;
+    if (speed < 100) return Colors.yellow;
+    return Colors.red;
+  }
+}
+
+class SpeedometerArcPainter extends CustomPainter {
+  final double progress;
+  final Color trackColor;
+  final Color progressColor;
+
+  SpeedometerArcPainter({
+    required this.progress,
+    required this.trackColor,
+    required this.progressColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 10;
+    const startAngle = 135 * 3.14159 / 180; // Start from bottom-left
+    const sweepAngle = 270 * 3.14159 / 180; // Sweep 270 degrees
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 15.0
+      ..strokeCap = StrokeCap.round;
+
+    // Draw Track
+    paint.color = trackColor;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      sweepAngle,
+      false,
+      paint,
     );
+
+    // Draw Progress
+    paint.color = progressColor;
+    // Add a gradient or shadow if needed, for now simple solid color
+    // To make it look cooler, we can use a gradient shader
+    paint.shader = SweepGradient(
+      startAngle: startAngle,
+      endAngle: startAngle + sweepAngle,
+      colors: [Colors.greenAccent, Colors.yellowAccent, Colors.redAccent],
+      stops: const [0.0, 0.5, 1.0],
+      transform: GradientRotation(startAngle - 0.1), // Slight adjustment
+    ).createShader(Rect.fromCircle(center: center, radius: radius));
+
+    // Override color with shader
+    paint.color = Colors.white; // Ignored when shader is set
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      sweepAngle * progress,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant SpeedometerArcPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.trackColor != trackColor ||
+        oldDelegate.progressColor != progressColor;
   }
 }
 
@@ -322,8 +483,8 @@ class RoadPainter extends CustomPainter {
     final bottomY = size.height;
 
     // Perspective calculation
-    final topWidth = size.width * 0.35;
-    final bottomWidth = size.width * 0.7;
+    final topWidth = size.width * 0.25;
+    final bottomWidth = size.width * 0.75;
 
     // Draw Dashed Lanes
     void drawDashedLane(double offsetFactor, Color color) {

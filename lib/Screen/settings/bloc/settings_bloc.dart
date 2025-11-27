@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
+import 'package:flutter/foundation.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   SettingsBloc() : super(const SettingsInitial()) {
@@ -112,11 +113,11 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
   void _onExportData(Emitter<SettingsState> emit) {
     // TODO: Implement export data logic
-    print('Export Data Triggered');
+    debugPrint('Export Data Triggered');
   }
 
   void _onClearData(Emitter<SettingsState> emit) {
     // TODO: Implement clear data logic
-    print('Clear Data Triggered');
+    debugPrint('Clear Data Triggered');
   }
 }
