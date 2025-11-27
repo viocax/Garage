@@ -10,6 +10,13 @@ class AppTheme {
   static const Color surfaceColor = Colors.white;
   static const Color errorColor = Color(0xFFFF3B30); // iOS system red
 
+  // iOS System Gray Colors
+  static const Color systemGray4 = Color(0xFFD1D1D6); // iOS system gray 4
+  static const Color systemGray5 = Color(0xFFE5E5EA); // iOS system gray 5
+  static const Color systemGray6 = Color(
+    0xFFF5F5F7,
+  ); // iOS system gray 6 (light)
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
