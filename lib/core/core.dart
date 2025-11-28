@@ -11,7 +11,7 @@ export 'models/tabbar_type.dart';
 export 'repositories/speed_camera_repository.dart';
 
 // Dependency Injection
-// export 'di/service_locator.dart';
+export 'di/service_locator.dart';
 
 // Database (僅供內部使用，一般不需要直接存取)
 // export 'database/isar_service.dart';

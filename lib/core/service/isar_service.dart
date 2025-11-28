@@ -3,12 +3,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import '../models/speed_camera.dart';
 
-/// Isar 資料庫服務（單例模式）
+/// Isar 資料庫服務
 class IsarService {
-  static final IsarService instance = IsarService._init();
-  static Isar? _isar;
-
-  IsarService._init();
+  Isar? _isar;
 
   /// 取得 Isar 實例
   Future<Isar> get isar async {
