@@ -43,6 +43,16 @@ dependencies:
   # 3D model viewer
   model_viewer_plus: ^1.7.2
 
+  # HTTP and data processing
+  http: ^1.2.2
+  archive: ^3.6.1
+  csv: ^6.0.0
+
+  # Local database - Isar
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -53,6 +63,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+  # Isar code generation
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.13
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

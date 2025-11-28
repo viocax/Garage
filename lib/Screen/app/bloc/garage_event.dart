@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:garage/models/tabbar_type.dart';
+import 'package:garage/core/models/tabbar_type.dart';
 
 sealed class GarageEvent extends Equatable {
   const GarageEvent();

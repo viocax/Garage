@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:garage/Screen/app/bloc/garage_event.dart';
-import 'package:garage/Screen/app/bloc/garage_state.dart';
+import 'package:garage/screen/app/bloc/garage_event.dart';
+import 'package:garage/screen/app/bloc/garage_state.dart';
 
 class GarageBloc extends Bloc<GarageEvent, GarageState> {
   GarageBloc() : super(const GarageInitialState()) {

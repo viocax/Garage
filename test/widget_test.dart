@@ -7,7 +7,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:garage/Screen/app/garage_app.dart';
+import 'package:garage/screen/app/garage_app.dart';
 
 void main() {
   testWidgets('GarageApp smoke test', (WidgetTester tester) async {

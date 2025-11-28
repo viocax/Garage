@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:garage/Screen/app/bloc/garage_bloc.dart';
-import 'package:garage/Screen/app/bloc/garage_event.dart';
-import 'package:garage/Screen/app/bloc/garage_state.dart';
-import 'package:garage/Screen/records/records_page.dart';
-import 'package:garage/Screen/settings/settings_page.dart';
-import 'package:garage/Screen/speed/speedCamera/speed_camera_page.dart';
-import 'package:garage/models/tabbar_type.dart';
+import 'package:garage/screen/app/bloc/garage_bloc.dart';
+import 'package:garage/screen/app/bloc/garage_event.dart';
+import 'package:garage/screen/app/bloc/garage_state.dart';
+import 'package:garage/screen/records/records_page.dart';
+import 'package:garage/screen/settings/settings_page.dart';
+import 'package:garage/screen/speed/speedCamera/speed_camera_page.dart';
+import 'package:garage/core/models/tabbar_type.dart';
 import 'package:garage/theme/app_theme.dart';
 
 class GarageApp extends StatelessWidget {
