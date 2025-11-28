@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
-import 'package:garage/screen/app/launch/bloc/launch_event.dart';
 import 'package:garage/screen/app/launch/bloc/launch_state.dart';
 
 /// 啟動頁面
@@ -15,61 +14,59 @@ class LaunchPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => LaunchBloc()..add(const StartInitialization()),
-      child: BlocListener<LaunchBloc, LaunchState>(
-        listener: (context, state) {
-          switch (state) {
-            case LaunchCompleted():
-              // 初始化完成，跳轉到主頁面
-              context.go(AppRouter.home);
-            case LaunchError(:final message):
-              // 顯示錯誤訊息
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(message)));
-            case LaunchInitializing():
-              // 初始化中，不做任何事
-              break;
-          }
-        },
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: BlocBuilder<LaunchBloc, LaunchState>(
-            builder: (context, state) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Logo
-                    Icon(
-                      Icons.directions_car,
-                      size: 80,
-                      color: Theme.of(context).primaryColor,
+    return BlocListener<LaunchBloc, LaunchState>(
+      listener: (context, state) {
+        switch (state) {
+          case LaunchCompleted():
+            // 初始化完成，跳轉到主頁面
+            context.go(AppRouter.speedometer);
+          case LaunchError(:final message):
+            // 顯示錯誤訊息
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
+          case LaunchInitializing():
+            // 初始化中，不做任何事
+            break;
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: BlocBuilder<LaunchBloc, LaunchState>(
+          builder: (context, state) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo
+                  Icon(
+                    Icons.directions_car,
+                    size: 80,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    '愛車管家',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  const SizedBox(height: 48),
+                  // 載入指示器
+                  const CircularProgressIndicator(),
+                  if (state is LaunchError) ...[
                     const SizedBox(height: 24),
                     Text(
-                      '愛車管家',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 48),
-                    // 載入指示器
-                    const CircularProgressIndicator(),
-                    if (state is LaunchError) ...[
-                      const SizedBox(height: 24),
-                      Text(
-                        state.message,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                      state.message,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
                       ),
-                    ],
+                    ),
                   ],
-                ),
-              );
-            },
-          ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

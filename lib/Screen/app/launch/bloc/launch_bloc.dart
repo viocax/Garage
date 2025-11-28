@@ -5,6 +5,7 @@ import 'launch_state.dart';
 class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
   LaunchBloc() : super(const LaunchInitializing()) {
     on<StartInitialization>(_onStartInitialization);
+    add(const StartInitialization());
   }
 
   Future<void> _onStartInitialization(

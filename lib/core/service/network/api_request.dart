@@ -35,8 +35,8 @@ abstract class ApiRequest<T> {
   /// 解析 HTTP 回應為指定型別
   ///
   /// [response] 可能是：
-  /// - Map<String, dynamic>（JSON 物件）
-  /// - List<dynamic>（JSON 陣列）
+  /// - Map`<`String, dynamic`>`（JSON 物件）
+  /// - List`<`dynamic`>`（JSON 陣列）
   /// - String（原始字串）
   /// - null（空回應）
   T parseResponse(dynamic response);

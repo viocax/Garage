@@ -1,7 +1,3 @@
-/// 核心功能匯出檔案
-///
-/// 提供統一的入口點來存取核心功能，包含資料模型、資料倉儲、依賴注入等。
-library core;
 
 // Models
 export 'models/speed_camera.dart';
