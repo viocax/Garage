@@ -47,5 +47,9 @@
 	<true/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>我們需要您的位置來顯示附近的測速照相。</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>我們需要您的位置來顯示附近的測速照相。</string>
 </dict>
 </plist>

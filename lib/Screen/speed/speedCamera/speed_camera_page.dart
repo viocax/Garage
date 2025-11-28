@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/theme/app_theme.dart';
 import '../car3d/car_3d_view.dart';
 import '../car3d/bloc/car_3d_bloc.dart';
 import '../car3d/bloc/car_3d_event.dart';
@@ -72,7 +73,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
           ),
         ],
         child: Scaffold(
-          backgroundColor: Colors.black,
+          backgroundColor: AppTheme.primaryColor,
           body: Stack(
             children: [
               // 1. Background Gradient
@@ -149,8 +150,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                         value: currentSpeed,
                         min: 0,
                         max: 300,
-                        activeColor: Colors.white,
-                        inactiveColor: Colors.white.withValues(alpha: 0.3),
+                        activeColor: AppTheme.accentColor,
+                        inactiveColor: AppTheme.whiteTransparent30,
                         label: currentSpeed.round().toString(),
                         divisions: 300,
                         onChanged: (value) {
@@ -179,10 +180,10 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: AppTheme.whiteTransparent10,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: AppTheme.whiteTransparent20,
               width: 1,
             ),
           ),
@@ -190,9 +191,9 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             mainAxisSize: MainAxisSize.min,
             spacing: 12,
             children: [
-              if (upperSpeed != null) _speedLimitCircle(upperSpeed, Colors.red),
+              if (upperSpeed != null) _speedLimitCircle(upperSpeed, AppTheme.systemRed),
               if (lowerSpeed != null)
-                _speedLimitCircle(lowerSpeed, Colors.grey),
+                _speedLimitCircle(lowerSpeed, AppTheme.systemGray),
             ],
           ),
         ),
@@ -206,11 +207,11 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
       height: 48,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white,
+        color: AppTheme.accentColor,
         border: Border.all(color: borderColor, width: 4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: AppTheme.blackTransparent10,
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -220,7 +221,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
       child: Text(
         limit,
         style: const TextStyle(
-          color: Colors.black,
+          color: AppTheme.primaryColor,
           fontWeight: FontWeight.bold,
           fontSize: 18,
         ),
@@ -243,7 +244,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             CustomPaint(
               size: Size.infinite,
               painter: RoadPainter(
-                activeLaneColor: Colors.black.withValues(alpha: 0.15),
+                activeLaneColor: AppTheme.blackTransparent15,
                 animationValue: _roadAnimationController.value,
               ),
             ),
@@ -270,8 +271,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF1C1C1E), // Dark top
-            Color(0xFFE5E5EA), // Light bottom
+            AppTheme.darkSurface, // Dark top
+            AppTheme.systemGray5, // Light bottom
           ],
           stops: [0.3, 1.0],
         ),
@@ -343,7 +344,7 @@ class _SpeedometerState extends State<Speedometer>
           child: CustomPaint(
             painter: SpeedometerArcPainter(
               progress: progress,
-              trackColor: Colors.grey.withValues(alpha: 0.2),
+              trackColor: AppTheme.greyTransparent20,
               progressColor: _getProgressColor(currentSpeed),
             ),
           ),
@@ -355,11 +356,11 @@ class _SpeedometerState extends State<Speedometer>
           builder: (context, child) {
             final speedColor = widget.isOverSpeed
                 ? Color.lerp(
-                    Colors.red,
-                    Colors.red.withValues(alpha: 0.3),
+                    AppTheme.systemRed,
+                    AppTheme.redTransparent30,
                     _blinkController.value,
                   )!
-                : Colors.white;
+                : AppTheme.accentColor;
 
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -379,8 +380,8 @@ class _SpeedometerState extends State<Speedometer>
                   widget.unit,
                   style: textTheme.titleMedium?.copyWith(
                     color: widget.isOverSpeed
-                        ? Colors.red.withValues(alpha: 0.9)
-                        : Colors.white.withValues(alpha: 0.7),
+                        ? AppTheme.redTransparent90
+                        : AppTheme.whiteTransparent70,
                     fontSize: 20,
                     letterSpacing: 1,
                   ),
@@ -394,9 +395,9 @@ class _SpeedometerState extends State<Speedometer>
   }
 
   Color _getProgressColor(double speed) {
-    if (speed < 60) return Colors.green;
-    if (speed < 100) return Colors.yellow;
-    return Colors.red;
+    if (speed < 60) return AppTheme.speedSlow;
+    if (speed < 100) return AppTheme.speedMedium;
+    return AppTheme.speedFast;
   }
 }
 
@@ -440,13 +441,13 @@ class SpeedometerArcPainter extends CustomPainter {
     paint.shader = SweepGradient(
       startAngle: startAngle,
       endAngle: startAngle + sweepAngle,
-      colors: [Colors.greenAccent, Colors.yellowAccent, Colors.redAccent],
+      colors: [AppTheme.gradientGreen, AppTheme.gradientYellow, AppTheme.gradientRed],
       stops: const [0.0, 0.5, 1.0],
       transform: GradientRotation(startAngle - 0.1), // Slight adjustment
     ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     // Override color with shader
-    paint.color = Colors.white; // Ignored when shader is set
+    paint.color = AppTheme.accentColor; // Ignored when shader is set
 
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
@@ -557,7 +558,7 @@ class MapGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey.withValues(alpha: 0.1)
+      ..color = AppTheme.greyTransparent10
       ..strokeWidth = 1;
 
     const gridSize = 40.0;

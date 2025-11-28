@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
+import 'package:garage/theme/app_theme.dart';
 import 'bloc/car_3d_bloc.dart';
 import 'bloc/car_3d_event.dart';
 import 'bloc/car_3d_state.dart';
@@ -88,13 +89,13 @@ class _Car3DViewState extends State<Car3DView>
               width: 80,
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.accentColor,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(
                 Icons.directions_car_filled,
                 size: 60,
-                color: Colors.black,
+                color: AppTheme.primaryColor,
               ),
             ),
           ),
@@ -146,7 +147,7 @@ class _Car3DViewState extends State<Car3DView>
                       alt: "A 3D car model",
                       autoRotate: false,
                       cameraControls: false,
-                      backgroundColor: Colors.transparent,
+                      backgroundColor: AppTheme.accentColor.withAlpha(0),
                       loading: Loading.eager, // 立即載入，隱藏載入指示器
                       // 使用百分比让模型自动适配容器（180度让车尾朝前）
                       cameraOrbit: cameraOrbit, // 相机更远，降低俯视角度
@@ -183,7 +184,7 @@ class TrapezoidShadowPainter extends CustomPainter {
       ..shader = RadialGradient(
         center: Alignment.center,
         radius: 0.8,
-        colors: [Colors.black, Colors.transparent],
+        colors: [AppTheme.primaryColor, AppTheme.primaryColor.withAlpha(0)],
         stops: const [0.0, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill

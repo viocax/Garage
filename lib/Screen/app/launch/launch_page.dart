@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
 import 'package:garage/screen/app/launch/bloc/launch_state.dart';
+import 'package:garage/theme/app_theme.dart';
 
 /// 啟動頁面
 ///
@@ -31,7 +32,7 @@ class LaunchPage extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.accentColor,
         body: BlocBuilder<LaunchBloc, LaunchState>(
           builder: (context, state) {
             return Center(

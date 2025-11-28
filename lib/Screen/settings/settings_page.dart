@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/theme/app_theme.dart';
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_event.dart';
 import 'bloc/settings_state.dart';
@@ -290,7 +291,7 @@ class _SettingsView extends StatelessWidget {
     final isSelected = value == currentValue;
     return ListTile(
       title: Text(label),
-      trailing: isSelected ? const Icon(Icons.check, color: Colors.blue) : null,
+      trailing: isSelected ? const Icon(Icons.check, color: AppTheme.systemBlue) : null,
       onTap: onTap,
     );
   }
@@ -338,7 +339,7 @@ class _SettingsView extends StatelessWidget {
                 : theme.colorScheme.primary,
           ),
         ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        trailing: const Icon(Icons.chevron_right, color: AppTheme.systemGray),
         onTap: onTap ?? () {},
       ),
     );
@@ -404,10 +405,10 @@ class _SettingsView extends StatelessWidget {
           children: [
             Text(
               currentValue,
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              style: theme.textTheme.bodyMedium?.copyWith(color: AppTheme.systemGray),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: Colors.grey),
+            const Icon(Icons.chevron_right, color: AppTheme.systemGray),
           ],
         ),
         onTap: onTap ?? () {},

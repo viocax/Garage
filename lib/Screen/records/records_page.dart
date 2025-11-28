@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garage/theme/app_theme.dart';
 
 class RecordsPage extends StatelessWidget {
   const RecordsPage({super.key});
@@ -137,7 +138,7 @@ class RecordsPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: isPositive
-                      ? const Color(0xFF34C759).withValues(alpha: 0.1)
+                      ? AppTheme.greenTransparent10
                       : theme.colorScheme.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -145,7 +146,7 @@ class RecordsPage extends StatelessWidget {
                   trend,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: isPositive
-                        ? const Color(0xFF34C759)
+                        ? AppTheme.systemGreen
                         : theme.colorScheme.error,
                     fontWeight: FontWeight.bold,
                   ),

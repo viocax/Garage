@@ -1,7 +1,13 @@
-import 'package:garage/screen/screen.dart';
 import 'package:get_it/get_it.dart';
+import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
+import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
+import 'package:garage/screen/speed/speedCamera/bloc/speed_bloc.dart';
+import 'package:garage/screen/speed/car3d/bloc/car_3d_bloc.dart';
+import 'package:garage/screen/settings/bloc/settings_bloc.dart';
 import '../service/isar_service.dart';
 import '../service/network/http_service.dart';
+import '../service/location/location_service.dart';
+// import '../repositories/speed_camera_repository.dart';
 
 final getIt = GetIt.instance;
 
@@ -10,6 +16,7 @@ Future<void> setupServiceLocator() async {
   // Service layer
   getIt.registerLazySingleton<IsarService>(() => IsarService());
   getIt.registerLazySingleton<HttpService>(() => HttpService());
+  getIt.registerLazySingleton<LocationService>(() => LocationService());
 
   // Repository layer
   // TODO: Register repository implementation when available
@@ -53,6 +60,7 @@ class ServiceScopes {
 
   HttpService get network => _getIt<HttpService>();
   IsarService get isarDB => _getIt<IsarService>();
+  LocationService get location => _getIt<LocationService>();
 }
 
 class RepositoryScopes {
