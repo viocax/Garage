@@ -24,10 +24,7 @@ class AppRouter {
         GoRoute(
           path: launch,
           name: 'launch',
-          builder: (context, state) => BlocProvider(
-            create: (context) => getIt.bloc.launch,
-            child: const LaunchPage(),
-          ),
+          builder: (context, state) => const LaunchPage(),
         ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) {

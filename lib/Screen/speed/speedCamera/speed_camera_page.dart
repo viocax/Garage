@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
+import 'package:garage/theme/grid_background_painter.dart';
 import '../car3d/car_3d_view.dart';
 import '../car3d/bloc/car_3d_bloc.dart';
 import '../car3d/bloc/car_3d_event.dart';
@@ -85,7 +86,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                 left: 0,
                 right: 0,
                 height: MediaQuery.of(context).size.height * 0.4,
-                child: CustomPaint(painter: MapGridPainter()),
+                child: CustomPaint(painter: GridBackgroundPainter()),
               ),
 
               // 3. Speed Limit Overlay (Top Left)
@@ -182,16 +183,14 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
           decoration: BoxDecoration(
             color: AppTheme.whiteTransparent10,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppTheme.whiteTransparent20,
-              width: 1,
-            ),
+            border: Border.all(color: AppTheme.whiteTransparent20, width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             spacing: 12,
             children: [
-              if (upperSpeed != null) _speedLimitCircle(upperSpeed, AppTheme.systemRed),
+              if (upperSpeed != null)
+                _speedLimitCircle(upperSpeed, AppTheme.systemRed),
               if (lowerSpeed != null)
                 _speedLimitCircle(lowerSpeed, AppTheme.systemGray),
             ],
@@ -441,7 +440,11 @@ class SpeedometerArcPainter extends CustomPainter {
     paint.shader = SweepGradient(
       startAngle: startAngle,
       endAngle: startAngle + sweepAngle,
-      colors: [AppTheme.gradientGreen, AppTheme.gradientYellow, AppTheme.gradientRed],
+      colors: [
+        AppTheme.gradientGreen,
+        AppTheme.gradientYellow,
+        AppTheme.gradientRed,
+      ],
       stops: const [0.0, 0.5, 1.0],
       transform: GradientRotation(startAngle - 0.1), // Slight adjustment
     ).createShader(Rect.fromCircle(center: center, radius: radius));
@@ -551,27 +554,4 @@ class RoadPainter extends CustomPainter {
     return oldDelegate.animationValue != animationValue ||
         oldDelegate.activeLaneColor != activeLaneColor;
   }
-}
-
-// this is for map placeholder
-class MapGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppTheme.greyTransparent10
-      ..strokeWidth = 1;
-
-    const gridSize = 40.0;
-
-    for (var x = 0.0; x < size.width; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-
-    for (var y = 0.0; y < size.height; y += gridSize) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

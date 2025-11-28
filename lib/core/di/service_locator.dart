@@ -7,6 +7,7 @@ import 'package:garage/screen/settings/bloc/settings_bloc.dart';
 import '../service/isar_service.dart';
 import '../service/network/http_service.dart';
 import '../service/location/location_service.dart';
+import 'package:flutter/material.dart';
 // import '../repositories/speed_camera_repository.dart';
 
 final getIt = GetIt.instance;
@@ -24,7 +25,9 @@ Future<void> setupServiceLocator() async {
 
   // Bloc layer
   getIt.registerFactory<GarageHomeBloc>(() => GarageHomeBloc());
-  getIt.registerFactory<LaunchBloc>(() => LaunchBloc());
+  getIt.registerFactoryParam<LaunchBloc, TickerProvider, void>(
+    (vsync, _) => LaunchBloc(vsync),
+  );
   getIt.registerFactory<SpeedBloc>(() => SpeedBloc());
   getIt.registerFactory<Car3DBloc>(() => Car3DBloc());
   getIt.registerFactory<SettingsBloc>(() => SettingsBloc());
@@ -48,7 +51,7 @@ class BlocScopes {
   BlocScopes(this._getIt);
 
   GarageHomeBloc get home => _getIt<GarageHomeBloc>();
-  LaunchBloc get launch => _getIt<LaunchBloc>();
+  LaunchBloc launch(TickerProvider vsync) => _getIt<LaunchBloc>(param1: vsync);
   SpeedBloc get speed => _getIt<SpeedBloc>();
   Car3DBloc get car3d => _getIt<Car3DBloc>();
   SettingsBloc get settings => _getIt<SettingsBloc>();
