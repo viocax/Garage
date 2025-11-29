@@ -7,8 +7,8 @@ import 'package:garage/screen/settings/bloc/settings_bloc.dart';
 import '../service/isar_service.dart';
 import '../service/network/http_service.dart';
 import '../service/location/location_service.dart';
+import '../service/shared_preferences/shared_preferences_service.dart';
 import 'package:flutter/material.dart';
-// import '../repositories/speed_camera_repository.dart';
 
 final getIt = GetIt.instance;
 
@@ -18,10 +18,9 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<IsarService>(() => IsarService());
   getIt.registerLazySingleton<HttpService>(() => HttpService());
   getIt.registerLazySingleton<LocationService>(() => LocationService());
+  getIt.registerLazySingleton<SharedPreferencesService>(() => SharedPreferencesService());
 
   // Repository layer
-  // TODO: Register repository implementation when available
-  // getIt.registerLazySingleton<ISpeedCameraRepository>(() => SpeedCameraRepositoryImpl());
 
   // Bloc layer
   getIt.registerFactory<GarageHomeBloc>(() => GarageHomeBloc());
@@ -64,12 +63,10 @@ class ServiceScopes {
   HttpService get network => _getIt<HttpService>();
   IsarService get isarDB => _getIt<IsarService>();
   LocationService get location => _getIt<LocationService>();
+  SharedPreferencesService get preferences => _getIt<SharedPreferencesService>();
 }
 
 class RepositoryScopes {
   final GetIt _getIt;
   RepositoryScopes(this._getIt);
-
-  // Example:
-  // ISpeedCameraRepository get speedCamera => _getIt<ISpeedCameraRepository>();
 }
