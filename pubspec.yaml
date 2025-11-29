@@ -56,7 +56,7 @@ dependencies:
 
   # Local database - Isar
   isar: ^3.1.0+1
-  isar_flutter_libs: ^3.1.0+1
+  isar_community_flutter_libs: ^3.1.0+1
   path_provider: ^2.1.5
   geolocator: ^14.0.2
 
