@@ -26,16 +26,6 @@ abstract class ISpeedCameraRepository {
     int limit = 10,
   });
 
-  /// 根據道路編號搜尋測速照相點位
-  ///
-  /// [roadNumber] 道路編號（支援部分匹配）
-  Future<List<SpeedCamera>> searchByRoadNumber(String roadNumber);
-
-  /// 全文搜尋備註欄位
-  ///
-  /// [keyword] 搜尋關鍵字（大小寫不敏感）
-  Future<List<SpeedCamera>> searchRemarks(String keyword);
-
   /// 多條件過濾
   ///
   /// [roadNumber] 道路編號（精確匹配）
@@ -57,9 +47,4 @@ abstract class ISpeedCameraRepository {
 
   /// 清除所有本地資料
   Future<void> clearAll();
-
-  /// 取得服務統計資訊
-  ///
-  /// 返回包含資料數量、同步時間、資料庫統計等資訊
-  Future<Map<String, dynamic>> getServiceInfo();
 }

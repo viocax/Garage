@@ -1,7 +1,11 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// MARK: Isar 暫時不使用 - 此檔案為自動生成檔案，目前不使用
+// 如需重新啟用 Isar，請取消 speed_camera.dart 中的註解並執行:
+// dart run build_runner build --delete-conflicting-outputs
 
-part of 'speed_camera.dart';
+// part of 'speed_camera.dart'; // MARK: 已在 speed_camera.dart 中註解，此行也需註解
 
+/*
 // **************************************************************************
 // IsarCollectionGenerator
 // **************************************************************************
@@ -2442,3 +2446,4 @@ extension SpeedCameraQueryProperty
     });
   }
 }
+*/

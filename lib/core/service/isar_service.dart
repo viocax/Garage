@@ -1,3 +1,5 @@
+// MARK: Isar 暫時不使用 - 以下程式碼全部註解
+/*
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -61,3 +63,4 @@ class IsarService {
     };
   }
 }
+*/

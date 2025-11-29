@@ -1,56 +1,71 @@
-import 'package:isar/isar.dart';
+// import 'package:isar/isar.dart'; // MARK: Isar 暫時不使用
 import 'dart:math';
 
-part 'speed_camera.g.dart';
+// part 'speed_camera.g.dart'; // MARK: Isar 暫時不使用
 
-/// 測速照相點位資料模型（Isar Collection）
-@collection
+/// 測速照相點位資料模型
+// @collection // MARK: Isar 暫時不使用
 class SpeedCamera {
-  Id id = Isar.autoIncrement; // Auto-increment ID
+  // Id id = Isar.autoIncrement; // Auto-increment ID // MARK: Isar 暫時不使用
 
-  @Index()
-  late String code; // 編號
+  // @Index(type: IndexType.value, caseSensitive: false) // MARK: Isar 暫時不使用
+  late String cityName; // 城市名稱
 
-  @Index()
-  late String roadNumber; // 道路編號
+  // @Index(type: IndexType.value, caseSensitive: false) // MARK: Isar 暫時不使用
+  late String regionName; // 地區名稱
 
-  @Index()
-  late String direction; // 道路方向
+  // @Index(type: IndexType.value, caseSensitive: false) // MARK: Isar 暫時不使用
+  late String address; // 地址
 
-  late double mileage; // 里程數（公里）
+  late String deptName; // 部門名稱
 
-  @Index()
-  late int speedLimit; // 速限（公里/小時）
+  late String branchName; // 分局名稱
 
-  late double xCoordinate; // X座標
-  late double yCoordinate; // Y座標
-
-  @Index(type: IndexType.value)
+  // @Index(type: IndexType.value) // MARK: Isar 暫時不使用
   late double longitude; // WGS84 東經度
 
-  @Index(type: IndexType.value)
+  // @Index(type: IndexType.value) // MARK: Isar 暫時不使用
   late double latitude; // WGS84 北緯度
 
-  // 全文搜尋支援
-  @Index(type: IndexType.value, caseSensitive: false)
-  String? remarks; // 備註
+  // @Index() // MARK: Isar 暫時不使用
+  late String direction; // 方向
+
+  // @Index() // MARK: Isar 暫時不使用
+  late int speedLimit; // 速限（公里/小時）
 
   late DateTime lastUpdated; // 最後更新時間
 
-  /// 從 CSV 行資料建立 SpeedCamera 物件
-  static SpeedCamera fromCsvRow(List<String> row) {
+  /// 預設 constructor
+  SpeedCamera();
+
+  /// 從 JSON 資料建立 SpeedCamera 物件
+  factory SpeedCamera.fromJson(Map<String, dynamic> json) {
     return SpeedCamera()
-      ..code = row[1]
-      ..roadNumber = row[2]
-      ..direction = row[3]
-      ..mileage = double.tryParse(row[4]) ?? 0.0
-      ..speedLimit = int.tryParse(row[5]) ?? 0
-      ..xCoordinate = double.tryParse(row[6]) ?? 0.0
-      ..yCoordinate = double.tryParse(row[7]) ?? 0.0
-      ..longitude = double.tryParse(row[8]) ?? 0.0
-      ..latitude = double.tryParse(row[9]) ?? 0.0
-      ..remarks = row.length > 10 ? row[10] : null
+      ..cityName = json['CityName'] ?? ''
+      ..regionName = json['RegionName'] ?? ''
+      ..address = json['Address'] ?? ''
+      ..deptName = json['DeptNm'] ?? ''
+      ..branchName = json['BranchNm'] ?? ''
+      ..longitude = (json['Longitude'] as num?)?.toDouble() ?? 0.0
+      ..latitude = (json['Latitude'] as num?)?.toDouble() ?? 0.0
+      ..direction = json['direct'] ?? ''
+      ..speedLimit = int.tryParse(json['limitspeed']?.toString() ?? '0') ?? 0
       ..lastUpdated = DateTime.now();
+  }
+
+  /// 轉換為 JSON 格式
+  Map<String, dynamic> toJson() {
+    return {
+      'CityName': cityName,
+      'RegionName': regionName,
+      'Address': address,
+      'DeptNm': deptName,
+      'BranchNm': branchName,
+      'Longitude': longitude,
+      'Latitude': latitude,
+      'direct': direction,
+      'limitspeed': speedLimit.toString(),
+    };
   }
 
   /// 計算與指定座標的距離（公尺）
@@ -75,6 +90,6 @@ class SpeedCamera {
 
   @override
   String toString() {
-    return 'SpeedCamera(code: $code, road: $roadNumber $direction, mileage: $mileage km, speedLimit: $speedLimit km/h)';
+    return 'SpeedCamera(city: $cityName, region: $regionName, address: $address, direction: $direction, speedLimit: $speedLimit km/h)';
   }
 }

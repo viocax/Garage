@@ -4,10 +4,12 @@ import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
 import 'package:garage/screen/speed/speedCamera/bloc/speed_bloc.dart';
 import 'package:garage/screen/speed/car3d/bloc/car_3d_bloc.dart';
 import 'package:garage/screen/settings/bloc/settings_bloc.dart';
-import '../service/isar_service.dart';
+// import '../service/isar_service.dart'; // MARK: Isar 暫時不使用
 import '../service/network/http_service.dart';
 import '../service/location/location_service.dart';
 import '../service/shared_preferences/shared_preferences_service.dart';
+import '../repositories/speed_camera_repository.dart';
+import '../repositories/local_speed_camera_repository.dart';
 import 'package:flutter/material.dart';
 
 final getIt = GetIt.instance;
@@ -15,12 +17,13 @@ final getIt = GetIt.instance;
 /// 初始化依賴注入
 Future<void> setupServiceLocator() async {
   // Service layer
-  getIt.registerLazySingleton<IsarService>(() => IsarService());
+  // getIt.registerLazySingleton<IsarService>(() => IsarService()); // MARK: Isar 暫時不使用
   getIt.registerLazySingleton<HttpService>(() => HttpService());
   getIt.registerLazySingleton<LocationService>(() => LocationService());
   getIt.registerLazySingleton<SharedPreferencesService>(() => SharedPreferencesService());
 
   // Repository layer
+  getIt.registerLazySingleton<ISpeedCameraRepository>(() => LocalSpeedCameraRepository());
 
   // Bloc layer
   getIt.registerFactory<GarageHomeBloc>(() => GarageHomeBloc());
@@ -61,7 +64,7 @@ class ServiceScopes {
   ServiceScopes(this._getIt);
 
   HttpService get network => _getIt<HttpService>();
-  IsarService get isarDB => _getIt<IsarService>();
+  // IsarService get isarDB => _getIt<IsarService>(); // MARK: Isar 暫時不使用
   LocationService get location => _getIt<LocationService>();
   SharedPreferencesService get preferences => _getIt<SharedPreferencesService>();
 }
@@ -69,4 +72,6 @@ class ServiceScopes {
 class RepositoryScopes {
   final GetIt _getIt;
   RepositoryScopes(this._getIt);
+
+  ISpeedCameraRepository get speedCamera => _getIt<ISpeedCameraRepository>();
 }
