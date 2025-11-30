@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
-import 'package:garage/core/service/location/location_service.dart';
+import 'package:garage/core/repositories/speed_camera_repository.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
 
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
-  final LocationService locationService = getIt.service.location;
+  final ISpeedCameraRepository repository = getIt.repo.speedCamera;
   StreamSubscription<double>? _speedSubscription;
 
   // TODO: maxSpeed and unit and lower and upper，到時候會在設定方式注入進來
@@ -56,18 +56,17 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     if (currentState is! SpeedData) return;
 
     try {
-      // 1. 檢查定位權限
-      final position = await locationService.getCurrentPosition();
-      if (position == null) {
+      // 1. 檢查定位權限（通過 Repository）
+      final location = await repository.getCurrentLocation();
+      if (location == null) {
         debugPrint('SpeedBloc: 定位權限被拒絕或服務未開啟');
-        // TODO: 可以發送錯誤事件或更新狀態
         return;
       }
 
       debugPrint('SpeedBloc: 開始偵測');
 
-      // 2. 開始位置追蹤
-      _speedSubscription = locationService.getSpeedKmhStream().listen(
+      // 2. 開始位置追蹤（通過 Repository）
+      _speedSubscription = repository.getSpeedStream().listen(
         (speed) {
           add(UpdateSpeed(speed));
         },
@@ -138,8 +137,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     // 隨著 speedRatio 增加，持續時間線性遞增，直到 MAX_DURATION_MS (5200)。
 
     // 總持續時間變化量 (5200 - 4700 = 500)
-    final double durationDifference = (maxDuration - minDuration)
-        .toDouble();
+    final double durationDifference = (maxDuration - minDuration).toDouble();
 
     // 計算最終持續時間
     // 最終結果將在 [4700.0, 5200.0] 之間平滑變化

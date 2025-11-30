@@ -1,4 +1,5 @@
 import '../models/speed_camera.dart';
+import '../service/location/location_service.dart';
 
 /// 測速照相資料倉儲介面
 ///
@@ -47,4 +48,16 @@ abstract class ISpeedCameraRepository {
 
   /// 清除所有本地資料
   Future<void> clearAll();
+
+  // --- 速度追蹤相關方法 ---
+
+  /// 檢查定位權限並獲取當前位置
+  ///
+  /// 返回當前位置的經緯度，如果權限被拒絕或服務未開啟則返回 null
+  Future<LatLng?> getCurrentLocation();
+
+  /// 監聽速度變化（km/h）
+  ///
+  /// 返回實時速度流，單位為公里/小時
+  Stream<double> getSpeedStream();
 }

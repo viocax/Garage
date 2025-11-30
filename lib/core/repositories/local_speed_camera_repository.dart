@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart';
+import 'package:garage/core/di/service_locator.dart';
+import 'package:garage/core/service/location/location_service.dart';
 import '../models/speed_camera.dart';
 import 'speed_camera_repository.dart';
 
@@ -8,6 +10,8 @@ import 'speed_camera_repository.dart';
 ///
 /// 從 assets/cameras.json 讀取資料，並使用記憶體快取避免重複解析
 class LocalSpeedCameraRepository implements ISpeedCameraRepository {
+  final LocationService locationService = getIt.service.location;
+
   /// 快取的測速照相資料
   List<SpeedCamera>? _cachedCameras;
 
@@ -20,7 +24,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   Future<List<SpeedCamera>> _loadCamerasFromAssets() async {
     // 如果已有快取，直接返回
     if (_cachedCameras != null) {
-      debugPrint('LocalSpeedCameraRepository: 使用快取資料 (${_cachedCameras!.length} 筆)');
+      debugPrint(
+        'LocalSpeedCameraRepository: 使用快取資料 (${_cachedCameras!.length} 筆)',
+      );
       return _cachedCameras!;
     }
 
@@ -28,7 +34,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
     try {
       // 讀取 JSON 檔案
-      final String jsonString = await rootBundle.loadString('assets/cameras.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/cameras.json',
+      );
 
       // 解析 JSON
       final Map<String, dynamic> jsonData = json.decode(jsonString);
@@ -41,7 +49,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
       _loadedAt = DateTime.now();
 
-      debugPrint('LocalSpeedCameraRepository: 載入完成，共 ${_cachedCameras!.length} 筆資料');
+      debugPrint(
+        'LocalSpeedCameraRepository: 載入完成，共 ${_cachedCameras!.length} 筆資料',
+      );
 
       return _cachedCameras!;
     } catch (e, stackTrace) {
@@ -54,7 +64,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   @override
   Future<void> syncFromRemote({bool force = false}) async {
     // 本地資料不需要同步，直接載入即可
-    debugPrint('LocalSpeedCameraRepository: syncFromRemote called (force: $force)');
+    debugPrint(
+      'LocalSpeedCameraRepository: syncFromRemote called (force: $force)',
+    );
     if (force) {
       // 強制重新載入，清除快取
       _cachedCameras = null;
@@ -89,7 +101,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
         .toList();
 
     // 按距離排序
-    nearby.sort((a, b) => (a['distance'] as double).compareTo(b['distance'] as double));
+    nearby.sort(
+      (a, b) => (a['distance'] as double).compareTo(b['distance'] as double),
+    );
 
     // 取前 N 筆
     final result = nearby
@@ -97,7 +111,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
         .map((item) => item['camera'] as SpeedCamera)
         .toList();
 
-    debugPrint('LocalSpeedCameraRepository: getNearby found ${result.length} cameras within ${radiusInMeters}m');
+    debugPrint(
+      'LocalSpeedCameraRepository: getNearby found ${result.length} cameras within ${radiusInMeters}m',
+    );
 
     return result;
   }
@@ -145,5 +161,17 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     debugPrint('LocalSpeedCameraRepository: 清除快取');
     _cachedCameras = null;
     _loadedAt = null;
+  }
+
+  // --- 速度追蹤相關方法實作 ---
+
+  @override
+  Future<LatLng?> getCurrentLocation() async {
+    return await locationService.getCurrentLatLng();
+  }
+
+  @override
+  Stream<double> getSpeedStream() {
+    return locationService.getSpeedKmhStream();
   }
 }

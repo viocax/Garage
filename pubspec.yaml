@@ -63,6 +63,9 @@ dependencies:
   # Local storage
   shared_preferences: ^2.3.3
 
+  # Text-to-Speech
+  flutter_tts: ^4.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

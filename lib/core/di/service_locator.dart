@@ -8,6 +8,7 @@ import 'package:garage/screen/settings/bloc/settings_bloc.dart';
 import '../service/network/http_service.dart';
 import '../service/location/location_service.dart';
 import '../service/shared_preferences/shared_preferences_service.dart';
+import '../service/tts/tts_service.dart';
 import '../repositories/speed_camera_repository.dart';
 import '../repositories/local_speed_camera_repository.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<SharedPreferencesService>(
     () => SharedPreferencesService(),
   );
+  getIt.registerLazySingleton<TtsService>(() => TtsService());
 
   // Repository layer
   getIt.registerLazySingleton<ISpeedCameraRepository>(
@@ -74,6 +76,7 @@ class ServiceScopes {
   LocationService get location => _getIt<LocationService>();
   SharedPreferencesService get preferences =>
       _getIt<SharedPreferencesService>();
+  TtsService get tts => _getIt<TtsService>();
 }
 
 class RepositoryScopes {
