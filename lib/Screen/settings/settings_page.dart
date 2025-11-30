@@ -56,65 +56,44 @@ class _SettingsView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    _buildSelectionItem(
-                      context,
-                      '距離單位',
-                      Icons.straighten,
-                      state.distanceUnit,
-                      onTap: () => _showUnitDialog(
-                        context,
-                        '選擇距離單位',
-                        state.distanceUnit,
-                        ['km', 'mi'],
-                        (unit) => context.read<SettingsBloc>().add(
-                          ChangeDistanceUnit(unit),
-                        ),
-                      ),
-                    ),
 
                     // 測速提醒
                     _buildSectionHeader(context, '測速提醒'),
                     _buildToggleItem(
                       context,
-                      '警示音效',
-                      Icons.volume_up_outlined,
-                      state.isSoundEnabled,
-                      onTap: () {
-                        context.read<SettingsBloc>().add(const ToggleSound());
-                      },
-                    ),
-
-                    // 顯示設定
-                    _buildSectionHeader(context, '顯示設定'),
-                    _buildSelectionItem(
-                      context,
-                      '地圖類型',
-                      Icons.map_outlined,
-                      _getMapTypeLabel(state.mapType),
-                      onTap: () => _showMapTypeDialog(context, state.mapType),
-                    ),
-                    _buildToggleItem(
-                      context,
-                      '顯示測速相機',
-                      Icons.camera_alt_outlined,
-                      state.showSpeedCameras,
+                      '語音提示',
+                      Icons.record_voice_over_outlined,
+                      state.isVoiceAlertEnabled,
                       onTap: () {
                         context.read<SettingsBloc>().add(
-                          const ToggleSpeedCameras(),
+                          const ToggleVoiceAlert(),
                         );
                       },
                     ),
-                    _buildToggleItem(
-                      context,
-                      '顯示平均速度',
-                      Icons.trending_up,
-                      state.showAverageSpeed,
-                      onTap: () {
-                        context.read<SettingsBloc>().add(
-                          const ToggleAverageSpeed(),
-                        );
-                      },
-                    ),
+                    if (state.isVoiceAlertEnabled) ...[
+                      _buildSliderItem(
+                        context,
+                        '語音音量',
+                        Icons.volume_up,
+                        state.voiceVolume,
+                        onChanged: (value) {
+                          context.read<SettingsBloc>().add(
+                            ChangeVoiceVolume(value),
+                          );
+                        },
+                      ),
+                      _buildSliderItem(
+                        context,
+                        '語速',
+                        Icons.speed,
+                        state.voiceSpeechRate,
+                        onChanged: (value) {
+                          context.read<SettingsBloc>().add(
+                            ChangeVoiceSpeechRate(value),
+                          );
+                        },
+                      ),
+                    ],
 
                     // 隱私與安全
                     _buildSectionHeader(context, '隱私與安全'),
@@ -122,17 +101,6 @@ class _SettingsView extends StatelessWidget {
                       context,
                       '位置權限',
                       Icons.location_on_outlined,
-                    ),
-                    _buildToggleItem(
-                      context,
-                      '允許資料收集',
-                      Icons.analytics_outlined,
-                      state.allowDataCollection,
-                      onTap: () {
-                        context.read<SettingsBloc>().add(
-                          const ToggleDataCollection(),
-                        );
-                      },
                     ),
 
                     // 資料管理
@@ -196,61 +164,6 @@ class _SettingsView extends StatelessWidget {
     );
   }
 
-  String _getMapTypeLabel(String mapType) {
-    switch (mapType) {
-      case 'standard':
-        return '標準';
-      case 'satellite':
-        return '衛星';
-      case 'hybrid':
-        return '混合';
-      default:
-        return '標準';
-    }
-  }
-
-  void _showMapTypeDialog(BuildContext context, String currentType) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('選擇地圖類型'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildDialogOption(
-              dialogContext,
-              '標準',
-              'standard',
-              currentType,
-              () {
-                context.read<SettingsBloc>().add(
-                  const ChangeMapType('standard'),
-                );
-                Navigator.pop(dialogContext);
-              },
-            ),
-            _buildDialogOption(
-              dialogContext,
-              '衛星',
-              'satellite',
-              currentType,
-              () {
-                context.read<SettingsBloc>().add(
-                  const ChangeMapType('satellite'),
-                );
-                Navigator.pop(dialogContext);
-              },
-            ),
-            _buildDialogOption(dialogContext, '混合', 'hybrid', currentType, () {
-              context.read<SettingsBloc>().add(const ChangeMapType('hybrid'));
-              Navigator.pop(dialogContext);
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showUnitDialog(
     BuildContext context,
     String title,
@@ -291,7 +204,9 @@ class _SettingsView extends StatelessWidget {
     final isSelected = value == currentValue;
     return ListTile(
       title: Text(label),
-      trailing: isSelected ? const Icon(Icons.check, color: AppTheme.systemBlue) : null,
+      trailing: isSelected
+          ? const Icon(Icons.check, color: AppTheme.systemBlue)
+          : null,
       onTap: onTap,
     );
   }
@@ -405,13 +320,65 @@ class _SettingsView extends StatelessWidget {
           children: [
             Text(
               currentValue,
-              style: theme.textTheme.bodyMedium?.copyWith(color: AppTheme.systemGray),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppTheme.systemGray,
+              ),
             ),
             const SizedBox(width: 8),
             const Icon(Icons.chevron_right, color: AppTheme.systemGray),
           ],
         ),
         onTap: onTap ?? () {},
+      ),
+    );
+  }
+
+  Widget _buildSliderItem(
+    BuildContext context,
+    String title,
+    IconData icon,
+    double value, {
+    required ValueChanged<double> onChanged,
+  }) {
+    final theme = Theme.of(context);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: theme.colorScheme.primary, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${(value * 100).toInt()}%',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.systemGray,
+                  ),
+                ),
+              ],
+            ),
+            Slider(
+              value: value,
+              onChanged: onChanged,
+              activeColor: theme.colorScheme.primary,
+            ),
+          ],
+        ),
       ),
     );
   }

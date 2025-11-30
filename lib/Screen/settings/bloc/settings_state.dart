@@ -7,41 +7,31 @@ final class SettingsInitial extends SettingsState {
 }
 
 final class SettingsLoaded extends SettingsState {
-  final bool isSoundEnabled;
   final String speedUnit; // 'km/h' or 'mph'
-  final String distanceUnit; // 'km' or 'mi'
-  final String mapType; // 'standard', 'satellite', 'hybrid'
-  final bool showSpeedCameras;
-  final bool showAverageSpeed;
-  final bool allowDataCollection;
+
+  // Voice alert settings
+  final bool isVoiceAlertEnabled;
+  final double voiceVolume; // 0.0 - 1.0
+  final double voiceSpeechRate; // 0.0 - 1.0
 
   const SettingsLoaded({
-    required this.isSoundEnabled,
     required this.speedUnit,
-    required this.distanceUnit,
-    required this.mapType,
-    required this.showSpeedCameras,
-    required this.showAverageSpeed,
-    required this.allowDataCollection,
+    required this.isVoiceAlertEnabled,
+    required this.voiceVolume,
+    required this.voiceSpeechRate,
   });
 
   SettingsLoaded copyWith({
-    bool? isSoundEnabled,
     String? speedUnit,
-    String? distanceUnit,
-    String? mapType,
-    bool? showSpeedCameras,
-    bool? showAverageSpeed,
-    bool? allowDataCollection,
+    bool? isVoiceAlertEnabled,
+    double? voiceVolume,
+    double? voiceSpeechRate,
   }) {
     return SettingsLoaded(
-      isSoundEnabled: isSoundEnabled ?? this.isSoundEnabled,
       speedUnit: speedUnit ?? this.speedUnit,
-      distanceUnit: distanceUnit ?? this.distanceUnit,
-      mapType: mapType ?? this.mapType,
-      showSpeedCameras: showSpeedCameras ?? this.showSpeedCameras,
-      showAverageSpeed: showAverageSpeed ?? this.showAverageSpeed,
-      allowDataCollection: allowDataCollection ?? this.allowDataCollection,
+      isVoiceAlertEnabled: isVoiceAlertEnabled ?? this.isVoiceAlertEnabled,
+      voiceVolume: voiceVolume ?? this.voiceVolume,
+      voiceSpeechRate: voiceSpeechRate ?? this.voiceSpeechRate,
     );
   }
 }

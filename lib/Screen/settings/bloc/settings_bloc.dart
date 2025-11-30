@@ -15,24 +15,18 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     switch (event) {
       case LoadSettings():
         _onLoadSettings(emit);
-      case ToggleSound():
-        _onToggleSound(emit);
       case ChangeSpeedUnit():
         _onChangeSpeedUnit(event, emit);
-      case ChangeDistanceUnit():
-        _onChangeDistanceUnit(event, emit);
-      case ChangeMapType():
-        _onChangeMapType(event, emit);
-      case ToggleSpeedCameras():
-        _onToggleSpeedCameras(emit);
-      case ToggleAverageSpeed():
-        _onToggleAverageSpeed(emit);
-      case ToggleDataCollection():
-        _onToggleDataCollection(emit);
       case ExportData():
         _onExportData(emit);
       case ClearData():
         _onClearData(emit);
+      case ToggleVoiceAlert():
+        _onToggleVoiceAlert(emit);
+      case ChangeVoiceVolume():
+        _onChangeVoiceVolume(event, emit);
+      case ChangeVoiceSpeechRate():
+        _onChangeVoiceSpeechRate(event, emit);
     }
   }
 
@@ -40,74 +34,18 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     // Simulate loading settings with default values
     emit(
       const SettingsLoaded(
-        isSoundEnabled: true,
         speedUnit: 'km/h',
-        distanceUnit: 'km',
-        mapType: 'standard',
-        showSpeedCameras: true,
-        showAverageSpeed: false,
-        allowDataCollection: false,
+        isVoiceAlertEnabled: true,
+        voiceVolume: 1.0,
+        voiceSpeechRate: 0.5,
       ),
     );
-  }
-
-  void _onToggleSound(Emitter<SettingsState> emit) {
-    final currentState = state;
-    if (currentState is SettingsLoaded) {
-      emit(currentState.copyWith(isSoundEnabled: !currentState.isSoundEnabled));
-    }
   }
 
   void _onChangeSpeedUnit(ChangeSpeedUnit event, Emitter<SettingsState> emit) {
     final currentState = state;
     if (currentState is SettingsLoaded) {
       emit(currentState.copyWith(speedUnit: event.unit));
-    }
-  }
-
-  void _onChangeDistanceUnit(
-    ChangeDistanceUnit event,
-    Emitter<SettingsState> emit,
-  ) {
-    final currentState = state;
-    if (currentState is SettingsLoaded) {
-      emit(currentState.copyWith(distanceUnit: event.unit));
-    }
-  }
-
-  void _onChangeMapType(ChangeMapType event, Emitter<SettingsState> emit) {
-    final currentState = state;
-    if (currentState is SettingsLoaded) {
-      emit(currentState.copyWith(mapType: event.type));
-    }
-  }
-
-  void _onToggleSpeedCameras(Emitter<SettingsState> emit) {
-    final currentState = state;
-    if (currentState is SettingsLoaded) {
-      emit(
-        currentState.copyWith(showSpeedCameras: !currentState.showSpeedCameras),
-      );
-    }
-  }
-
-  void _onToggleAverageSpeed(Emitter<SettingsState> emit) {
-    final currentState = state;
-    if (currentState is SettingsLoaded) {
-      emit(
-        currentState.copyWith(showAverageSpeed: !currentState.showAverageSpeed),
-      );
-    }
-  }
-
-  void _onToggleDataCollection(Emitter<SettingsState> emit) {
-    final currentState = state;
-    if (currentState is SettingsLoaded) {
-      emit(
-        currentState.copyWith(
-          allowDataCollection: !currentState.allowDataCollection,
-        ),
-      );
     }
   }
 
@@ -119,5 +57,36 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   void _onClearData(Emitter<SettingsState> emit) {
     // TODO: Implement clear data logic
     debugPrint('Clear Data Triggered');
+  }
+
+  void _onToggleVoiceAlert(Emitter<SettingsState> emit) {
+    final currentState = state;
+    if (currentState is SettingsLoaded) {
+      emit(
+        currentState.copyWith(
+          isVoiceAlertEnabled: !currentState.isVoiceAlertEnabled,
+        ),
+      );
+    }
+  }
+
+  void _onChangeVoiceVolume(
+    ChangeVoiceVolume event,
+    Emitter<SettingsState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is SettingsLoaded) {
+      emit(currentState.copyWith(voiceVolume: event.volume));
+    }
+  }
+
+  void _onChangeVoiceSpeechRate(
+    ChangeVoiceSpeechRate event,
+    Emitter<SettingsState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is SettingsLoaded) {
+      emit(currentState.copyWith(voiceSpeechRate: event.rate));
+    }
   }
 }
