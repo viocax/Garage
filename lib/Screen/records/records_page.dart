@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:garage/theme/app_theme.dart';
 
 class RecordsPage extends StatelessWidget {
@@ -7,90 +8,98 @@ class RecordsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Car Info Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'FK8 Type R',
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        height: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '45,230 km',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.5,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      ),
+      child: Scaffold(
+        body: SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              // Car Info Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'FK8 Type R',
+                        style: theme.textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          height: 1.0,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Statistics Cards
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 120,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    _buildStatCard(
-                      context,
-                      title: '本月花費',
-                      amount: '\$12,500',
-                      trend: '+12%',
-                      isPositive: false,
-                    ),
-                    _buildStatCard(
-                      context,
-                      title: '本年累計',
-                      amount: '\$156,200',
-                      trend: '-5%',
-                      isPositive: true,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-            // Recent Records Title
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  '最近紀錄',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+                      const SizedBox(height: 4),
+                      Text(
+                        '45,230 km',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+              // Statistics Cards
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 120,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      _buildStatCard(
+                        context,
+                        title: '本月花費',
+                        amount: '\$12,500',
+                        trend: '+12%',
+                        isPositive: false,
+                      ),
+                      _buildStatCard(
+                        context,
+                        title: '本年累計',
+                        amount: '\$156,200',
+                        trend: '-5%',
+                        isPositive: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
-            // Records List
-            SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                return _buildRecordItem(context, index);
-              }, childCount: 10),
-            ),
-          ],
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+              // Recent Records Title
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    '最近紀錄',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+              // Records List
+              SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  return _buildRecordItem(context, index);
+                }, childCount: 10),
+              ),
+            ],
+          ),
         ),
       ),
     );
