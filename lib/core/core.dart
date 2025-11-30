@@ -7,6 +7,9 @@ export 'models/tabbar_type.dart';
 export 'repositories/speed_camera_repository.dart';
 export 'repositories/local_speed_camera_repository.dart';
 
+// Services (僅匯出常用的資料類別)
+export 'service/location/location_service.dart' show LatLng;
+
 // Dependency Injection
 export 'di/service_locator.dart';
 

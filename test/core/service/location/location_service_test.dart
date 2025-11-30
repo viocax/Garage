@@ -246,16 +246,10 @@ void main() {
       mockGeolocator.closePositionStream();
     });
 
-    test('應該可以傳遞 LocationSettings', () {
-      // Arrange
-      final locationSettings = const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
-      );
-
+    test('應該正常取得位置流', () {
       // Act & Assert
       expect(
-        () => locationService.getPositionStream(locationSettings: locationSettings),
+        () => locationService.getPositionStream(),
         returnsNormally,
       );
     });

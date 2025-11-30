@@ -19,7 +19,7 @@ Future<void> setupServiceLocator() async {
   // Service layer
   // getIt.registerLazySingleton<IsarService>(() => IsarService()); // MARK: Isar 暫時不使用
   getIt.registerLazySingleton<HttpService>(() => HttpService());
-  getIt.registerLazySingleton<LocationService>(() => LocationService());
+  getIt.registerLazySingleton<LocationService>(() => LocationService()); // 使用預設的 GeolocatorWrapper
   getIt.registerLazySingleton<SharedPreferencesService>(() => SharedPreferencesService());
 
   // Repository layer

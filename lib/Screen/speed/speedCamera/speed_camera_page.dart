@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
@@ -73,97 +74,103 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             },
           ),
         ],
-        child: Scaffold(
-          backgroundColor: AppTheme.primaryColor,
-          body: Stack(
-            children: [
-              // 1. Background Gradient
-              _backgroundGradient(),
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          ),
+          child: Scaffold(
+            backgroundColor: AppTheme.primaryColor,
+            body: Stack(
+              children: [
+                // 1. Background Gradient
+                _backgroundGradient(),
 
-              // 2. Grid Background (Top part)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: MediaQuery.of(context).size.height * 0.4,
-                child: CustomPaint(painter: GridBackgroundPainter()),
-              ),
-
-              // 3. Speed Limit Overlay (Top Left)
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 20,
-                left: 20,
-                child: BlocBuilder<SpeedBloc, SpeedState>(
-                  builder: (context, state) {
-                    return switch (state) {
-                      SpeedData(:final lowerSpeed, :final upperSpeed) =>
-                        _buildSpeedLimitOverlay(lowerSpeed, upperSpeed),
-                    };
-                  },
+                // 2. Grid Background (Top part)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  child: CustomPaint(painter: GridBackgroundPainter()),
                 ),
-              ),
 
-              // 4. Speedometer (Center)
-              Positioned(
-                top: MediaQuery.of(context).size.height * 0.25,
-                left: 0,
-                right: 0,
-                child: BlocBuilder<SpeedBloc, SpeedState>(
-                  builder: (context, state) {
-                    return switch (state) {
-                      SpeedData(
-                        :final speed,
-                        :final unit,
-                        :final isOverSpeed,
-                      ) =>
-                        Speedometer(
-                          speed: speed.toInt().toString(),
-                          unit: unit,
-                          isOverSpeed: isOverSpeed,
-                        ),
-                    };
-                  },
-                ),
-              ),
-
-              // 5. Road & Car (Bottom)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: MediaQuery.of(context).size.height * 0.3,
-                child: _roadPath(),
-              ),
-
-              // 6. Debug Slider (Right Side)
-              Positioned(
-                right: 20,
-                top: 100,
-                bottom: 100,
-                child: RotatedBox(
-                  quarterTurns: 3,
+                // 3. Speed Limit Overlay (Top Left)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 20,
+                  left: 20,
                   child: BlocBuilder<SpeedBloc, SpeedState>(
                     builder: (context, state) {
-                      final currentSpeed = switch (state) {
-                        SpeedData(:final speed) => speed,
+                      return switch (state) {
+                        SpeedData(:final lowerSpeed, :final upperSpeed) =>
+                          _buildSpeedLimitOverlay(lowerSpeed, upperSpeed),
                       };
-                      return Slider(
-                        value: currentSpeed,
-                        min: 0,
-                        max: 300,
-                        activeColor: AppTheme.accentColor,
-                        inactiveColor: AppTheme.whiteTransparent30,
-                        label: currentSpeed.round().toString(),
-                        divisions: 300,
-                        onChanged: (value) {
-                          context.read<SpeedBloc>().add(UpdateSpeed(value));
-                        },
-                      );
                     },
                   ),
                 ),
-              ),
-            ],
+
+                // 4. Speedometer (Center)
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 0.25,
+                  left: 0,
+                  right: 0,
+                  child: BlocBuilder<SpeedBloc, SpeedState>(
+                    builder: (context, state) {
+                      return switch (state) {
+                        SpeedData(
+                          :final speed,
+                          :final unit,
+                          :final maxSpeed,
+                          :final isOverSpeed,
+                          :final isDetecting,
+                        ) =>
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Center(
+                                child: Speedometer(
+                                  speed: speed.toInt().toString(),
+                                  unit: unit,
+                                  isOverSpeed: isOverSpeed,
+                                  maxSpeed: maxSpeed,
+                                ),
+                              ),
+                              // Detection Button (Bottom Center)
+                              Positioned(
+                                bottom: 0,
+                                child: SpeedDetectionButton(
+                                  isDetecting: isDetecting,
+                                  onTap: () {
+                                    if (isDetecting) {
+                                      context.read<SpeedBloc>().add(
+                                        const StopDetection(),
+                                      );
+                                    } else {
+                                      context.read<SpeedBloc>().add(
+                                        const StartDetection(),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                      };
+                    },
+                  ),
+                ),
+
+                // 5. Road & Car (Bottom)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  child: _roadPath(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -284,11 +291,13 @@ class Speedometer extends StatefulWidget {
   final String speed;
   final String unit;
   final bool isOverSpeed;
+  final double maxSpeed; // 假設最大速度
 
   const Speedometer({
     super.key,
     required this.speed,
     required this.unit,
+    required this.maxSpeed,
     this.isOverSpeed = false,
   });
 
@@ -330,8 +339,7 @@ class _SpeedometerState extends State<Speedometer>
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final double currentSpeed = double.tryParse(widget.speed) ?? 0;
-    final double maxSpeed = 240.0; // 假設最大速度
-    final double progress = (currentSpeed / maxSpeed).clamp(0.0, 1.0);
+    final double progress = (currentSpeed / widget.maxSpeed).clamp(0.0, 1.0);
 
     return Stack(
       alignment: Alignment.center,
@@ -555,3 +563,252 @@ class RoadPainter extends CustomPainter {
         oldDelegate.activeLaneColor != activeLaneColor;
   }
 }
+
+// Detection Button Widget
+class DetectionButton extends StatefulWidget {
+  final bool isDetecting;
+  final VoidCallback onPressed;
+
+  const DetectionButton({
+    super.key,
+    required this.isDetecting,
+    required this.onPressed,
+  });
+
+  @override
+  State<DetectionButton> createState() => _DetectionButtonState();
+}
+
+class _DetectionButtonState extends State<DetectionButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void didUpdateWidget(DetectionButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isDetecting && !oldWidget.isDetecting) {
+      _pulseController.repeat(reverse: true);
+    } else if (!widget.isDetecting && oldWidget.isDetecting) {
+      _pulseController.stop();
+      _pulseController.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulseAnimation,
+      builder: (context, child) {
+        return GestureDetector(
+          onTap: widget.onPressed,
+          child: Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: widget.isDetecting
+                  ? [
+                      BoxShadow(
+                        color: AppTheme.accentColor.withValues(
+                          alpha: 0.4 * _pulseAnimation.value,
+                        ),
+                        blurRadius: 20 * _pulseAnimation.value,
+                        spreadRadius: 5 * _pulseAnimation.value,
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: AppTheme.blackTransparent15,
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(40),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: widget.isDetecting
+                        ? LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppTheme.accentColor,
+                              AppTheme.accentColor.withValues(alpha: 0.8),
+                            ],
+                          )
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppTheme.whiteTransparent20,
+                              AppTheme.whiteTransparent10,
+                            ],
+                          ),
+                    border: Border.all(
+                      color: widget.isDetecting
+                          ? AppTheme.accentColor
+                          : AppTheme.whiteTransparent30,
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      widget.isDetecting
+                          ? Icons.stop_rounded
+                          : Icons.play_arrow_rounded,
+                      size: 40,
+                      color: widget.isDetecting
+                          ? AppTheme.primaryColor
+                          : AppTheme.accentColor,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class SpeedDetectionButton extends StatefulWidget {
+  final bool isDetecting;
+  final VoidCallback onTap;
+
+  const SpeedDetectionButton({
+    Key? key,
+    required this.isDetecting,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  State<SpeedDetectionButton> createState() => _SpeedDetectionButtonState();
+}
+
+class _SpeedDetectionButtonState extends State<SpeedDetectionButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true); // 讓呼吸燈效果循環
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 定義顏色
+    final activeColor = const Color.fromARGB(
+      255,
+      223,
+      162,
+      162,
+    ); // 偵測中 (停止按鈕顏色)
+    final inactiveColor = const Color.fromARGB(
+      255,
+      152,
+      220,
+      204,
+    ); // 未啟動 (啟動按鈕顏色 - 類似賽博龐克綠)
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          // 計算呼吸燈陰影擴散半徑 (只在偵測中時有呼吸效果)
+          double glowRadius = widget.isDetecting
+              ? (5.0 * _controller.value)
+              : 0.0;
+
+          return Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.6), // 半透明深色背景
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: widget.isDetecting ? activeColor : inactiveColor,
+                width: 3,
+              ),
+              boxShadow: [
+                // 外發光效果
+                BoxShadow(
+                  color: (widget.isDetecting ? activeColor : inactiveColor)
+                      .withValues(alpha: 0.6),
+                  blurRadius: widget.isDetecting ? 20 : 10,
+                  spreadRadius: glowRadius,
+                ),
+                // 內部光暈
+                BoxShadow(
+                  color: (widget.isDetecting ? activeColor : inactiveColor)
+                      .withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  spreadRadius: -5,
+                  offset: const Offset(0, 0),
+                ),
+              ],
+            ),
+            child: Center(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child: widget.isDetecting
+                    ? Icon(
+                        Icons.stop_rounded,
+                        key: const ValueKey('stop'),
+                        color: activeColor,
+                        size: 40,
+                      )
+                    : Icon(
+                        Icons.play_arrow_rounded,
+                        key: const ValueKey('start'),
+                        color: inactiveColor,
+                        size: 45,
+                      ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+//developer.apple.com

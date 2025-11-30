@@ -4,17 +4,21 @@ import 'speed_event.dart';
 import 'speed_state.dart';
 
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
+  // TODO: maxSpeed and unit and lower and upper，到時候會在設定方式注入進來
   SpeedBloc()
     : super(
         const SpeedData(
           speed: 0.0,
           animationDuration: Duration(milliseconds: 5300),
           unit: 'km/h',
+          maxSpeed: 300,
           lowerSpeed: '110',
           upperSpeed: '120',
         ),
       ) {
-    on<UpdateSpeed>(_onUpdateSpeed);
+    // on<UpdateSpeed>(_onUpdateSpeed);
+    on<StartDetection>(_onStartDetection);
+    on<StopDetection>(_onStopDetection);
   }
 
   void _onUpdateSpeed(UpdateSpeed event, Emitter<SpeedState> emit) {
@@ -36,6 +40,39 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
         isOverSpeed: isOverSpeed,
       ),
     );
+  }
+
+  void _onStartDetection(StartDetection event, Emitter<SpeedState> emit) {
+    final currentState = state;
+    if (currentState is! SpeedData) return;
+
+    // TODO: check location permission;
+    // TODO: start location tracking;
+    // TODO: handler error;
+
+    debugPrint('SpeedBloc: 開始偵測');
+
+    final newSpeed = 150.0;
+    final newDuration = _calculateDuration(newSpeed);
+    final isOverSpeed = _checkOverSpeed(newSpeed, currentState.upperSpeed);
+
+    emit(
+      currentState.copyWith(
+        speed: newSpeed,
+        animationDuration: newDuration,
+        isOverSpeed: isOverSpeed,
+        isDetecting: true,
+      ),
+    );
+  }
+
+  void _onStopDetection(StopDetection event, Emitter<SpeedState> emit) {
+    final currentState = state;
+    if (currentState is! SpeedData) return;
+
+    debugPrint('SpeedBloc: 停止偵測');
+
+    emit(currentState.copyWith(speed: 0, isOverSpeed: false, isDetecting: false));
   }
 
   // 檢查是否超速

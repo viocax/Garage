@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Primary Colors
   static const Color primaryColor = Colors.black;
   static const Color accentColor = Colors.white;
-  static const Color backgroundColor = Color(0xFFF5F5F7); // iOS light gray background
+  static const Color backgroundColor = Color(
+    0xFFF5F5F7,
+  ); // iOS light gray background
   static const Color surfaceColor = Colors.white;
   static const Color errorColor = Color(0xFFFF3B30); // iOS system red
 
@@ -15,7 +18,9 @@ class AppTheme {
   static const Color systemGray3 = Color(0xFFC7C7CC); // iOS system gray 3
   static const Color systemGray4 = Color(0xFFD1D1D6); // iOS system gray 4
   static const Color systemGray5 = Color(0xFFE5E5EA); // iOS system gray 5
-  static const Color systemGray6 = Color(0xFFF5F5F7); // iOS system gray 6 (light)
+  static const Color systemGray6 = Color(
+    0xFFF5F5F7,
+  ); // iOS system gray 6 (light)
 
   // iOS System Colors
   static const Color systemGreen = Color(0xFF34C759); // iOS system green
@@ -49,10 +54,16 @@ class AppTheme {
   static Color greyTransparent10 = Colors.grey.withValues(alpha: 0.1);
   static Color greyTransparent20 = Colors.grey.withValues(alpha: 0.2);
 
-  static Color redTransparent30 = const Color(0xFFFF3B30).withValues(alpha: 0.3);
-  static Color redTransparent90 = const Color(0xFFFF3B30).withValues(alpha: 0.9);
+  static Color redTransparent30 = const Color(
+    0xFFFF3B30,
+  ).withValues(alpha: 0.3);
+  static Color redTransparent90 = const Color(
+    0xFFFF3B30,
+  ).withValues(alpha: 0.9);
 
-  static Color greenTransparent10 = const Color(0xFF34C759).withValues(alpha: 0.1);
+  static Color greenTransparent10 = const Color(
+    0xFF34C759,
+  ).withValues(alpha: 0.1);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -77,6 +88,11 @@ class AppTheme {
         foregroundColor: primaryColor,
         elevation: 0,
         centerTitle: true,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark, // Android
+          statusBarBrightness: Brightness.light, // iOS
+        ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: surfaceColor,

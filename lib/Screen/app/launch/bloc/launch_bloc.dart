@@ -38,7 +38,7 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
       debugPrint('LaunchBloc: 測速照相資料載入完成，共 $count 筆');
 
       // 等待動畫完成
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 4));
 
       // 初始化完成
       debugPrint('LaunchBloc: 初始化完成');
@@ -78,6 +78,8 @@ class LaunchAnimationHolder {
   late Animation<double> taglinePosition;
   late Animation<double> underlineWidth;
   late Animation<double> carDrawProgress;
+
+  late double totolAnimationTime;
 
   LaunchAnimationHolder(this.vsync) {
     _setupAnimation();

@@ -107,7 +107,7 @@ class MockGeolocator implements GeolocatorInterface {
   }
 
   @override
-  Future<Position> getCurrentPosition({LocationSettings? locationSettings}) async {
+  Future<Position> getCurrentPosition() async {
     getCurrentPositionCallCount++;
     if (_errorToThrow != null) {
       throw _errorToThrow!;
@@ -119,7 +119,7 @@ class MockGeolocator implements GeolocatorInterface {
   }
 
   @override
-  Stream<Position> getPositionStream({LocationSettings? locationSettings}) {
+  Stream<Position> getPositionStream() {
     if (_errorToThrow != null) {
       return Stream.error(_errorToThrow!);
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:garage/router/app_router.dart';
@@ -51,135 +52,145 @@ class LaunchView extends StatelessWidget {
             break;
         }
       },
-      child: Scaffold(
-        backgroundColor: AppTheme.primaryColor,
-        body: Stack(
-          children: [
-            // 網格背景
-            _gridBackground(launchBloc),
-            // 漸層遮罩
-            _overlapGridbackgroundMask(launchBloc),
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          backgroundColor: AppTheme.primaryColor,
+          body: Stack(
+            children: [
+              // 網格背景
+              _gridBackground(launchBloc),
+              // 漸層遮罩
+              _overlapGridbackgroundMask(launchBloc),
 
-            // 主要內容
-            SafeArea(
-              child: Column(
-                children: [
-                  // 頂部指示器
-                  const SizedBox(height: 80),
-                  AnimatedBuilder(
-                    animation: launchBloc.animationHolder.indicatorOpacity,
-                    builder: (context, child) => Opacity(
-                      opacity:
-                          launchBloc.animationHolder.indicatorOpacity.value,
-                      child: _buildTopIndicator(launchBloc),
+              // 主要內容
+              SafeArea(
+                child: Column(
+                  children: [
+                    // 頂部指示器
+                    const SizedBox(height: 80),
+                    AnimatedBuilder(
+                      animation: launchBloc.animationHolder.indicatorOpacity,
+                      builder: (context, child) => Opacity(
+                        opacity:
+                            launchBloc.animationHolder.indicatorOpacity.value,
+                        child: _buildTopIndicator(launchBloc),
+                      ),
                     ),
-                  ),
 
-                  const Spacer(),
+                    const Spacer(),
 
-                  // Logo 區域
-                  AnimatedBuilder(
-                    animation: Listenable.merge([
-                      launchBloc.animationHolder.logoOpacity,
-                      launchBloc.animationHolder.logoScale,
-                    ]),
-                    builder: (context, child) => Opacity(
-                      opacity: launchBloc.animationHolder.logoOpacity.value,
-                      child: Transform.scale(
-                        scale: launchBloc.animationHolder.logoScale.value,
-                        child: Column(
-                          children: [
-                            // GARAGE 文字
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'GARAGE',
-                                  style: TextStyle(
-                                    fontSize: 52,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 12,
-                                    color: AppTheme.accentColor,
-                                    height: 1.0,
+                    // Logo 區域
+                    AnimatedBuilder(
+                      animation: Listenable.merge([
+                        launchBloc.animationHolder.logoOpacity,
+                        launchBloc.animationHolder.logoScale,
+                      ]),
+                      builder: (context, child) => Opacity(
+                        opacity: launchBloc.animationHolder.logoOpacity.value,
+                        child: Transform.scale(
+                          scale: launchBloc.animationHolder.logoScale.value,
+                          child: Column(
+                            children: [
+                              // GARAGE 文字
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    'GARAGE',
+                                    style: TextStyle(
+                                      fontSize: 52,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 12,
+                                      color: AppTheme.accentColor,
+                                      height: 1.0,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 8),
-                                // 下劃線
-                                AnimatedBuilder(
-                                  animation:
-                                      launchBloc.animationHolder.underlineWidth,
-                                  builder: (context, child) => Container(
-                                    width:
-                                        372 *
-                                        launchBloc
+                                  const SizedBox(height: 8),
+                                  // 下劃線
+                                  AnimatedBuilder(
+                                    animation: launchBloc
+                                        .animationHolder
+                                        .underlineWidth,
+                                    builder: (context, child) => Container(
+                                      width:
+                                          372 *
+                                          launchBloc
+                                              .animationHolder
+                                              .underlineWidth
+                                              .value,
+                                      height: 2,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            AppTheme.accentColor.withValues(
+                                              alpha: 0,
+                                            ),
+                                            AppTheme.accentColor,
+                                            AppTheme.accentColor.withValues(
+                                              alpha: 0,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 60),
+
+                              // 輪框輪廓
+                              AnimatedBuilder(
+                                animation: Listenable.merge([
+                                  launchBloc.animationHolder.carOpacity,
+                                  launchBloc.animationHolder.carDrawProgress,
+                                ]),
+                                builder: (context, child) => Opacity(
+                                  opacity: launchBloc
+                                      .animationHolder
+                                      .carOpacity
+                                      .value,
+                                  child: SizedBox(
+                                    width: 200,
+                                    height: 200,
+                                    child: CustomPaint(
+                                      painter: WheelRimPainter(
+                                        progress: launchBloc
                                             .animationHolder
-                                            .underlineWidth
+                                            .carDrawProgress
                                             .value,
-                                    height: 2,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppTheme.accentColor.withValues(
-                                            alpha: 0,
-                                          ),
-                                          AppTheme.accentColor,
-                                          AppTheme.accentColor.withValues(
-                                            alpha: 0,
-                                          ),
-                                        ],
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 60),
-
-                            // 輪框輪廓
-                            AnimatedBuilder(
-                              animation: Listenable.merge([
-                                launchBloc.animationHolder.carOpacity,
-                                launchBloc.animationHolder.carDrawProgress,
-                              ]),
-                              builder: (context, child) => Opacity(
-                                opacity:
-                                    launchBloc.animationHolder.carOpacity.value,
-                                child: SizedBox(
-                                  width: 200,
-                                  height: 200,
-                                  child: CustomPaint(
-                                    painter: WheelRimPainter(
-                                      progress: launchBloc
-                                          .animationHolder
-                                          .carDrawProgress
-                                          .value,
-                                    ),
-                                  ),
-                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  const Spacer(),
+                    const Spacer(),
 
-                  // 速度線裝飾
-                  _buildSpeedGradient(launchBloc),
+                    // 速度線裝飾
+                    _buildSpeedGradient(launchBloc),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  // Tagline
-                  _buildSolgen(launchBloc),
+                    // Tagline
+                    _buildSolgen(launchBloc),
 
-                  const SizedBox(height: 120),
-                ],
+                    const SizedBox(height: 120),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

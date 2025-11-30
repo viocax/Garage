@@ -4,12 +4,15 @@ abstract class GeolocatorInterface {
   Future<bool> isLocationServiceEnabled();
   Future<LocationPermission> checkPermission();
   Future<LocationPermission> requestPermission();
-  Future<Position> getCurrentPosition({LocationSettings? locationSettings});
-  Stream<Position> getPositionStream({LocationSettings? locationSettings});
+  Future<Position> getCurrentPosition();
+  Stream<Position> getPositionStream();
 }
 
 class GeolocatorWrapper implements GeolocatorInterface {
-  const GeolocatorWrapper();
+  final LocationSettings locationSettings;
+
+  const GeolocatorWrapper({required this.locationSettings});
+
   @override
   Future<bool> isLocationServiceEnabled() =>
       Geolocator.isLocationServiceEnabled();
@@ -22,10 +25,10 @@ class GeolocatorWrapper implements GeolocatorInterface {
       Geolocator.requestPermission();
 
   @override
-  Future<Position> getCurrentPosition({LocationSettings? locationSettings}) =>
+  Future<Position> getCurrentPosition() =>
       Geolocator.getCurrentPosition(locationSettings: locationSettings);
 
   @override
-  Stream<Position> getPositionStream({LocationSettings? locationSettings}) =>
+  Stream<Position> getPositionStream() =>
       Geolocator.getPositionStream(locationSettings: locationSettings);
 }
