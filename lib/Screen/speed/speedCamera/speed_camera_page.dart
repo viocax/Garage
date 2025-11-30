@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
-import 'package:garage/core/di/service_locator.dart';
+
+import 'package:garage/core/models/speed_unit.dart';
 import '../car3d/car_3d_view.dart';
 import '../car3d/bloc/car_3d_bloc.dart';
 import '../car3d/bloc/car_3d_event.dart';
@@ -290,7 +291,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
 
 class Speedometer extends StatefulWidget {
   final String speed;
-  final String unit;
+  final SpeedUnit unit;
   final bool isOverSpeed;
   final double maxSpeed; // 假設最大速度
 
@@ -385,7 +386,7 @@ class _SpeedometerState extends State<Speedometer>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  widget.unit,
+                  widget.unit.displayName,
                   style: textTheme.titleMedium?.copyWith(
                     color: widget.isOverSpeed
                         ? AppTheme.redTransparent90

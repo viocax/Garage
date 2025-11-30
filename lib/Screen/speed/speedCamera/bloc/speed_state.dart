@@ -1,3 +1,5 @@
+import 'package:garage/core/models/speed_unit.dart';
+
 sealed class SpeedState {
   const SpeedState();
 }
@@ -6,7 +8,7 @@ sealed class SpeedState {
 final class SpeedData extends SpeedState {
   final double speed; // 當前速度
   final Duration animationDuration; // 動畫時長
-  final String unit; // 速度單位
+  final SpeedUnit unit; // 速度單位
   final double maxSpeed;
   final String? lowerSpeed; // 最低速限
   final String? upperSpeed; // 最高速限
@@ -27,7 +29,7 @@ final class SpeedData extends SpeedState {
   SpeedData copyWith({
     double? speed,
     Duration? animationDuration,
-    String? unit,
+    SpeedUnit? unit,
     double? maxSpeed,
     String? lowerSpeed,
     String? upperSpeed,

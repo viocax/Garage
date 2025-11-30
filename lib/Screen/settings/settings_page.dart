@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_event.dart';
@@ -45,12 +46,12 @@ class _SettingsView extends StatelessWidget {
                       context,
                       '速度單位',
                       Icons.speed,
-                      state.speedUnit,
+                      state.speedUnit.displayName,
                       onTap: () => _showUnitDialog(
                         context,
                         '選擇速度單位',
                         state.speedUnit,
-                        ['km/h', 'mph'],
+                        SpeedUnit.values,
                         (unit) => context.read<SettingsBloc>().add(
                           ChangeSpeedUnit(unit),
                         ),
@@ -167,9 +168,9 @@ class _SettingsView extends StatelessWidget {
   void _showUnitDialog(
     BuildContext context,
     String title,
-    String currentUnit,
-    List<String> options,
-    Function(String) onSelect,
+    SpeedUnit currentUnit,
+    List<SpeedUnit> options,
+    Function(SpeedUnit) onSelect,
   ) {
     showDialog(
       context: context,
@@ -180,9 +181,9 @@ class _SettingsView extends StatelessWidget {
           children: options.map((option) {
             return _buildDialogOption(
               dialogContext,
-              option,
-              option,
-              currentUnit,
+              option.displayName,
+              option.value,
+              currentUnit.value,
               () {
                 onSelect(option);
                 Navigator.pop(dialogContext);

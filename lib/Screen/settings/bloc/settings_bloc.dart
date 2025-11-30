@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
 import 'package:flutter/foundation.dart';
+import 'package:garage/core/models/speed_unit.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   SettingsBloc() : super(const SettingsInitial()) {
@@ -34,7 +35,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     // Simulate loading settings with default values
     emit(
       const SettingsLoaded(
-        speedUnit: 'km/h',
+        speedUnit: SpeedUnit.kmh,
         isVoiceAlertEnabled: true,
         voiceVolume: 1.0,
         voiceSpeechRate: 0.5,

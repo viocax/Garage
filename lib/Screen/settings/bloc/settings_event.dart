@@ -1,3 +1,5 @@
+import 'package:garage/core/models/speed_unit.dart';
+
 sealed class SettingsEvent {
   const SettingsEvent();
 }
@@ -9,7 +11,7 @@ final class LoadSettings extends SettingsEvent {
 
 // Change speed unit
 final class ChangeSpeedUnit extends SettingsEvent {
-  final String unit;
+  final SpeedUnit unit;
   const ChangeSpeedUnit(this.unit);
 }
 

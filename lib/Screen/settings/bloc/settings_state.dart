@@ -1,3 +1,5 @@
+import 'package:garage/core/models/speed_unit.dart';
+
 sealed class SettingsState {
   const SettingsState();
 }
@@ -7,7 +9,7 @@ final class SettingsInitial extends SettingsState {
 }
 
 final class SettingsLoaded extends SettingsState {
-  final String speedUnit; // 'km/h' or 'mph'
+  final SpeedUnit speedUnit; // 'km/h' or 'mph'
 
   // Voice alert settings
   final bool isVoiceAlertEnabled;
@@ -22,7 +24,7 @@ final class SettingsLoaded extends SettingsState {
   });
 
   SettingsLoaded copyWith({
-    String? speedUnit,
+    SpeedUnit? speedUnit,
     bool? isVoiceAlertEnabled,
     double? voiceVolume,
     double? voiceSpeechRate,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/core/repositories/speed_camera_repository.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
 
@@ -16,7 +17,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
         const SpeedData(
           speed: 0.0,
           animationDuration: Duration(milliseconds: 5300),
-          unit: 'km/h',
+          unit: SpeedUnit.kmh,
           maxSpeed: 300,
           lowerSpeed: '110',
           upperSpeed: '120',
