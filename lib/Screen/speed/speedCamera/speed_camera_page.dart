@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
+import 'package:garage/core/di/service_locator.dart';
 import '../car3d/car_3d_view.dart';
 import '../car3d/bloc/car_3d_bloc.dart';
 import '../car3d/bloc/car_3d_event.dart';

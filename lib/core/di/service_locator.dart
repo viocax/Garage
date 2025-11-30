@@ -19,11 +19,17 @@ Future<void> setupServiceLocator() async {
   // Service layer
   // getIt.registerLazySingleton<IsarService>(() => IsarService()); // MARK: Isar 暫時不使用
   getIt.registerLazySingleton<HttpService>(() => HttpService());
-  getIt.registerLazySingleton<LocationService>(() => LocationService()); // 使用預設的 GeolocatorWrapper
-  getIt.registerLazySingleton<SharedPreferencesService>(() => SharedPreferencesService());
+  getIt.registerLazySingleton<LocationService>(
+    () => LocationService(),
+  ); // 使用預設的 GeolocatorWrapper
+  getIt.registerLazySingleton<SharedPreferencesService>(
+    () => SharedPreferencesService(),
+  );
 
   // Repository layer
-  getIt.registerLazySingleton<ISpeedCameraRepository>(() => LocalSpeedCameraRepository());
+  getIt.registerLazySingleton<ISpeedCameraRepository>(
+    () => LocalSpeedCameraRepository(),
+  );
 
   // Bloc layer
   getIt.registerFactory<GarageHomeBloc>(() => GarageHomeBloc());
@@ -66,7 +72,8 @@ class ServiceScopes {
   HttpService get network => _getIt<HttpService>();
   // IsarService get isarDB => _getIt<IsarService>(); // MARK: Isar 暫時不使用
   LocationService get location => _getIt<LocationService>();
-  SharedPreferencesService get preferences => _getIt<SharedPreferencesService>();
+  SharedPreferencesService get preferences =>
+      _getIt<SharedPreferencesService>();
 }
 
 class RepositoryScopes {

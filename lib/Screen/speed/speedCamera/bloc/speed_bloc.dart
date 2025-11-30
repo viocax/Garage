@@ -1,9 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/core/core.dart';
+import 'package:garage/core/service/location/location_service.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
 
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
+  final LocationService locationService = getIt.service.location;
+  StreamSubscription<double>? _speedSubscription;
+
   // TODO: maxSpeed and unit and lower and upper，到時候會在設定方式注入進來
   SpeedBloc()
     : super(
@@ -16,7 +22,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
           upperSpeed: '120',
         ),
       ) {
-    // on<UpdateSpeed>(_onUpdateSpeed);
+    on<UpdateSpeed>(_onUpdateSpeed);
     on<StartDetection>(_onStartDetection);
     on<StopDetection>(_onStopDetection);
   }
@@ -26,7 +32,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     if (currentState is! SpeedData) return;
 
     final newSpeed = event.speed;
-    final newDuration = _calculateDuration(newSpeed);
+    final newDuration = _calculateDuration(newSpeed, currentState.maxSpeed);
     final isOverSpeed = _checkOverSpeed(newSpeed, currentState.upperSpeed);
 
     debugPrint(
@@ -42,37 +48,60 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     );
   }
 
-  void _onStartDetection(StartDetection event, Emitter<SpeedState> emit) {
+  Future<void> _onStartDetection(
+    StartDetection event,
+    Emitter<SpeedState> emit,
+  ) async {
     final currentState = state;
     if (currentState is! SpeedData) return;
 
-    // TODO: check location permission;
-    // TODO: start location tracking;
-    // TODO: handler error;
+    try {
+      // 1. 檢查定位權限
+      final position = await locationService.getCurrentPosition();
+      if (position == null) {
+        debugPrint('SpeedBloc: 定位權限被拒絕或服務未開啟');
+        // TODO: 可以發送錯誤事件或更新狀態
+        return;
+      }
 
-    debugPrint('SpeedBloc: 開始偵測');
+      debugPrint('SpeedBloc: 開始偵測');
 
-    final newSpeed = 150.0;
-    final newDuration = _calculateDuration(newSpeed);
-    final isOverSpeed = _checkOverSpeed(newSpeed, currentState.upperSpeed);
+      // 2. 開始位置追蹤
+      _speedSubscription = locationService.getSpeedKmhStream().listen(
+        (speed) {
+          add(UpdateSpeed(speed));
+        },
+        onError: (error) {
+          debugPrint('SpeedBloc: 速度追蹤錯誤 - $error');
+          add(const StopDetection());
+        },
+      );
 
-    emit(
-      currentState.copyWith(
-        speed: newSpeed,
-        animationDuration: newDuration,
-        isOverSpeed: isOverSpeed,
-        isDetecting: true,
-      ),
-    );
+      // 更新狀態為偵測中
+      emit(currentState.copyWith(isDetecting: true));
+    } catch (e) {
+      // 3. 處理錯誤
+      debugPrint('SpeedBloc: 啟動偵測失敗 - $e');
+      emit(currentState.copyWith(isDetecting: false));
+    }
   }
 
-  void _onStopDetection(StopDetection event, Emitter<SpeedState> emit) {
+  Future<void> _onStopDetection(
+    StopDetection event,
+    Emitter<SpeedState> emit,
+  ) async {
     final currentState = state;
     if (currentState is! SpeedData) return;
 
     debugPrint('SpeedBloc: 停止偵測');
 
-    emit(currentState.copyWith(speed: 0, isOverSpeed: false, isDetecting: false));
+    // 取消訂閱
+    await _speedSubscription?.cancel();
+    _speedSubscription = null;
+
+    emit(
+      currentState.copyWith(speed: 0, isOverSpeed: false, isDetecting: false),
+    );
   }
 
   // 檢查是否超速
@@ -83,21 +112,48 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     return currentSpeed > limit;
   }
 
-  // 根據速度計算動畫時長（速度越快，時長越長）
-  // 每 25 單位變換一個數值：4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3 秒
-  Duration _calculateDuration(double speed) {
+  // 根據速度計算動畫時長（速度越快，時長越短，動畫跑得越快）
+  // 速度區間：0-10, 11-30, 31-60, 61-100, 101-150, 150+
+  Duration _calculateDuration(double speed, double maxSpeed) {
     if (speed == 0) {
       return Duration.zero;
     }
+    // 你的持續時間範圍
+    const int minDuration = 4700;
+    const int maxDuration = 5200;
 
-    // 將速度四捨五入到最近的 25 倍數
-    final roundedSpeed = (speed / 25).round() * 25.0;
+    // --- 邏輯處理 ---
 
-    // 8 個區間：0, 25, 50, 75, 100, 125, 150, 175
-    // 對應：4600, 4700, 4800, 4900, 5000, 5100, 5200, 5300 ms
-    final durationMs = 4600 + (roundedSpeed / 25 * 100);
-    debugPrint('SpeedBloc: durationMs=$durationMs');
+    // 1. 限制輸入速度，防止計算溢出 (例如速度為負數或超速)
+    final double clampedSpeed = speed.clamp(0.0, maxSpeed);
 
-    return Duration(milliseconds: durationMs.clamp(4600, 5300).toInt());
+    // 2. 計算速度比例 (speedRatio)，將速度映射到 [0.0, 1.0] 區間
+    // 0.0 表示 0 km/h，1.0 表示 MAX_SPEED (200 km/h)
+    final double speedRatio = clampedSpeed / maxSpeed;
+
+    // 3. 進行線性插值 (Linear Interpolation, Lerp)
+
+    // 由於你的數值設定是 (速度增加 -> Duration 增加)，
+    // 我們直接從 MIN_DURATION_MS (4700) 開始，
+    // 隨著 speedRatio 增加，持續時間線性遞增，直到 MAX_DURATION_MS (5200)。
+
+    // 總持續時間變化量 (5200 - 4700 = 500)
+    final double durationDifference = (maxDuration - minDuration)
+        .toDouble();
+
+    // 計算最終持續時間
+    // 最終結果將在 [4700.0, 5200.0] 之間平滑變化
+    final double finalDuration =
+        minDuration + (speedRatio * durationDifference);
+
+    debugPrint('SpeedBloc: finalDuration=$finalDuration');
+
+    return Duration(milliseconds: finalDuration.toInt());
+  }
+
+  @override
+  Future<void> close() {
+    _speedSubscription?.cancel();
+    return super.close();
   }
 }
