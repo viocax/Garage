@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/screen/settings/settings_page.dart';
+import 'package:garage/screen/settings/speed_detection_settings_page.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/screen/records/records_page.dart';
 import 'package:garage/screen/speed/speedCamera/speed_camera_page.dart';
@@ -15,6 +16,7 @@ class AppRouter {
   static const String speedometer = '/speedometer';
   static const String records = '/records';
   static const String settings = '/settings';
+  static const String speedDetectionSettings = '$settings/speed-detection';
 
   /// 建立並返回 GoRouter 實例
   static GoRouter createRouter() {
@@ -67,6 +69,16 @@ class AppRouter {
                     create: (context) => getIt.bloc.settings,
                     child: const SettingsPage(),
                   ),
+                  routes: [
+                    GoRoute(
+                      path: 'speed-detection', // 相對路徑，不帶前導 /
+                      name: 'speedDetectionSettings',
+                      builder: (context, state) => BlocProvider.value(
+                        value: getIt.bloc.settings,
+                        child: const SpeedDetectionSettingsPage(),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

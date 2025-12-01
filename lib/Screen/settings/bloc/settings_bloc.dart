@@ -7,6 +7,7 @@ import 'package:garage/core/models/speed_unit.dart';
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   SettingsBloc() : super(const SettingsInitial()) {
     on<SettingsEvent>(_onEvent);
+    add(const LoadSettings());
   }
 
   Future<void> _onEvent(
