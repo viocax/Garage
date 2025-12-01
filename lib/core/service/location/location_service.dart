@@ -109,17 +109,17 @@ class LocationService {
   }
 
   /// 監聽速度變化（單位：公尺/秒）
-  Stream<double> getSpeedStream() {
-    return getPositionStream().map((position) => position.speed);
-  }
+  // Stream<double> getSpeedStream() {
+  //   return getPositionStream().map((position) => position.speed);
+  // }
 
-  /// 監聽速度變化（單位：公里/小時）
-  Stream<double> getSpeedKmhStream() {
-    return getPositionStream().map((position) => position.speed * 3.6);
-  }
+  // /// 監聽速度變化（單位：公里/小時）
+  // Stream<double> getSpeedKmhStream() {
+  //   return getPositionStream().map((position) => position.speed * 3.6);
+  // }
 
-  /// 監聽經緯度變化
-  Stream<LatLng> getLatLngStream() {
-    return getPositionStream().map((position) => LatLng(position.latitude, position.longitude));
-  }
+  // /// 監聽經緯度變化
+  // Stream<LatLng> getLatLngStream() {
+  //   return getPositionStream().map((position) => LatLng(position.latitude, position.longitude));
+  // }
 }

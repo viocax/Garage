@@ -2,14 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
-import 'package:garage/core/repositories/speed_camera_repository.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
+import 'package:garage/core/models/near_speed_camera.dart';
 
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
   final ISpeedCameraRepository repository = getIt.repo.speedCamera;
-  StreamSubscription<double>? _speedSubscription;
+  StreamSubscription<NearSpeedCamera>? _speedSubscription;
 
   // TODO: maxSpeed and unit and lower and upper，到時候會在設定方式注入進來
   SpeedBloc()
@@ -32,12 +32,22 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     final currentState = state;
     if (currentState is! SpeedData) return;
 
-    final newSpeed = event.speed;
+    final nearCamera = event.nearSpeedCamera;
+    final newSpeed = nearCamera.currentSpeed;
+    final limit = nearCamera.speedCamera.speedLimit;
+
+    // 計算動畫時長
     final newDuration = _calculateDuration(newSpeed, currentState.maxSpeed);
-    final isOverSpeed = _checkOverSpeed(newSpeed, currentState.upperSpeed);
+
+    // 判斷是否超速
+    final isOverSpeed = newSpeed > limit;
+
+    if (isOverSpeed) {
+      repository.readOverSpeedTTS(limit.toDouble(), newSpeed, nearCamera.distance);
+    }
 
     debugPrint(
-      'SpeedBloc: update speed=$newSpeed, duration=$newDuration, isOverSpeed=$isOverSpeed',
+      'SpeedBloc: update speed=$newSpeed, limit=$limit, isOverSpeed=$isOverSpeed',
     );
 
     emit(
@@ -45,6 +55,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
         speed: newSpeed,
         animationDuration: newDuration,
         isOverSpeed: isOverSpeed,
+        upperSpeed: limit.toString(),
       ),
     );
   }
@@ -58,25 +69,15 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
 
     try {
       // 1. 檢查定位權限（通過 Repository）
-      final location = await repository.getCurrentLocation();
-      if (location == null) {
-        debugPrint('SpeedBloc: 定位權限被拒絕或服務未開啟');
-        return;
-      }
-
-      debugPrint('SpeedBloc: 開始偵測');
-
-      // 2. 開始位置追蹤（通過 Repository）
-      _speedSubscription = repository.getSpeedStream().listen(
-        (speed) {
-          add(UpdateSpeed(speed));
+      _speedSubscription = repository.startLocationTracking().listen(
+        (nearSpeedCamera) {
+          add(UpdateSpeed(nearSpeedCamera));
         },
         onError: (error) {
-          debugPrint('SpeedBloc: 速度追蹤錯誤 - $error');
+          debugPrint('SpeedBloc: 位置追蹤錯誤 - $error');
           add(const StopDetection());
         },
       );
-
       // 更新狀態為偵測中
       emit(currentState.copyWith(isDetecting: true));
     } catch (e) {
@@ -95,21 +96,17 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
 
     debugPrint('SpeedBloc: 停止偵測');
 
-    // 取消訂閱
-    await _speedSubscription?.cancel();
-    _speedSubscription = null;
-
-    emit(
-      currentState.copyWith(speed: 0, isOverSpeed: false, isDetecting: false),
-    );
-  }
-
-  // 檢查是否超速
-  bool _checkOverSpeed(double currentSpeed, String? upperSpeedLimit) {
-    if (upperSpeedLimit == null) return false;
-    final limit = double.tryParse(upperSpeedLimit);
-    if (limit == null) return false;
-    return currentSpeed > limit;
+    try {
+      await repository.stopLocationTracking();
+      // 取消訂閱
+      await _speedSubscription?.cancel();
+      _speedSubscription = null;
+      emit(
+        currentState.copyWith(speed: 0, isOverSpeed: false, isDetecting: false),
+      );
+    } catch (e) {
+      debugPrint('SpeedBloc: 停止定位失敗 - $e');
+    }
   }
 
   // 根據速度計算動畫時長（速度越快，時長越短，動畫跑得越快）

@@ -3,14 +3,19 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/service/location/location_service.dart';
-import '../models/speed_camera.dart';
+import 'package:garage/core/service/tts/tts_service.dart';
+import 'package:garage/core/models/speed_camera.dart';
 import 'speed_camera_repository.dart';
+import 'package:garage/core/models/near_speed_camera.dart';
+import 'package:garage/core/utils/stream_extensions.dart';
 
 /// 本地測速照相資料倉儲實作
 ///
 /// 從 assets/cameras.json 讀取資料，並使用記憶體快取避免重複解析
 class LocalSpeedCameraRepository implements ISpeedCameraRepository {
+  // Service
   final LocationService locationService = getIt.service.location;
+  final TtsService ttsService = getIt.service.tts;
 
   /// 快取的測速照相資料
   List<SpeedCamera>? _cachedCameras;
@@ -81,71 +86,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   }
 
   @override
-  Future<List<SpeedCamera>> getNearby({
-    required double latitude,
-    required double longitude,
-    double radiusInMeters = 5000,
-    int limit = 10,
-  }) async {
-    final cameras = await _loadCamerasFromAssets();
-
-    // 計算每個測速照相點的距離
-    final camerasWithDistance = cameras.map((camera) {
-      final distance = camera.distanceTo(latitude, longitude);
-      return {'camera': camera, 'distance': distance};
-    }).toList();
-
-    // 篩選在範圍內的
-    final nearby = camerasWithDistance
-        .where((item) => (item['distance'] as double) <= radiusInMeters)
-        .toList();
-
-    // 按距離排序
-    nearby.sort(
-      (a, b) => (a['distance'] as double).compareTo(b['distance'] as double),
-    );
-
-    // 取前 N 筆
-    final result = nearby
-        .take(limit)
-        .map((item) => item['camera'] as SpeedCamera)
-        .toList();
-
-    debugPrint(
-      'LocalSpeedCameraRepository: getNearby found ${result.length} cameras within ${radiusInMeters}m',
-    );
-
-    return result;
-  }
-
-  @override
-  Future<List<SpeedCamera>> filterByConditions({
-    String? roadNumber,
-    int? minSpeedLimit,
-    int? maxSpeedLimit,
-    String? direction,
-  }) async {
-    final cameras = await _loadCamerasFromAssets();
-
-    return cameras.where((camera) {
-      // 速限過濾
-      if (minSpeedLimit != null && camera.speedLimit < minSpeedLimit) {
-        return false;
-      }
-      if (maxSpeedLimit != null && camera.speedLimit > maxSpeedLimit) {
-        return false;
-      }
-
-      // 方向過濾（部分匹配）
-      if (direction != null && !camera.direction.contains(direction)) {
-        return false;
-      }
-
-      return true;
-    }).toList();
-  }
-
-  @override
   Future<int> getCount() async {
     final cameras = await _loadCamerasFromAssets();
     return cameras.length;
@@ -163,15 +103,60 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     _loadedAt = null;
   }
 
-  // --- 速度追蹤相關方法實作 ---
-
   @override
-  Future<LatLng?> getCurrentLocation() async {
-    return await locationService.getCurrentLatLng();
+  Stream<NearSpeedCamera> startLocationTracking() async* {
+    try {
+      // 確保資料已載入
+      final cameras = await _loadCamerasFromAssets();
+      if (cameras.isEmpty) return;
+
+      // 監聽位置變化
+      await for (final position in locationService.getPositionStream().throttle(
+        const Duration(milliseconds: 500),
+      )) {
+        SpeedCamera? nearestCamera;
+        double minDistance = double.infinity;
+
+        for (final camera in cameras) {
+          final distance = camera.distanceTo(
+            position.latitude,
+            position.longitude,
+          );
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestCamera = camera;
+          }
+        }
+
+        if (nearestCamera != null) {
+          yield NearSpeedCamera(
+            speedCamera: nearestCamera,
+            currentLocation: LatLng(position.latitude, position.longitude),
+            currentSpeed: position.speed * 3.6, // m/s to km/h
+          );
+        } else {
+          throw Exception('找不到最近的測速照相機');
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint(
+        'LocalSpeedCameraRepository: Error in startLocationTracking - $e',
+      );
+      debugPrint('StackTrace: $stackTrace');
+      rethrow;
+    }
   }
 
   @override
-  Stream<double> getSpeedStream() {
-    return locationService.getSpeedKmhStream();
+  Future<void> stopLocationTracking() async {
+    // LocationService 目前使用 Stream，取消訂閱即可停止監聽，不需要顯式停止服務
+    // 如果未來有需要顯式停止定位服務的需求，可以在這裡實作
+    return;
+  }
+
+  @override
+  void readOverSpeedTTS(double speedLimit, double currentSpeed, double distance) {
+    // TODO:  unit, 語音 要根據user設定去切換
+    ttsService.speak('超速警告，前方 $distance 公尺，限速 $speedLimit km/h，目前速度 $currentSpeed km/h');
   }
 }
