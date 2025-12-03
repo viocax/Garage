@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:flutter/services.dart';
+import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
@@ -76,12 +76,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             },
           ),
         ],
-        child: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light,
-            statusBarBrightness: Brightness.dark,
-          ),
+        child: ThemedStatusBar(
+          theme: StatusBarTheme.light,
           child: Scaffold(
             backgroundColor: AppTheme.primaryColor,
             body: Stack(

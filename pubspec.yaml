@@ -65,6 +65,7 @@ dependencies:
 
   # Text-to-Speech
   flutter_tts: ^4.2.0
+  bloc: ^8.1.4
 
 dev_dependencies:
   flutter_test:

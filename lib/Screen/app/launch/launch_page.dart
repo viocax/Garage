@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:garage/router/app_router.dart';
@@ -52,12 +52,8 @@ class LaunchView extends StatelessWidget {
             break;
         }
       },
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
-        ),
+      child: ThemedStatusBar(
+        theme: StatusBarTheme.light,
         child: Scaffold(
           backgroundColor: AppTheme.primaryColor,
           body: Stack(

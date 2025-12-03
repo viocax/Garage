@@ -54,7 +54,7 @@ class AppRouter {
                   path: records,
                   name: 'records',
                   builder: (context, state) => BlocProvider(
-                    create: (context) => getIt.bloc.car3d,
+                    create: (context) => getIt.bloc.records,
                     child: const RecordsPage(),
                   ),
                 ),

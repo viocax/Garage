@@ -5,6 +5,7 @@ import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/service/location/location_service.dart';
 import 'package:garage/core/service/tts/tts_service.dart';
 import 'package:garage/core/models/speed_camera.dart';
+import 'package:geolocator/geolocator.dart';
 import 'speed_camera_repository.dart';
 import 'package:garage/core/models/near_speed_camera.dart';
 import 'package:garage/core/utils/stream_extensions.dart';
@@ -111,7 +112,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       if (cameras.isEmpty) return;
 
       // 監聽位置變化
-      await for (final position in locationService.getPositionStream().throttle(
+      await for (final Position position in locationService.getPositionStream().throttle(
         const Duration(milliseconds: 500),
       )) {
         SpeedCamera? nearestCamera;

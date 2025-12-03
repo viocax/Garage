@@ -4,6 +4,7 @@ import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
 import 'package:garage/screen/speed/speedCamera/bloc/speed_bloc.dart';
 import 'package:garage/screen/speed/car3d/bloc/car_3d_bloc.dart';
 import 'package:garage/screen/settings/bloc/settings_bloc.dart';
+import 'package:garage/screen/records/bloc/records_bloc.dart';
 // import '../service/isar_service.dart'; // MARK: Isar 暫時不使用
 import '../service/network/http_service.dart';
 import '../service/location/location_service.dart';
@@ -41,6 +42,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory<SpeedBloc>(() => SpeedBloc());
   getIt.registerFactory<Car3DBloc>(() => Car3DBloc());
   getIt.registerFactory<SettingsBloc>(() => SettingsBloc());
+  getIt.registerFactory<RecordsBloc>(() => RecordsBloc());
 }
 
 /// 重置所有依賴（測試用）
@@ -65,6 +67,7 @@ class BlocScopes {
   SpeedBloc get speed => _getIt<SpeedBloc>();
   Car3DBloc get car3d => _getIt<Car3DBloc>();
   SettingsBloc get settings => _getIt<SettingsBloc>();
+  RecordsBloc get records => _getIt<RecordsBloc>();
 }
 
 class ServiceScopes {
