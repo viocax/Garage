@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:math' as math;
 import 'package:garage/theme/grid_background_painter.dart';
 import 'package:garage/theme/themed_status_bar.dart';
+import 'package:garage/theme/app_theme.dart';
 import 'package:garage/screen/records/bloc/records_bloc.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
@@ -12,40 +13,38 @@ class RecordsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Force dark mode colors for this specific page design as per CSS variables
-    const bgColor = Color(0xFF0A0A0A);
-
-    return ThemedStatusBar(
-      theme: StatusBarTheme.light,
-      child: Scaffold(
-        backgroundColor: bgColor,
-        body: Stack(
-          children: [
-            // Background Grid Pattern
-            Positioned.fill(
-              child: CustomPaint(painter: GridBackgroundPainter()),
-            ),
-            SafeArea(
-              child: BlocBuilder<RecordsBloc, RecordsState>(
-                builder: (context, state) {
-                  return switch (state) {
-                    RecordsLoading() => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    RecordsEmpty() => _RecordsContent(
-                      vehicle: Vehicle.empty(),
-                    ),
-                    RecordsError(:final message) => Center(
-                      child: Text('Error: $message'),
-                    ),
-                    RecordsLoaded(:final currentVehicle) => _RecordsContent(
-                      vehicle: currentVehicle,
-                    ),
-                  };
-                },
+    return Theme(
+      data: AppTheme.darkTheme,
+      child: ThemedStatusBar(
+        theme: StatusBarTheme.light,
+        child: Scaffold(
+          backgroundColor: AppTheme.dashboardBg,
+          body: Stack(
+            children: [
+              // Background Grid Pattern
+              Positioned.fill(
+                child: CustomPaint(painter: GridBackgroundPainter()),
               ),
-            ),
-          ],
+              SafeArea(
+                child: BlocBuilder<RecordsBloc, RecordsState>(
+                  builder: (context, state) {
+                    return switch (state) {
+                      RecordsLoading() => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      RecordsEmpty() => _RecordsContent(vehicle: Vehicle.empty()),
+                      RecordsError(:final message) => Center(
+                        child: Text('Error: $message'),
+                      ),
+                      RecordsLoaded(:final currentVehicle) => _RecordsContent(
+                        vehicle: currentVehicle,
+                      ),
+                    };
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -59,11 +58,6 @@ class _RecordsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const cardBg = Color.fromRGBO(28, 28, 30, 0.65);
-    const textPrimary = Color(0xFFF5F5F7);
-    const textSecondary = Color(0xFF8E8E93);
-    const accentRed = Color(0xFFD64045);
-
     return Column(
       children: [
         Expanded(
@@ -74,8 +68,8 @@ class _RecordsContent extends StatelessWidget {
               children: [
                 // 1. Hero Section
                 _HeroSection(
-                  textSecondary: textSecondary,
-                  textPrimary: textPrimary,
+                  textSecondary: AppTheme.dashboardTextSecondary,
+                  textPrimary: AppTheme.dashboardTextPrimary,
                   vehicle: vehicle,
                 ),
 
@@ -83,28 +77,29 @@ class _RecordsContent extends StatelessWidget {
 
                 // 2. Stats Grid
                 _StatsGrid(
-                  cardBg: cardBg,
-                  textSecondary: textSecondary,
-                  textPrimary: textPrimary,
-                  accentRed: accentRed,
+                  cardBg: AppTheme.dashboardCardBg,
+                  textSecondary: AppTheme.dashboardTextSecondary,
+                  textPrimary: AppTheme.dashboardTextPrimary,
+                  accentRed: AppTheme.dashboardAccentRed,
                   vehicle: vehicle,
                 ),
 
                 const SizedBox(height: 24),
 
                 // 3. Add Button
-                _AddButton(accentRed: accentRed),
+                _AddButton(accentRed: AppTheme.dashboardAccentRed),
 
                 const SizedBox(height: 40),
 
                 // 4. Recent Activity Stack
                 _RecentActivitySection(
-                  textPrimary: textPrimary,
-                  textSecondary: textSecondary,
-                  cardBg: cardBg,
-                  accentRed: accentRed,
+                  textPrimary: AppTheme.dashboardTextPrimary,
+                  textSecondary: AppTheme.dashboardTextSecondary,
+                  cardBg: AppTheme.dashboardCardBg,
+                  accentRed: AppTheme.dashboardAccentRed,
                   records: vehicle.records,
                 ),
+                const SizedBox(height: 100),
               ],
             ),
           ),
@@ -173,7 +168,10 @@ class _HeroSection extends StatelessWidget {
           shaderCallback: (bounds) => const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFF5F5F7), Color(0xFFB0B0B5)],
+            colors: [
+              AppTheme.dashboardGradientStart,
+              AppTheme.dashboardGradientEnd,
+            ],
           ).createShader(bounds),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -486,18 +484,18 @@ class _RecentActivitySection extends StatelessWidget {
     double topOffset = 0;
     double scale = 1.0;
     double opacity = 1.0;
-    Color bgColor = cardBg;
+    Color bgColor = AppTheme.dashboardCardBg;
 
     if (index == 1) {
       topOffset = 11;
       scale = 0.96;
       opacity = 0.65;
-      bgColor = const Color.fromRGBO(38, 38, 40, 0.65);
+      bgColor = AppTheme.dashboardCardBgStacked1;
     } else if (index == 2) {
       topOffset = 22;
       scale = 0.92;
       opacity = 0.4;
-      bgColor = const Color.fromRGBO(38, 38, 40, 0.5);
+      bgColor = AppTheme.dashboardCardBgStacked2;
     }
 
     return Positioned(
@@ -515,8 +513,8 @@ class _RecentActivitySection extends StatelessWidget {
             date: '${record.date.year}/${record.date.month}/${record.date.day}',
             cost: record.formattedCost,
             cardBg: bgColor,
-            accentRed: accentRed,
-            textSecondary: textSecondary,
+            accentRed: AppTheme.dashboardAccentRed,
+            textSecondary: AppTheme.dashboardTextSecondary,
             isTop: index == 0,
           ),
         ),

@@ -41,6 +41,36 @@ class AppTheme {
   static const Color gradientYellow = Color(0xFFFFFF8D); // yellowAccent
   static const Color gradientRed = Color(0xFFFF8A80); // redAccent
 
+  // Dashboard/Records Page Colors
+  static const Color dashboardBg = Color(0xFF0A0A0A); // Very dark background
+  static const Color dashboardCardBg = Color.fromRGBO(
+    28,
+    28,
+    30,
+    0.65,
+  ); // Semi-transparent card background
+  static const Color dashboardCardBgStacked1 = Color.fromRGBO(
+    38,
+    38,
+    40,
+    0.65,
+  ); // Stacked card 1
+  static const Color dashboardCardBgStacked2 = Color.fromRGBO(
+    38,
+    38,
+    40,
+    0.5,
+  ); // Stacked card 2
+  static const Color dashboardTextPrimary = Color(0xFFF5F5F7); // Primary text
+  static const Color dashboardTextSecondary = Color(
+    0xFF8E8E93,
+  ); // Secondary text
+  static const Color dashboardAccentRed = Color(0xFFD64045); // Accent red color
+  static const Color dashboardGradientStart = Color(
+    0xFFF5F5F7,
+  ); // Gradient start
+  static const Color dashboardGradientEnd = Color(0xFFB0B0B5); // Gradient end
+
   // Transparent/Opacity Colors
   static Color whiteTransparent10 = Colors.white.withValues(alpha: 0.1);
   static Color whiteTransparent20 = Colors.white.withValues(alpha: 0.2);

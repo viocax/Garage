@@ -55,4 +55,9 @@ class TabConfig {
     }
     return tabs[index];
   }
+
+  static bool duplicate(int currentIndex, TabbarType clickTab) {
+    final isDuplicate = currentIndex == getTabIndex(clickTab);
+    return isDuplicate;
+  }
 }

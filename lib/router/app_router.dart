@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/screen/settings/settings_page.dart';
 import 'package:garage/screen/settings/speed_detection_settings_page.dart';
@@ -10,6 +11,9 @@ import 'package:garage/screen/app/launch/launch_page.dart';
 
 /// 應用程式的路由配置
 class AppRouter {
+  /// Root navigator key - 用於全屏路由
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
   /// 路由路徑
   static const String launch = '/';
   static const String home = 'home';
@@ -21,6 +25,7 @@ class AppRouter {
   /// 建立並返回 GoRouter 實例
   static GoRouter createRouter() {
     return GoRouter(
+      navigatorKey: _rootNavigatorKey,
       initialLocation: launch,
       routes: [
         GoRoute(
@@ -71,10 +76,12 @@ class AppRouter {
                   ),
                   routes: [
                     GoRoute(
-                      path: 'speed-detection', // 相對路徑，不帶前導 /
+                      path: 'speed-detection',
                       name: 'speedDetectionSettings',
-                      builder: (context, state) => BlocProvider.value(
-                        value: getIt.bloc.settings,
+                      // 使用 root navigator，跳過 shell 直接全屏顯示
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => BlocProvider(
+                        create: (context) => getIt.bloc.settings,
                         child: const SpeedDetectionSettingsPage(),
                       ),
                     ),
