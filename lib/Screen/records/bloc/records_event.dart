@@ -7,4 +7,19 @@ sealed class RecordsEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadVehicleRecord extends RecordsEvent {}
+final class LoadVehicleRecord extends RecordsEvent {
+  const LoadVehicleRecord();
+}
+
+final class SwitchVehicle extends RecordsEvent {
+  final String vehicleId;
+
+  const SwitchVehicle(this.vehicleId);
+
+  @override
+  List<Object> get props => [vehicleId];
+}
+
+final class ClickAddButton extends RecordsEvent {
+  const ClickAddButton();
+}

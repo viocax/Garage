@@ -1,6 +1,9 @@
-import 'vehicle_record.dart';
+import 'dart:math';
 
-class Vehicle {
+import 'vehicle_record.dart';
+import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
+
+class Vehicle implements PickerOption {
   final String id;
   final String carName;
   final int currentMileage;
@@ -37,12 +40,49 @@ class Vehicle {
 
   // Calculate maintenance health percentage (1.0 = fresh, 0.0 = due)
   double get maintenanceHealth {
-    if (maintenanceInterval <= 0) return 1.0;
-    return distanceToNextMaintenance / maintenanceInterval;
+    if (maintenanceInterval <= 0) return 0.0;
+    return max(0.0, min(1.0, distanceToNextMaintenance / maintenanceInterval));
   }
 
   // Helper to get total spent from records
-  double get totalSpent {
-    return records.fold(0, (sum, record) => sum + record.cost);
+  String get totalSpent {
+    double total = records.fold(0, (sum, record) => sum + record.cost);
+    return '\$ ${total.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
   }
+
+  String get spentThisMonth {
+    final now = DateTime.now();
+    final thisMonth = DateTime(now.year, now.month);
+    final nextMonth = DateTime(now.year, now.month + 1);
+
+    // Filter records from this month
+    final thisMonthRecords = records.where((record) {
+      return record.date.isAfter(thisMonth.subtract(const Duration(days: 1))) &&
+             record.date.isBefore(nextMonth);
+    });
+
+    // Calculate total spent this month
+    final total = thisMonthRecords.fold<double>(
+      0,
+      (sum, record) => sum + record.cost,
+    );
+
+    // Format the result
+    final formattedTotal = total.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]},',
+    );
+
+    return '本月新增 \$$formattedTotal';
+  }
+
+  // PickerOption implementation
+  @override
+  String getIdentifier() => id;
+
+  @override
+  String getTitle() => carName;
+
+  @override
+  String getSubTitle() => '$currentMileage km';
 }

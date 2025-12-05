@@ -7,6 +7,7 @@ import 'package:garage/theme/app_theme.dart';
 import 'package:garage/screen/records/bloc/records_bloc.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
+import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
 
 class RecordsPage extends StatelessWidget {
   const RecordsPage({super.key});
@@ -32,13 +33,24 @@ class RecordsPage extends StatelessWidget {
                       RecordsLoading() => const Center(
                         child: CircularProgressIndicator(),
                       ),
-                      RecordsEmpty() => _RecordsContent(vehicle: Vehicle.empty()),
+                      RecordsEmpty() => _RecordsContent(
+                        vehicle: Vehicle.empty(),
+                        vehicles: const [],
+                        currentVehicleId: '',
+                      ),
                       RecordsError(:final message) => Center(
                         child: Text('Error: $message'),
                       ),
-                      RecordsLoaded(:final currentVehicle) => _RecordsContent(
-                        vehicle: currentVehicle,
-                      ),
+                      RecordsLoaded(
+                        :final currentVehicle,
+                        :final vehicles,
+                        :final currentVehicleId,
+                      ) =>
+                        _RecordsContent(
+                          vehicle: currentVehicle,
+                          vehicles: vehicles,
+                          currentVehicleId: currentVehicleId,
+                        ),
                     };
                   },
                 ),
@@ -53,8 +65,14 @@ class RecordsPage extends StatelessWidget {
 
 class _RecordsContent extends StatelessWidget {
   final Vehicle vehicle;
+  final List<Vehicle> vehicles;
+  final String currentVehicleId;
 
-  const _RecordsContent({required this.vehicle});
+  const _RecordsContent({
+    required this.vehicle,
+    required this.vehicles,
+    required this.currentVehicleId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +89,8 @@ class _RecordsContent extends StatelessWidget {
                   textSecondary: AppTheme.dashboardTextSecondary,
                   textPrimary: AppTheme.dashboardTextPrimary,
                   vehicle: vehicle,
+                  vehicles: vehicles,
+                  currentVehicleId: currentVehicleId,
                 ),
 
                 const SizedBox(height: 24),
@@ -113,11 +133,15 @@ class _HeroSection extends StatelessWidget {
   final Color textSecondary;
   final Color textPrimary;
   final Vehicle vehicle;
+  final List<Vehicle> vehicles;
+  final String currentVehicleId;
 
   const _HeroSection({
     required this.textSecondary,
     required this.textPrimary,
     required this.vehicle,
+    required this.vehicles,
+    required this.currentVehicleId,
   });
 
   @override
@@ -154,48 +178,70 @@ class _HeroSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 15),
-        Text(
-          vehicle.carName.toUpperCase(),
-          style: TextStyle(
-            fontSize: 18, // ~1.1rem
-            fontWeight: FontWeight.w600,
-            color: textSecondary,
-            letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ShaderMask(
-          shaderCallback: (bounds) => const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppTheme.dashboardGradientStart,
-              AppTheme.dashboardGradientEnd,
-            ],
-          ).createShader(bounds),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+        GestureDetector(
+          onLongPress: () => _showVehiclePicker(context),
+          child: Column(
             children: [
               Text(
-                vehicle.currentMileage.toString().replaceAllMapped(
-                  RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                  (Match m) => '${m[1]},',
-                ),
-                style: const TextStyle(
-                  fontSize: 45, // ~2.8rem
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -1,
-                  color: Colors.white,
+                vehicle.carName.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 18, // ~1.1rem
+                  fontWeight: FontWeight.w600,
+                  color: textSecondary,
+                  letterSpacing: 1,
                 ),
               ),
-              const SizedBox(width: 4),
-              Text('km', style: TextStyle(fontSize: 16, color: textSecondary)),
+              const SizedBox(height: 8),
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppTheme.dashboardGradientStart,
+                    AppTheme.dashboardGradientEnd,
+                  ],
+                ).createShader(bounds),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      vehicle.currentMileage.toString().replaceAllMapped(
+                        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                        (Match m) => '${m[1]},',
+                      ),
+                      style: const TextStyle(
+                        fontSize: 45, // ~2.8rem
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -1,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'km',
+                      style: TextStyle(fontSize: 16, color: textSecondary),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  void _showVehiclePicker(BuildContext context) {
+    showPickerDialog(
+      context: context,
+      options: vehicles,
+      currentSelectedIdentifier: currentVehicleId,
+      onSelected: (option) {
+        final vehicle = option as Vehicle;
+        context.read<RecordsBloc>().add(SwitchVehicle(vehicle.id));
+      },
     );
   }
 }
@@ -251,7 +297,7 @@ class _StatsGrid extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '\$ ${vehicle.totalSpent.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                    vehicle.totalSpent,
                     style: TextStyle(
                       fontSize: 24, // 1.5rem
                       fontWeight: FontWeight.w700,
@@ -267,7 +313,7 @@ class _StatsGrid extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '本月新增 \$2,400', // Mock data for now
+                        vehicle.spentThisMonth,
                         style: TextStyle(
                           fontSize: 12.5, // ~0.78rem
                           color: textSecondary,
@@ -388,7 +434,9 @@ class _AddButton extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          context.read<RecordsBloc>().add(const ClickAddButton());
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: accentRed,
           foregroundColor: Colors.white,
@@ -456,18 +504,21 @@ class _RecentActivitySection extends StatelessWidget {
         // Stack Container
         SizedBox(
           height: 140, // Enough space for stack
-          child: Stack(
-            children: [
-              for (int i = 0; i < displayRecords.length; i++)
-                _buildStackedCard(i, displayRecords[i]),
-            ].reversed.toList(), // Reverse to paint bottom cards first
-          ),
+          child: displayRecords.isEmpty
+              ? _buildEmptyState()
+              : Stack(
+                  children: [
+                    for (int i = 0; i < displayRecords.length; i++)
+                      _buildStackedCard(i, displayRecords[i]),
+                  ].reversed.toList(), // Reverse to paint bottom cards first
+                ),
         ),
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              '輕觸卡片查看完整歷史',
+        if (displayRecords.isNotEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                '輕觸卡片查看完整歷史',
               style: TextStyle(
                 fontSize: 12,
                 color: textSecondary.withValues(alpha: 0.6),
@@ -476,6 +527,36 @@ class _RecentActivitySection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      height: 95,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: cardBg.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.inbox_outlined,
+            size: 32,
+            color: textSecondary.withValues(alpha: 0.4),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            '目前沒有維修紀錄',
+            style: TextStyle(
+              fontSize: 14,
+              color: textSecondary.withValues(alpha: 0.6),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

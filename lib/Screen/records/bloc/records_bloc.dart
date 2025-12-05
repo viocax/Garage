@@ -9,7 +9,22 @@ part 'records_state.dart';
 class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
   RecordsBloc() : super(RecordsLoading()) {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
+    on<SwitchVehicle>(_onSwitchVehicle);
+    on<ClickAddButton>(_onClickAddButton);
     add(LoadVehicleRecord());
+  }
+
+  void _onClickAddButton(ClickAddButton event, Emitter<RecordsState> emit) {
+    // current vehicle
+    final currentState = state;
+    if (currentState is! RecordsLoaded) {
+      return;
+    }
+    if (currentState.vehicles.isEmpty) {
+      // add vehicle
+    } else {
+      // add record
+    }
   }
 
   Future<void> _onLoadVehicleRecord(
@@ -20,6 +35,8 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     try {
       // Simulate API delay
       await Future.delayed(const Duration(milliseconds: 800));
+      // emit(RecordsEmpty());
+      // return;
 
       // Mock Data - Create multiple vehicles
       final mockVehicle1 = Vehicle(
@@ -81,6 +98,24 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
       );
     } catch (e) {
       emit(RecordsError(e.toString()));
+    }
+  }
+
+  void _onSwitchVehicle(SwitchVehicle event, Emitter<RecordsState> emit) {
+    final currentState = state;
+    if (currentState is RecordsLoaded) {
+      // Check if the requested vehicle exists
+      final vehicleExists = currentState.vehicles.any(
+        (v) => v.id == event.vehicleId,
+      );
+      if (vehicleExists) {
+        emit(
+          RecordsLoaded(
+            vehicles: currentState.vehicles,
+            currentVehicleId: event.vehicleId,
+          ),
+        );
+      }
     }
   }
 }
