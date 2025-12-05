@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:garage/core/models/tts_speaking_token.dart';
+import 'package:garage/core/utils/auto_release_queue.dart';
 import 'tts_interface.dart';
 
 /// TTS (Text-to-Speech) 服務
@@ -8,6 +10,9 @@ import 'tts_interface.dart';
 class TtsService {
   final TtsInterface tts;
   bool _isInitialized = false;
+
+  /// TTS 播報隊列，確保播報按順序執行，不會重疊
+  final AutoReleaseQueue _speakQueue = AutoReleaseQueue();
 
   TtsService({TtsInterface? tts}) : tts = tts ?? FlutterTtsWrapper();
 
@@ -66,6 +71,42 @@ class TtsService {
     } catch (e) {
       debugPrint('TtsService: 播報失敗 - $e');
     }
+  }
+
+  /// 播報超速警告
+  ///
+  /// [token] TTS播報令牌，包含速度、限速、距離等資訊
+  /// 使用隊列機制確保播報按順序執行，不會重疊
+  void speakOverSpeed(TTSSpeakingToken token) {
+    // 創建帶有執行邏輯的 token 並放入隊列
+    if (_speakQueue.lastItem is TTSSpeakingToken) {
+      final lastToken = _speakQueue.lastItem as TTSSpeakingToken;
+      if (lastToken.shouldSpeak(token) == false) {
+        return;
+      }
+    }
+    final executableToken = token.copyWith(
+      onExecute: (t) async {
+        if (!_isInitialized) {
+          await initialize();
+        }
+
+        try {
+          // TODO: unit, 語音 要根據user設定去切換
+          final text = '超速警告，前方 ${t.distance.toStringAsFixed(0)} 公尺，'
+              '限速 ${t.speedLimit.toStringAsFixed(0)} 公里，'
+              '目前速度 ${t.currentSpeed.toStringAsFixed(0)} 公里';
+
+          debugPrint('TtsService: 播報超速警告 - $text');
+          await tts.speak(text);
+        } catch (e) {
+          debugPrint('TtsService: 播報超速警告失敗 - $e');
+        }
+      },
+    );
+
+    // 將 token 加入隊列，確保順序執行
+    _speakQueue.enqueue(executableToken);
   }
 
   /// 停止播報

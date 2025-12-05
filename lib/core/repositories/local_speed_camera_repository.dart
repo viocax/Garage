@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart';
 import 'package:garage/core/di/service_locator.dart';
+import 'package:garage/core/models/tts_speaking_token.dart';
 import 'package:garage/core/service/location/location_service.dart';
 import 'package:garage/core/service/tts/tts_service.dart';
 import 'package:garage/core/models/speed_camera.dart';
@@ -112,9 +113,10 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       if (cameras.isEmpty) return;
 
       // 監聽位置變化
-      await for (final Position position in locationService.getPositionStream().throttle(
-        const Duration(milliseconds: 500),
-      )) {
+      await for (final Position position
+          in locationService.getPositionStream().throttle(
+            const Duration(milliseconds: 500),
+          )) {
         SpeedCamera? nearestCamera;
         double minDistance = double.infinity;
 
@@ -156,8 +158,19 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   }
 
   @override
-  void readOverSpeedTTS(double speedLimit, double currentSpeed, double distance) {
+  void readOverSpeedTTS(
+    double speedLimit,
+    double currentSpeed,
+    double distance,
+  ) {
     // TODO:  unit, 語音 要根據user設定去切換
-    ttsService.speak('超速警告，前方 $distance 公尺，限速 $speedLimit km/h，目前速度 $currentSpeed km/h');
+    ttsService.speakOverSpeed(
+      TTSSpeakingToken(
+        speedLimit: speedLimit,
+        currentSpeed: currentSpeed,
+        distance: distance,
+        lastReportTime: DateTime.now(),
+      ),
+    );
   }
 }
