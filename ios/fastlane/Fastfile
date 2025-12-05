@@ -1,10 +1,30 @@
 default_platform(:ios)
 
 platform :ios do
+  desc "Run Flutter tests"
+  lane :build_test do
+    # Run flutter test from the project root
+    Dir.chdir("../..") do
+      sh("flutter", "test")
+    end
+  end
+
+  desc "Compile only (No Code Signing)"
+  lane :compile do
+    Dir.chdir("../..") do
+      sh("flutter", "build", "ios", "--release", "--no-codesign")
+    end
+  end
+
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    match(type: "appstore") # Read-only access to certificates
+    match(type: "appstore", readonly: true)
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
     upload_to_testflight
+  end
+
+  desc "Archive and Upload (Alias for beta)"
+  lane :upload do
+    beta
   end
 end
