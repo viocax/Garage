@@ -2,9 +2,8 @@ name: Fastlane Build & Deploy
 
 on:
   push:
-    branches: [ "main", "developer" ]
-  pull_request:
-    branches: [ "main", "developer" ]
+    branches: [ "master", "developer" ]
+
 
 jobs:
   # Android Job
@@ -31,14 +30,14 @@ jobs:
         run: flutter pub get
         
       - name: Build Android
-        run: flutter build apk --release
+        run: flutter build apk --release --build-number=${{ github.run_number }}
         
-      # Uncomment to run Fastlane
-      # - name: Run Fastlane
-      #   uses: maierj/fastlane-action@v3.1.0
-      #   with:
-      #     lane: 'test'
-      #     subdirectory: 'android'
+      # Run Fastlane Tests
+      - name: Run Fastlane Tests
+        uses: maierj/fastlane-action@v3.1.0
+        with:
+          lane: 'test'
+          subdirectory: 'android'
 
   # iOS Job (Requires macOS runner, which consumes more minutes)
   ios:
@@ -59,11 +58,11 @@ jobs:
         run: flutter pub get
         
       - name: Build iOS (No Code Signing)
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
         
-      # Uncomment to run Fastlane
-      # - name: Run Fastlane
-      #   uses: maierj/fastlane-action@v3.1.0
-      #   with:
-      #     lane: 'beta'
-      #     subdirectory: 'ios'
+      # Run Fastlane Tests
+      - name: Run Fastlane Tests
+        uses: maierj/fastlane-action@v3.1.0
+        with:
+          lane: 'tests'
+          subdirectory: 'ios'
