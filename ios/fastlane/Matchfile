@@ -1,0 +1,13 @@
+git_url("git@github.com:viocax/Garage_certificates.git") # URL to the git repo containing the certificates
+
+storage_mode("git")
+
+type("development") # The default type, can be: appstore, adhoc, enterprise or development
+
+app_identifier(["com.drake.garage"])
+username("angelica812860@live.com") # Your Apple Developer Portal username
+
+# For all available options run `fastlane match --help`
+# Remove the # in the beginning of the line to enable the other options
+# shallow_clone(true)
+# clone_branch_directly(true)
