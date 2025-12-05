@@ -2,7 +2,7 @@ name: Fastlane Build & Deploy
 
 on:
   push:
-    branches: [ "master", "developer" ]
+    branches: [ ]
 
 
 jobs:
