@@ -36,7 +36,7 @@ class LocationService {
   });
 
   /// 檢查並請求定位權限
-  Future<bool> _handlePermission() async {
+  Future<bool> requestPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -68,7 +68,7 @@ class LocationService {
   ///
   /// 如果權限不足或服務未開啟，可能拋出異常或返回 null
   Future<Position?> getCurrentPosition() async {
-    final hasPermission = await _handlePermission();
+    final hasPermission = await requestPermission();
     if (!hasPermission) {
       return null;
     }

@@ -1,8 +1,8 @@
 name: Fastlane Build & Deploy
 
-on:
-  push:
-    branches: [ ]
+# on:
+#   push:
+#     branches: [ ]
 
 
 jobs:

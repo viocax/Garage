@@ -112,6 +112,13 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       final cameras = await _loadCamerasFromAssets();
       if (cameras.isEmpty) return;
 
+      // 確保有定位權限
+      final hasPermission = await locationService.requestPermission();
+      if (!hasPermission) {
+        debugPrint('LocalSpeedCameraRepository: No location permission');
+        throw Exception('Location permission denied'); // TODO: 跳轉到權限設定頁面
+      }
+
       // 監聽位置變化
       await for (final Position position
           in locationService.getPositionStream().throttle(

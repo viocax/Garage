@@ -75,6 +75,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
         },
         onError: (error) {
           debugPrint('SpeedBloc: 位置追蹤錯誤 - $error');
+          // TODO: 跳轉到權限設定頁面, or 顯示錯誤提示
           add(const StopDetection());
         },
       );
