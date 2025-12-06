@@ -14,6 +14,13 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => SettingsBloc(),
+      child: _body(context),
+    );
+  }
+
+  Widget _body(BuildContext context) {
     final theme = Theme.of(context);
 
     return BlocBuilder<SettingsBloc, SettingsState>(
@@ -34,11 +41,13 @@ class SettingsPage extends StatelessWidget {
                           SettingsItem(
                             title: '測速設置',
                             icon: Icons.radar_outlined,
-                            onTap: state is SettingsLoaded
-                                ? () => context.go(
-                                    AppRouter.speedDetectionSettings,
-                                  )
-                                : null,
+                            onTap: () {
+                              if (state is SettingsLoaded) {
+                                context.goNamed(
+                                  AppPath.speedDetectionSettings.name,
+                                );
+                              }
+                            },
                           ),
 
                           // 資料管理
@@ -46,13 +55,13 @@ class SettingsPage extends StatelessWidget {
                           SettingsItem(
                             title: '匯出資料',
                             icon: Icons.upload_file_outlined,
-                            onTap: state is SettingsLoaded
-                                ? () {
-                                    context.read<SettingsBloc>().add(
-                                      const ExportData(),
-                                    );
-                                  }
-                                : null,
+                            onTap: () {
+                              if (state is SettingsLoaded) {
+                                context.read<SettingsBloc>().add(
+                                  const ExportData(),
+                                );
+                              }
+                            },
                           ),
                           SettingsItem(
                             title: '清除資料',

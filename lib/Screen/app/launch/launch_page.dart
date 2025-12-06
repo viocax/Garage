@@ -26,7 +26,7 @@ class _LaunchPageState extends State<LaunchPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt.bloc.launch(this),
+      create: (_) => LaunchBloc(this),
       child: const LaunchView(),
     );
   }
@@ -43,7 +43,7 @@ class LaunchView extends StatelessWidget {
       listener: (context, state) {
         switch (state) {
           case LaunchCompleted():
-            context.go(AppRouter.speedometer);
+            context.go(AppPath.speedometer.path);
           case LaunchError(:final message):
             ScaffoldMessenger.of(
               context,
@@ -217,8 +217,8 @@ class LaunchView extends StatelessWidget {
               center: const Alignment(0, 0.5),
               radius: 1.2,
               colors: [
-                const Color(0xFF1E1E1E).withValues(alpha: 0.8),
-                const Color(0xFF0A0A0A),
+                AppTheme.launchGradientStart.withValues(alpha: 0.8),
+                AppTheme.launchGradientEnd,
               ],
               stops: const [0.0, 0.7],
             ),
@@ -255,11 +255,11 @@ class LaunchView extends StatelessWidget {
         shape: BoxShape.circle,
         color: isActive
             ? AppTheme.accentColor
-            : AppTheme.accentColor.withValues(alpha: 0.3),
+            : AppTheme.whiteTransparent30,
         boxShadow: isActive
             ? [
                 BoxShadow(
-                  color: AppTheme.accentColor.withValues(alpha: 0.5),
+                  color: AppTheme.whiteTransparent50,
                   blurRadius: 10,
                 ),
               ]
@@ -305,7 +305,7 @@ class LaunchView extends StatelessWidget {
               fontSize: 18,
               letterSpacing: 4,
               fontWeight: FontWeight.w300,
-              color: AppTheme.accentColor.withValues(alpha: 0.5),
+              color: AppTheme.whiteTransparent50,
             ),
           ),
         ),
@@ -326,13 +326,13 @@ class WheelRimPainter extends CustomPainter {
     final radius = math.min(size.width, size.height) / 2;
 
     final paint = Paint()
-      ..color = AppTheme.accentColor.withValues(alpha: 0.8)
+      ..color = AppTheme.whiteTransparent80
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
     final glowPaint = Paint()
-      ..color = AppTheme.accentColor.withValues(alpha: 0.3)
+      ..color = AppTheme.whiteTransparent30
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);

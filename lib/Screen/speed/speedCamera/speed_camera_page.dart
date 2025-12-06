@@ -655,7 +655,7 @@ class _DetectionButtonState extends State<DetectionButton>
                             end: Alignment.bottomRight,
                             colors: [
                               AppTheme.accentColor,
-                              AppTheme.accentColor.withValues(alpha: 0.8),
+                              AppTheme.whiteTransparent80,
                             ],
                           )
                         : LinearGradient(
@@ -757,7 +757,7 @@ class _SpeedDetectionButtonState extends State<SpeedDetectionButton>
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.6), // 半透明深色背景
+              color: AppTheme.blackTransparent60,
               shape: BoxShape.circle,
               border: Border.all(
                 color: widget.isDetecting ? activeColor : inactiveColor,

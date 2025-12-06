@@ -14,10 +14,16 @@ class GarageHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Speed (index 0) and Records (index 1) use dark theme
-    // Settings (index 2) follows system theme
-    final shouldUseDarkTheme =
-        shell.currentIndex == 0 || shell.currentIndex == 1;
+    return BlocProvider(
+      create: (context) => GarageHomeBloc(),
+      child: Builder(
+        builder: (context) => _body(context),
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context) {
+    final shouldUseDarkTheme = TabConfig.shouldUseDarkTheme(shell.currentIndex);
 
     return Scaffold(
       body: shell,

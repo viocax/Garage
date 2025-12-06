@@ -60,4 +60,13 @@ class TabConfig {
     final isDuplicate = currentIndex == getTabIndex(clickTab);
     return isDuplicate;
   }
+  static bool shouldUseDarkTheme(int currentIndex) {
+    final tab = getTab(currentIndex);
+    switch (tab) {
+      case SettingsTab():
+        return false;
+      default:
+        return true;
+    }
+  }
 }

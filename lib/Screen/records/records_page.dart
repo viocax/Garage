@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/router/app_router.dart';
 import 'dart:math' as math;
 import 'package:garage/theme/grid_background_painter.dart';
 import 'package:garage/theme/themed_status_bar.dart';
@@ -8,12 +9,20 @@ import 'package:garage/screen/records/bloc/records_bloc.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
+import 'package:go_router/go_router.dart';
 
 class RecordsPage extends StatelessWidget {
   const RecordsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => RecordsBloc(),
+      child: _body(context),
+    );
+  }
+
+  Widget _body(BuildContext context) {
     return Theme(
       data: AppTheme.darkTheme,
       child: ThemedStatusBar(
@@ -434,8 +443,22 @@ class _AddButton extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {
-          context.read<RecordsBloc>().add(const ClickAddButton());
+        onPressed: () async {
+          // Open AddRecordPage and wait for result
+          final currentState = context.read<RecordsBloc>().state;
+          Vehicle vehicle = Vehicle.empty();
+          if (currentState is RecordsLoaded) {
+            vehicle = currentState.currentVehicle;
+          }
+
+          final newRecord = await context.pushNamed<VehicleRecord>(
+            AppPath.addRecord.name,
+            extra: vehicle,
+          );
+
+          if (newRecord != null && context.mounted) {
+            context.read<RecordsBloc>().add(AddVehicleRecord(newRecord));
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: accentRed,
@@ -519,13 +542,13 @@ class _RecentActivitySection extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8.0),
               child: Text(
                 '輕觸卡片查看完整歷史',
-              style: TextStyle(
-                fontSize: 12,
-                color: textSecondary.withValues(alpha: 0.6),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: textSecondary.withValues(alpha: 0.6),
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }

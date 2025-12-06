@@ -96,7 +96,7 @@ class _PickerDialogState extends State<PickerDialog>
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: Container(
-          color: Colors.black.withValues(alpha: 0.5),
+          color: AppTheme.blackTransparent50,
           child: Center(
             child: ScaleTransition(
               scale: _scaleAnimation,
@@ -118,7 +118,7 @@ class _PickerDialogState extends State<PickerDialog>
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.darkSurface.withValues(alpha: 0.85),
+              color: AppTheme.darkSurfaceTransparent85,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppTheme.whiteTransparent20, width: 1),
             ),

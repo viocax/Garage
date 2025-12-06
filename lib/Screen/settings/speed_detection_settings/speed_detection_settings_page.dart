@@ -1,35 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/theme/app_theme.dart';
-import 'bloc/settings_bloc.dart';
-import 'bloc/settings_event.dart';
-import 'bloc/settings_state.dart';
-import 'widgets/settings_section_header.dart';
-import 'widgets/settings_item.dart';
-import 'widgets/settings_toggle_item.dart';
-import 'widgets/settings_selection_item.dart';
-import 'widgets/settings_slider_item.dart';
+import 'package:garage/theme/themed_status_bar.dart';
+import 'bloc/speed_detection_settings_bloc.dart';
+import 'bloc/speed_detection_settings_event.dart';
+import 'bloc/speed_detection_settings_state.dart';
+import '../widgets/settings_section_header.dart';
+import '../widgets/settings_item.dart';
+import '../widgets/settings_toggle_item.dart';
+import '../widgets/settings_selection_item.dart';
+import '../widgets/settings_slider_item.dart';
 
 class SpeedDetectionSettingsPage extends StatelessWidget {
   const SpeedDetectionSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => SpeedDetectionSettingsBloc(),
+      child: _body(context),
+    );
+  }
+  Widget _body(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
-    return BlocBuilder<SettingsBloc, SettingsState>(
+    return BlocBuilder<SpeedDetectionSettingsBloc, SpeedDetectionSettingsState>(
       builder: (context, state) {
-        final isLoaded = state is SettingsLoaded;
+        final isLoaded = state is SpeedDetectionSettingsLoaded;
 
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-          ),
+        return ThemedStatusBar(
           child: Scaffold(
             appBar: AppBar(
               title: const Text('測速設置'),
@@ -60,7 +60,7 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                         subtitle: '開啟測速提醒語音播報',
                         onTap: isLoaded
                             ? () {
-                                context.read<SettingsBloc>().add(
+                                context.read<SpeedDetectionSettingsBloc>().add(
                                   const ToggleVoiceAlert(),
                                 );
                               }
@@ -72,7 +72,7 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                           icon: Icons.volume_up,
                           value: state.voiceVolume,
                           onChanged: (value) {
-                            context.read<SettingsBloc>().add(
+                            context.read<SpeedDetectionSettingsBloc>().add(
                               ChangeVoiceVolume(value),
                             );
                           },
@@ -82,7 +82,7 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                           icon: Icons.speed,
                           value: state.voiceSpeechRate,
                           onChanged: (value) {
-                            context.read<SettingsBloc>().add(
+                            context.read<SpeedDetectionSettingsBloc>().add(
                               ChangeVoiceSpeechRate(value),
                             );
                           },
@@ -102,7 +102,7 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                                   '選擇速度單位',
                                   state.speedUnit,
                                   SpeedUnit.values,
-                                  (unit) => context.read<SettingsBloc>().add(
+                                  (unit) => context.read<SpeedDetectionSettingsBloc>().add(
                                     ChangeSpeedUnit(unit),
                                   ),
                                 )
@@ -113,7 +113,7 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                 ),
 
                 // Loading HUD - 只在未載入時顯示
-                if (state is SettingsInitial)
+                if (state is SpeedDetectionSettingsInitial)
                   Container(
                     color: theme.colorScheme.surface.withValues(alpha: 0.3),
                     child: const Center(

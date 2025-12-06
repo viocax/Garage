@@ -23,3 +23,12 @@ final class SwitchVehicle extends RecordsEvent {
 final class ClickAddButton extends RecordsEvent {
   const ClickAddButton();
 }
+
+final class AddVehicleRecord extends RecordsEvent {
+  final VehicleRecord record;
+
+  const AddVehicleRecord(this.record);
+
+  @override
+  List<Object> get props => [record];
+}

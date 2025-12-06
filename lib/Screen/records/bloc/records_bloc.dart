@@ -11,19 +11,50 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
     on<SwitchVehicle>(_onSwitchVehicle);
     on<ClickAddButton>(_onClickAddButton);
+    on<AddVehicleRecord>(_onAddVehicleRecord);
     add(LoadVehicleRecord());
   }
 
   void _onClickAddButton(ClickAddButton event, Emitter<RecordsState> emit) {
-    // current vehicle
+    // This is now handled by the UI opening the sheet, and dispatching AddVehicleRecord on success
+  }
+
+  void _onAddVehicleRecord(AddVehicleRecord event, Emitter<RecordsState> emit) {
     final currentState = state;
-    if (currentState is! RecordsLoaded) {
-      return;
-    }
-    if (currentState.vehicles.isEmpty) {
-      // add vehicle
-    } else {
-      // add record
+    if (currentState is RecordsLoaded) {
+      // Find current vehicle
+      final vehicleIndex = currentState.vehicles.indexWhere(
+        (v) => v.id == currentState.currentVehicleId,
+      );
+
+      if (vehicleIndex != -1) {
+        final currentVehicle = currentState.vehicles[vehicleIndex];
+
+        // Update vehicle with new record
+        final updatedRecords = List<VehicleRecord>.from(currentVehicle.records)
+          ..add(event.record);
+
+        // Use copyWith if Vehicle had it, otherwise creating new instance
+        final updatedVehicle = Vehicle(
+          id: currentVehicle.id,
+          carName: currentVehicle.carName,
+          currentMileage: event.record.mileage > currentVehicle.currentMileage
+              ? event.record.mileage
+              : currentVehicle.currentMileage,
+          maintenanceInterval: currentVehicle.maintenanceInterval,
+          records: updatedRecords,
+        );
+
+        final updatedVehicles = List<Vehicle>.from(currentState.vehicles)
+          ..[vehicleIndex] = updatedVehicle;
+
+        emit(
+          RecordsLoaded(
+            vehicles: updatedVehicles,
+            currentVehicleId: currentState.currentVehicleId,
+          ),
+        );
+      }
     }
   }
 
