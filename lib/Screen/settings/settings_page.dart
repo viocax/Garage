@@ -32,93 +32,77 @@ class SettingsPage extends StatelessWidget {
               children: [
                 // 主要內容 - 始終顯示
                 SafeArea(
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverList(
-                        delegate: SliverChildListDelegate([
-                          // 一般設定
-                          const SettingsSectionHeader(title: '一般'),
-                          SettingsItem(
-                            title: '測速設置',
-                            icon: Icons.radar_outlined,
-                            onTap: () {
-                              if (state is SettingsLoaded) {
-                                context.goNamed(
-                                  AppPath.speedDetectionSettings.name,
-                                );
-                              }
-                            },
-                          ),
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    children: [
+                      // 一般設定
+                      const SettingsSectionHeader(title: '一般'),
+                      SettingsItem(
+                        title: '測速設置',
+                        icon: Icons.radar_outlined,
+                        onTap: () {
+                          context.goNamed(
+                            AppPath.speedDetectionSettings.name,
+                          );
+                        },
+                      ),
 
-                          // 資料管理
-                          const SettingsSectionHeader(title: '資料'),
-                          SettingsItem(
-                            title: '匯出資料',
-                            icon: Icons.upload_file_outlined,
-                            onTap: () {
-                              if (state is SettingsLoaded) {
-                                context.read<SettingsBloc>().add(
-                                  const ExportData(),
-                                );
-                              }
-                            },
-                          ),
-                          SettingsItem(
-                            title: '清除資料',
-                            icon: Icons.delete_outline,
-                            isDestructive: true,
-                            onTap: state is SettingsLoaded
-                                ? () {
-                                    context.read<SettingsBloc>().add(
-                                      const ClearData(),
-                                    );
-                                  }
-                                : null,
-                          ),
+                      // 資料管理
+                      const SettingsSectionHeader(title: '資料'),
+                      SettingsItem(
+                        title: '匯出資料',
+                        icon: Icons.upload_file_outlined,
+                        onTap: () {
+                          context.read<SettingsBloc>().add(
+                            const ExportData(),
+                          );
+                        },
+                      ),
+                      SettingsItem(
+                        title: '清除資料',
+                        icon: Icons.delete_outline,
+                        isDestructive: true,
+                        onTap: () {
+                          context.read<SettingsBloc>().add(
+                            const ClearData(),
+                          );
+                        },
+                      ),
 
-                          // 關於
-                          const SettingsSectionHeader(title: '關於'),
-                          const SettingsItem(
-                            title: '使用條款',
-                            icon: Icons.description_outlined,
-                          ),
-                          const SettingsItem(
-                            title: '隱私政策',
-                            icon: Icons.privacy_tip_outlined,
-                          ),
-                          const SettingsItem(
-                            title: '意見回饋',
-                            icon: Icons.feedback_outlined,
-                          ),
-                          const SettingsItem(
-                            title: '評分 App',
-                            icon: Icons.star_outline,
-                          ),
+                      // 關於
+                      const SettingsSectionHeader(title: '關於'),
+                      const SettingsItem(
+                        title: '使用條款',
+                        icon: Icons.description_outlined,
+                      ),
+                      const SettingsItem(
+                        title: '隱私政策',
+                        icon: Icons.privacy_tip_outlined,
+                      ),
+                      const SettingsItem(
+                        title: '意見回饋',
+                        icon: Icons.feedback_outlined,
+                      ),
+                      const SettingsItem(
+                        title: '評分 App',
+                        icon: Icons.star_outline,
+                      ),
 
-                          const SizedBox(height: 40),
-                          Center(
-                            child: Text(
-                              'Garage v1.0.0',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
+                      const SizedBox(height: 40),
+                      Center(
+                        child: Text(
+                          'Garage v1.0.0',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.3,
                             ),
                           ),
-                          const SizedBox(height: 20),
-                        ]),
+                        ),
                       ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
-
-                // Loading HUD - 只在未載入時顯示
-                if (state is SettingsInitial)
-                  Container(
-                    color: theme.colorScheme.surface.withValues(alpha: 0.3),
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
               ],
             ),
           ),
