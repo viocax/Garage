@@ -29,3 +29,12 @@ final class ChangeVoiceSpeechRate extends SpeedDetectionSettingsEvent {
   final double rate;
   const ChangeVoiceSpeechRate(this.rate);
 }
+
+// Location permission
+final class CheckLocationPermission extends SpeedDetectionSettingsEvent {
+  const CheckLocationPermission();
+}
+
+final class RequestLocationPermission extends SpeedDetectionSettingsEvent {
+  const RequestLocationPermission();
+}

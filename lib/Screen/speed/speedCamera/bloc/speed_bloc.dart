@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/core/models/speed_unit.dart';
+import 'package:geolocator/geolocator.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
-import 'package:garage/core/models/near_speed_camera.dart';
 
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
+  DateTime? _lastReportTime;
   final ISpeedCameraRepository repository = getIt.repo.speedCamera;
-  StreamSubscription<NearSpeedCamera>? _speedSubscription;
+  StreamSubscription<Position>? _speedSubscription;
 
   // TODO: maxSpeed and unit and lower and upper，到時候會在設定方式注入進來
   SpeedBloc()
@@ -28,22 +29,61 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     on<StopDetection>(_onStopDetection);
   }
 
-  void _onUpdateSpeed(UpdateSpeed event, Emitter<SpeedState> emit) {
+  Future<void> _onUpdateSpeed(
+    UpdateSpeed event,
+    Emitter<SpeedState> emit,
+  ) async {
     final currentState = state;
     if (currentState is! SpeedData) return;
 
-    final nearCamera = event.nearSpeedCamera;
-    final newSpeed = nearCamera.currentSpeed;
-    final limit = nearCamera.speedCamera.speedLimit;
+    final newSpeed = event.currentSpeed * 3.6; // m/s to km/h
+    var limit = currentState.maxSpeed;
+
+    // Calculate nearest camera
+    // Optimization: Should probably cache cameras in memory in Bloc or rely on fast repository access
+    final cameras = await repository.getAll();
+    SpeedCamera? nearestCamera;
+    double minDistance = double.infinity;
+
+    for (final camera in cameras) {
+      final distance = camera.distanceTo(
+        event.position.latitude,
+        event.position.longitude,
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestCamera = camera;
+      }
+    }
+
+    if (nearestCamera != null) {
+      // Update limit based on nearest camera if close enough?
+      // For now, let's assume we just want to update the UI limits based on nearest camera if logical
+      limit = nearestCamera.speedLimit.toDouble();
+    }
 
     // 計算動畫時長
-    final newDuration = _calculateDuration(newSpeed, currentState.maxSpeed);
+    final newDuration = _calculateDuration(
+      newSpeed,
+      300,
+    ); // Max gauge speed 300
 
     // 判斷是否超速
     final isOverSpeed = newSpeed > limit;
 
-    if (isOverSpeed) {
-      repository.readOverSpeedTTS(limit.toDouble(), newSpeed, nearCamera.distance);
+    // 判斷是否需要報警
+    final isNeedReport =
+        DateTime.now()
+            .difference(
+              _lastReportTime ??
+                  DateTime.now().subtract(const Duration(seconds: 10)),
+            )
+            .inSeconds >
+        5;
+
+    if (isOverSpeed && isNeedReport) {
+      repository.readOverSpeedTTS(event.position, limit.toDouble(), newSpeed);
+      _lastReportTime = DateTime.now();
     }
 
     debugPrint(
@@ -56,6 +96,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
         animationDuration: newDuration,
         isOverSpeed: isOverSpeed,
         upperSpeed: limit.toString(),
+        // maxSpeed: limit + 50, // Should we dynamic update max speed?
       ),
     );
   }
@@ -70,8 +111,8 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     try {
       // 1. 檢查定位權限（通過 Repository）
       _speedSubscription = repository.startLocationTracking().listen(
-        (nearSpeedCamera) {
-          add(UpdateSpeed(nearSpeedCamera));
+        (position) {
+          add(UpdateSpeed(position));
         },
         onError: (error) {
           debugPrint('SpeedBloc: 位置追蹤錯誤 - $error');

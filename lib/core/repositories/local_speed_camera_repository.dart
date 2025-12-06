@@ -8,19 +8,17 @@ import 'package:garage/core/service/tts/tts_service.dart';
 import 'package:garage/core/models/speed_camera.dart';
 import 'package:geolocator/geolocator.dart';
 import 'speed_camera_repository.dart';
-import 'package:garage/core/models/near_speed_camera.dart';
-import 'package:garage/core/utils/stream_extensions.dart';
 
 /// 本地測速照相資料倉儲實作
 ///
 /// 從 assets/cameras.json 讀取資料，並使用記憶體快取避免重複解析
 class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   // Service
-  final LocationService locationService = getIt.service.location;
-  final TtsService ttsService = getIt.service.tts;
+  final LocationService _locationService = getIt.service.location;
+  final TtsService _ttsService = getIt.service.tts;
 
   /// 快取的測速照相資料
-  List<SpeedCamera>? _cachedCameras;
+  List<SpeedCamera> _cachedCameras = [];
 
   /// 資料載入時間
   DateTime? _loadedAt;
@@ -30,11 +28,11 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 只在第一次呼叫時讀取並解析 JSON，之後使用快取資料
   Future<List<SpeedCamera>> _loadCamerasFromAssets() async {
     // 如果已有快取，直接返回
-    if (_cachedCameras != null) {
+    if (_cachedCameras.isNotEmpty) {
       debugPrint(
-        'LocalSpeedCameraRepository: 使用快取資料 (${_cachedCameras!.length} 筆)',
+        'LocalSpeedCameraRepository: 使用快取資料 (${_cachedCameras.length} 筆)',
       );
-      return _cachedCameras!;
+      return _cachedCameras;
     }
 
     debugPrint('LocalSpeedCameraRepository: 從 assets 載入資料...');
@@ -57,10 +55,10 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       _loadedAt = DateTime.now();
 
       debugPrint(
-        'LocalSpeedCameraRepository: 載入完成，共 ${_cachedCameras!.length} 筆資料',
+        'LocalSpeedCameraRepository: 載入完成，共 ${_cachedCameras.length} 筆資料',
       );
 
-      return _cachedCameras!;
+      return _cachedCameras;
     } catch (e, stackTrace) {
       debugPrint('LocalSpeedCameraRepository: 載入失敗 - $e');
       debugPrint('StackTrace: $stackTrace');
@@ -76,7 +74,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     );
     if (force) {
       // 強制重新載入，清除快取
-      _cachedCameras = null;
+      _cachedCameras = [];
       _loadedAt = null;
     }
     await _loadCamerasFromAssets();
@@ -101,59 +99,28 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   @override
   Future<void> clearAll() async {
     debugPrint('LocalSpeedCameraRepository: 清除快取');
-    _cachedCameras = null;
+    _cachedCameras = [];
     _loadedAt = null;
   }
 
   @override
-  Stream<NearSpeedCamera> startLocationTracking() async* {
-    try {
-      // 確保資料已載入
-      final cameras = await _loadCamerasFromAssets();
-      if (cameras.isEmpty) return;
+  Future<bool> checkPermission() async {
+    return _locationService.checkPermission();
+  }
+  @override
+  Future<bool> requestPermission() {
+    return _locationService.requestPermission();
+  }
 
-      // 確保有定位權限
-      final hasPermission = await locationService.requestPermission();
-      if (!hasPermission) {
-        debugPrint('LocalSpeedCameraRepository: No location permission');
-        throw Exception('Location permission denied'); // TODO: 跳轉到權限設定頁面
-      }
-
-      // 監聽位置變化
-      await for (final Position position
-          in locationService.getPositionStream().throttle(
-            const Duration(milliseconds: 500),
-          )) {
-        SpeedCamera? nearestCamera;
-        double minDistance = double.infinity;
-
-        for (final camera in cameras) {
-          final distance = camera.distanceTo(
-            position.latitude,
-            position.longitude,
-          );
-          if (distance < minDistance) {
-            minDistance = distance;
-            nearestCamera = camera;
-          }
-        }
-
-        if (nearestCamera != null) {
-          yield NearSpeedCamera(
-            speedCamera: nearestCamera,
-            currentLocation: LatLng(position.latitude, position.longitude),
-            currentSpeed: position.speed * 3.6, // m/s to km/h
-          );
-        } else {
-          throw Exception('找不到最近的測速照相機');
-        }
-      }
-    } catch (e, stackTrace) {
-      debugPrint(
-        'LocalSpeedCameraRepository: Error in startLocationTracking - $e',
-      );
-      debugPrint('StackTrace: $stackTrace');
-      rethrow;
+  @override
+  Stream<Position> startLocationTracking() async* {
+    final hasPermission = await requestPermission();
+    if (!hasPermission) {
+      debugPrint('LocalSpeedCameraRepository: No location permission');
+      throw Exception('Location permission denied'); // TODO: 跳轉到權限設定頁面
+    }
+    await for (final Position position in _locationService.getPositionStream()) {
+      yield position;
     }
   }
 
@@ -166,18 +133,43 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
   @override
   void readOverSpeedTTS(
+    Position position,
     double speedLimit,
     double currentSpeed,
-    double distance,
   ) {
-    // TODO:  unit, 語音 要根據user設定去切換
-    ttsService.speakOverSpeed(
-      TTSSpeakingToken(
-        speedLimit: speedLimit,
-        currentSpeed: currentSpeed,
-        distance: distance,
-        lastReportTime: DateTime.now(),
-      ),
-    );
+    final cameras = _cachedCameras;
+    if (cameras.isEmpty) {
+      debugPrint(
+        'LocalSpeedCameraRepository: No cameras found when readOverSpeedTTS',
+      );
+      return;
+    }
+    SpeedCamera? nearestCamera;
+    double minDistance = double.infinity;
+
+    // TODO: 優化算法
+    for (final camera in cameras) {
+      final distance = camera.distanceTo(position.latitude, position.longitude);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestCamera = camera;
+      }
+    }
+
+    if (nearestCamera != null) {
+      // TODO:  unit, 語音 要根據user設定去切換
+      _ttsService.speakOverSpeed(
+        TTSSpeakingToken(
+          speedLimit: speedLimit,
+          currentSpeed: currentSpeed,
+          distance: minDistance,
+          lastReportTime: DateTime.now(),
+        ),
+      );
+    } else {
+      debugPrint(
+        'LocalSpeedCameraRepository: No nearest camera found when readOverSpeedTTS',
+      );
+    }
   }
 }

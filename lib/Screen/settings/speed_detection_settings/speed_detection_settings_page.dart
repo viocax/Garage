@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/themed_status_bar.dart';
+import 'package:geolocator/geolocator.dart';
 import 'bloc/speed_detection_settings_bloc.dart';
 import 'bloc/speed_detection_settings_event.dart';
 import 'bloc/speed_detection_settings_state.dart';
@@ -28,6 +29,7 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
     return BlocBuilder<SpeedDetectionSettingsBloc, SpeedDetectionSettingsState>(
       builder: (context, state) {
         final isLoaded = state is SpeedDetectionSettingsLoaded;
+        final hasLocationPermission = isLoaded ? state.hasLocationPermission : false;
 
         return ThemedStatusBar(
           child: Scaffold(
@@ -43,13 +45,16 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     children: [
-                      // 位置權限
-                      const SettingsSectionHeader(title: '位置服務'),
-                      const SettingsItem(
-                        title: '位置權限',
-                        icon: Icons.location_on_outlined,
-                        subtitle: '允許應用程式存取您的位置',
-                      ),
+                      // 位置權限 - 只在沒有權限時顯示
+                      if (!hasLocationPermission) ...[
+                        const SettingsSectionHeader(title: '位置服務'),
+                        SettingsItem(
+                          title: '位置權限',
+                          icon: Icons.location_on_outlined,
+                          subtitle: '允許應用程式存取您的位置',
+                          onTap: () => _showPermissionAlert(context),
+                        ),
+                      ],
 
                       // 語音提示設定
                       const SettingsSectionHeader(title: '語音提示'),
@@ -74,16 +79,6 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                           onChanged: (value) {
                             context.read<SpeedDetectionSettingsBloc>().add(
                               ChangeVoiceVolume(value),
-                            );
-                          },
-                        ),
-                        SettingsSliderItem(
-                          title: '語速',
-                          icon: Icons.speed,
-                          value: state.voiceSpeechRate,
-                          onChanged: (value) {
-                            context.read<SpeedDetectionSettingsBloc>().add(
-                              ChangeVoiceSpeechRate(value),
                             );
                           },
                         ),
@@ -125,6 +120,39 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+
+  void _showPermissionAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('需要位置權限'),
+        content: const Text('測速功能需要存取您的位置資訊才能正常運作。請前往設定開啟位置權限。'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('稍後再說'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await Geolocator.openAppSettings();
+              // 從設定回來後重新檢查權限
+              if (context.mounted) {
+                context.read<SpeedDetectionSettingsBloc>().add(
+                  const CheckLocationPermission(),
+                );
+              }
+            },
+            child: const Text('前往設定'),
+          ),
+        ],
+      ),
     );
   }
 

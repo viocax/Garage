@@ -35,6 +35,17 @@ class LocationService {
     ),
   });
 
+  Future<bool> checkPermission() async {
+    final permission = await geolocator.checkPermission();
+    switch (permission) {
+      case LocationPermission.always:
+      case LocationPermission.whileInUse:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   /// 檢查並請求定位權限
   Future<bool> requestPermission() async {
     bool serviceEnabled;

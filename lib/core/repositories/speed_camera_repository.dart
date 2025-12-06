@@ -1,5 +1,6 @@
+import 'package:geolocator/geolocator.dart';
+
 import '../models/speed_camera.dart';
-import '../models/near_speed_camera.dart';
 
 /// 測速照相資料倉儲介面
 ///
@@ -23,9 +24,17 @@ abstract class ISpeedCameraRepository {
   /// 清除所有本地資料
   Future<void> clearAll();
 
-  Stream<NearSpeedCamera> startLocationTracking();
+  Future<bool> checkPermission();
+
+  Future<bool> requestPermission();
+
+  Stream<Position> startLocationTracking();
 
   Future<void> stopLocationTracking();
 
-  void readOverSpeedTTS(double speedLimit, double currentSpeed, double distance);
+  void readOverSpeedTTS(
+    Position position,
+    double speedLimit,
+    double currentSpeed,
+  );
 }

@@ -16,11 +16,15 @@ final class SpeedDetectionSettingsLoaded extends SpeedDetectionSettingsState {
   final double voiceVolume; // 0.0 - 1.0
   final double voiceSpeechRate; // 0.0 - 1.0
 
+  // Location permission
+  final bool hasLocationPermission;
+
   const SpeedDetectionSettingsLoaded({
     required this.speedUnit,
     required this.isVoiceAlertEnabled,
     required this.voiceVolume,
     required this.voiceSpeechRate,
+    required this.hasLocationPermission,
   });
 
   SpeedDetectionSettingsLoaded copyWith({
@@ -28,12 +32,14 @@ final class SpeedDetectionSettingsLoaded extends SpeedDetectionSettingsState {
     bool? isVoiceAlertEnabled,
     double? voiceVolume,
     double? voiceSpeechRate,
+    bool? hasLocationPermission,
   }) {
     return SpeedDetectionSettingsLoaded(
       speedUnit: speedUnit ?? this.speedUnit,
       isVoiceAlertEnabled: isVoiceAlertEnabled ?? this.isVoiceAlertEnabled,
       voiceVolume: voiceVolume ?? this.voiceVolume,
       voiceSpeechRate: voiceSpeechRate ?? this.voiceSpeechRate,
+      hasLocationPermission: hasLocationPermission ?? this.hasLocationPermission,
     );
   }
 }
