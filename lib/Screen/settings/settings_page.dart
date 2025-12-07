@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:garage/router/app_router.dart';
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_state.dart';
@@ -41,8 +40,8 @@ class SettingsPage extends StatelessWidget {
                         title: '測速設置',
                         icon: Icons.radar_outlined,
                         onTap: () {
-                          context.goNamed(
-                            AppPath.speedDetectionSettings.name,
+                          context.goPath(
+                            AppPath.speedDetectionSettings,
                           );
                         },
                       ),

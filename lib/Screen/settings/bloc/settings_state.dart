@@ -1,4 +1,3 @@
-import 'package:garage/core/models/speed_unit.dart';
 
 sealed class SettingsState {
   const SettingsState();

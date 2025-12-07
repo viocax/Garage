@@ -30,6 +30,21 @@ final class ChangeVoiceSpeechRate extends SpeedDetectionSettingsEvent {
   const ChangeVoiceSpeechRate(this.rate);
 }
 
+final class PlayTestVoice extends SpeedDetectionSettingsEvent {
+  const PlayTestVoice();
+}
+
+final class ChangeVoiceEngine extends SpeedDetectionSettingsEvent {
+  final String? engineId;
+  const ChangeVoiceEngine(this.engineId);
+}
+
+// Alert settings
+final class ChangeAlertDistance extends SpeedDetectionSettingsEvent {
+  final int distance;
+  const ChangeAlertDistance(this.distance);
+}
+
 // Location permission
 final class CheckLocationPermission extends SpeedDetectionSettingsEvent {
   const CheckLocationPermission();

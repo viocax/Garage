@@ -86,7 +86,35 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                             );
                           },
                         ),
+                        SettingsSliderItem(
+                          title: '語音語速',
+                          icon: Icons.speed,
+                          value: state.voiceSpeechRate,
+                          onChanged: (value) {
+                            context.read<SpeedDetectionSettingsBloc>().add(
+                              ChangeVoiceSpeechRate(value),
+                            );
+                          },
+                        ),
                       ],
+
+                      // 提醒設定
+                      const SettingsSectionHeader(title: '提醒設定'),
+                      if (isLoaded)
+                        SettingsSliderItem(
+                          title: '提前提醒距離',
+                          icon: Icons.location_searching,
+                          value: state.alertDistance.toDouble(),
+                          min: SpeedDetectionSettingsLoaded.minAlertDistance.toDouble(),
+                          max: SpeedDetectionSettingsLoaded.maxAlertDistance.toDouble(),
+                          divisions: state.alertDistanceDivisions,
+                          label: '${state.alertDistance} 公尺',
+                          onChanged: (value) {
+                            context.read<SpeedDetectionSettingsBloc>().add(
+                              ChangeAlertDistance(value.round()),
+                            );
+                          },
+                        ),
 
                       // 速度單位
                       const SettingsSectionHeader(title: '單位設定'),

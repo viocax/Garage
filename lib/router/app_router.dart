@@ -122,3 +122,9 @@ class AppRouter {
     );
   }
 }
+
+extension AppRouterExtension on BuildContext {
+  void goPath(AppPath path) {
+    GoRouter.of(this).goNamed(path.name);
+  }
+}

@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
 import 'package:garage/screen/app/launch/bloc/launch_state.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
 import 'package:garage/theme/speed_line_painter.dart';
-import 'package:garage/core/di/service_locator.dart';
 import 'dart:math' as math;
 
 /// 啟動頁面
@@ -43,7 +41,7 @@ class LaunchView extends StatelessWidget {
       listener: (context, state) {
         switch (state) {
           case LaunchCompleted():
-            context.go(AppPath.speedometer.path);
+            context.goPath(AppPath.speedometer);
           case LaunchError(:final message):
             ScaffoldMessenger.of(
               context,
@@ -253,16 +251,9 @@ class LaunchView extends StatelessWidget {
       height: 6,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isActive
-            ? AppTheme.accentColor
-            : AppTheme.whiteTransparent30,
+        color: isActive ? AppTheme.accentColor : AppTheme.whiteTransparent30,
         boxShadow: isActive
-            ? [
-                BoxShadow(
-                  color: AppTheme.whiteTransparent50,
-                  blurRadius: 10,
-                ),
-              ]
+            ? [BoxShadow(color: AppTheme.whiteTransparent50, blurRadius: 10)]
             : null,
       ),
     );

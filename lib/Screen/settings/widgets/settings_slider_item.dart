@@ -7,6 +7,11 @@ class SettingsSliderItem extends StatelessWidget {
   final IconData icon;
   final double value;
   final ValueChanged<double> onChanged;
+  final double min;
+  final double max;
+  final int? divisions;
+  final String? label;
+  final bool showPercentage;
 
   const SettingsSliderItem({
     super.key,
@@ -14,6 +19,11 @@ class SettingsSliderItem extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.onChanged,
+    this.min = 0.0,
+    this.max = 1.0,
+    this.divisions,
+    this.label,
+    this.showPercentage = true,
   });
 
   @override
@@ -43,7 +53,10 @@ class SettingsSliderItem extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${(value * 100).toInt()}%',
+                  label ??
+                      (showPercentage
+                          ? '${(value * 100).toInt()}%'
+                          : value.toStringAsFixed(1)),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppTheme.systemGray,
                   ),
@@ -52,6 +65,9 @@ class SettingsSliderItem extends StatelessWidget {
             ),
             Slider(
               value: value,
+              min: min,
+              max: max,
+              divisions: divisions,
               onChanged: onChanged,
               activeColor: theme.colorScheme.primary,
             ),

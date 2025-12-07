@@ -1,3 +1,6 @@
+import 'package:garage/core/repositories/local_user_settings_repository.dart';
+import 'package:garage/core/repositories/user_settings_repository.dart'
+    show UserSettingsRepository;
 import 'package:get_it/get_it.dart';
 // import '../service/isar_service.dart'; // MARK: Isar 暫時不使用
 import '../service/network/http_service.dart';
@@ -25,6 +28,9 @@ Future<void> setupServiceLocator() async {
   // Repository layer
   getIt.registerLazySingleton<ISpeedCameraRepository>(
     () => LocalSpeedCameraRepository(),
+  );
+  getIt.registerLazySingleton<UserSettingsRepository>(
+    () => LocalUserSettingsRepository(),
   );
 }
 
@@ -58,4 +64,5 @@ class RepositoryScopes {
   RepositoryScopes(this._getIt);
 
   ISpeedCameraRepository get speedCamera => _getIt<ISpeedCameraRepository>();
+  UserSettingsRepository get userSettings => _getIt<UserSettingsRepository>();
 }
