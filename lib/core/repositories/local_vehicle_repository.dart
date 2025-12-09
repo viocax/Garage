@@ -1,12 +1,23 @@
+import 'package:garage/core/core.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
+import 'package:isar_community/isar.dart';
 
 class LocalVehicleRepository implements VehicleRepository {
+  final IsarService isarService = getIt.service.isarDB;
 
   @override
-  Future<List<Vehicle>> loadVehicles() {
-    throw UnimplementedError();
+  Future<List<Vehicle>> loadVehicles() async {
+    final db = await isarService.isar;
+    final vehicles = await db.vehicles.where().findAll();
+
+    // Load the related records for each vehicle
+    for (final vehicle in vehicles) {
+      await vehicle.records.load();
+    }
+
+    return vehicles;
   }
 
   @override

@@ -1,4 +1,4 @@
-// import 'package:isar/isar.dart'; // MARK: Isar 暫時不使用
+// import 'package:isar_community/isar.dart'; // MARK: Isar 暫時不使用
 import 'dart:math';
 
 // part 'speed_camera.g.dart'; // MARK: Isar 暫時不使用
@@ -74,7 +74,8 @@ class SpeedCamera {
     final double dLat = _toRadians(lat - latitude);
     final double dLon = _toRadians(lon - longitude);
 
-    final double a = sin(dLat / 2) * sin(dLat / 2) +
+    final double a =
+        sin(dLat / 2) * sin(dLat / 2) +
         cos(_toRadians(latitude)) *
             cos(_toRadians(lat)) *
             sin(dLon / 2) *

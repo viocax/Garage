@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'vehicle_record.dart';
 import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
 
@@ -77,7 +77,7 @@ class Vehicle implements PickerOption {
     final recordsList = records.toList();
     final thisMonthRecords = recordsList.where((record) {
       return record.date.isAfter(thisMonth.subtract(const Duration(days: 1))) &&
-             record.date.isBefore(nextMonth);
+          record.date.isBefore(nextMonth);
     });
 
     // Calculate total spent this month
@@ -87,10 +87,12 @@ class Vehicle implements PickerOption {
     );
 
     // Format the result
-    final formattedTotal = total.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
+    final formattedTotal = total
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+        );
 
     return '本月新增 \$$formattedTotal';
   }

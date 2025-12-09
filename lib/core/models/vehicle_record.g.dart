@@ -17,16 +17,8 @@ const VehicleRecordSchema = CollectionSchema(
   name: r'VehicleRecord',
   id: -3548028493443854613,
   properties: {
-    r'cost': PropertySchema(
-      id: 0,
-      name: r'cost',
-      type: IsarType.double,
-    ),
-    r'date': PropertySchema(
-      id: 1,
-      name: r'date',
-      type: IsarType.dateTime,
-    ),
+    r'cost': PropertySchema(id: 0, name: r'cost', type: IsarType.double),
+    r'date': PropertySchema(id: 1, name: r'date', type: IsarType.dateTime),
     r'formattedCost': PropertySchema(
       id: 2,
       name: r'formattedCost',
@@ -37,33 +29,22 @@ const VehicleRecordSchema = CollectionSchema(
       name: r'formattedMileage',
       type: IsarType.string,
     ),
-    r'mileage': PropertySchema(
-      id: 4,
-      name: r'mileage',
-      type: IsarType.long,
-    ),
-    r'notes': PropertySchema(
-      id: 5,
-      name: r'notes',
-      type: IsarType.string,
-    ),
+    r'mileage': PropertySchema(id: 4, name: r'mileage', type: IsarType.long),
+    r'notes': PropertySchema(id: 5, name: r'notes', type: IsarType.string),
     r'recordId': PropertySchema(
       id: 6,
       name: r'recordId',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(
-      id: 7,
-      name: r'title',
-      type: IsarType.string,
-    ),
+    r'title': PropertySchema(id: 7, name: r'title', type: IsarType.string),
     r'type': PropertySchema(
       id: 8,
       name: r'type',
       type: IsarType.string,
       enumMap: _VehicleRecordtypeEnumValueMap,
-    )
+    ),
   },
+
   estimateSize: _vehicleRecordEstimateSize,
   serialize: _vehicleRecordSerialize,
   deserialize: _vehicleRecordDeserialize,
@@ -80,7 +61,7 @@ const VehicleRecordSchema = CollectionSchema(
           name: r'recordId',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'date': IndexSchema(
@@ -93,7 +74,7 @@ const VehicleRecordSchema = CollectionSchema(
           name: r'date',
           type: IndexType.value,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'mileage': IndexSchema(
@@ -106,16 +87,17 @@ const VehicleRecordSchema = CollectionSchema(
           name: r'mileage',
           type: IndexType.value,
           caseSensitive: false,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
+
   getId: _vehicleRecordGetId,
   getLinks: _vehicleRecordGetLinks,
   attach: _vehicleRecordAttach,
-  version: '3.1.0+1',
+  version: '3.3.0',
 );
 
 int _vehicleRecordEstimateSize(
@@ -171,7 +153,7 @@ VehicleRecord _vehicleRecordDeserialize(
   object.title = reader.readString(offsets[7]);
   object.type =
       _VehicleRecordtypeValueEnumMap[reader.readStringOrNull(offsets[8])] ??
-          RecordType.fuel;
+      RecordType.fuel;
   return object;
 }
 
@@ -200,7 +182,8 @@ P _vehicleRecordDeserializeProp<P>(
       return (reader.readString(offset)) as P;
     case 8:
       return (_VehicleRecordtypeValueEnumMap[reader.readStringOrNull(offset)] ??
-          RecordType.fuel) as P;
+              RecordType.fuel)
+          as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -228,7 +211,10 @@ List<IsarLinkBase<dynamic>> _vehicleRecordGetLinks(VehicleRecord object) {
 }
 
 void _vehicleRecordAttach(
-    IsarCollection<dynamic> col, Id id, VehicleRecord object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  VehicleRecord object,
+) {
   object.id = id;
 }
 
@@ -260,17 +246,16 @@ extension VehicleRecordQueryWhereSort
 extension VehicleRecordQueryWhere
     on QueryBuilder<VehicleRecord, VehicleRecord, QWhereClause> {
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> idEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -293,8 +278,9 @@ extension VehicleRecordQueryWhere
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -303,8 +289,9 @@ extension VehicleRecordQueryWhere
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -319,101 +306,120 @@ extension VehicleRecordQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> recordIdEqualTo(
-      String recordId) {
+    String recordId,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'recordId',
-        value: [recordId],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'recordId', value: [recordId]),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause>
-      recordIdNotEqualTo(String recordId) {
+  recordIdNotEqualTo(String recordId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [],
-              upper: [recordId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [recordId],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [],
+                upper: [recordId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [recordId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [recordId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [],
-              upper: [recordId],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [recordId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [],
+                upper: [recordId],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> dateEqualTo(
-      DateTime date) {
+    DateTime date,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'date',
-        value: [date],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'date', value: [date]),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> dateNotEqualTo(
-      DateTime date) {
+    DateTime date,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'date',
-              lower: [],
-              upper: [date],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'date',
-              lower: [date],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'date',
+                lower: [],
+                upper: [date],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'date',
+                lower: [date],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'date',
-              lower: [date],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'date',
-              lower: [],
-              upper: [date],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'date',
+                lower: [date],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'date',
+                lower: [],
+                upper: [date],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
@@ -423,12 +429,14 @@ extension VehicleRecordQueryWhere
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'date',
-        lower: [date],
-        includeLower: include,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'date',
+          lower: [date],
+          includeLower: include,
+          upper: [],
+        ),
+      );
     });
   }
 
@@ -437,12 +445,14 @@ extension VehicleRecordQueryWhere
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'date',
-        lower: [],
-        upper: [date],
-        includeUpper: include,
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'date',
+          lower: [],
+          upper: [date],
+          includeUpper: include,
+        ),
+      );
     });
   }
 
@@ -453,73 +463,82 @@ extension VehicleRecordQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'date',
-        lower: [lowerDate],
-        includeLower: includeLower,
-        upper: [upperDate],
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'date',
+          lower: [lowerDate],
+          includeLower: includeLower,
+          upper: [upperDate],
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> mileageEqualTo(
-      int mileage) {
+    int mileage,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'mileage',
-        value: [mileage],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'mileage', value: [mileage]),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause>
-      mileageNotEqualTo(int mileage) {
+  mileageNotEqualTo(int mileage) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'mileage',
-              lower: [],
-              upper: [mileage],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'mileage',
-              lower: [mileage],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'mileage',
+                lower: [],
+                upper: [mileage],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'mileage',
+                lower: [mileage],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'mileage',
-              lower: [mileage],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'mileage',
-              lower: [],
-              upper: [mileage],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'mileage',
+                lower: [mileage],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'mileage',
+                lower: [],
+                upper: [mileage],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause>
-      mileageGreaterThan(
-    int mileage, {
-    bool include = false,
-  }) {
+  mileageGreaterThan(int mileage, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'mileage',
-        lower: [mileage],
-        includeLower: include,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'mileage',
+          lower: [mileage],
+          includeLower: include,
+          upper: [],
+        ),
+      );
     });
   }
 
@@ -528,12 +547,14 @@ extension VehicleRecordQueryWhere
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'mileage',
-        lower: [],
-        upper: [mileage],
-        includeUpper: include,
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'mileage',
+          lower: [],
+          upper: [mileage],
+          includeUpper: include,
+        ),
+      );
     });
   }
 
@@ -544,13 +565,15 @@ extension VehicleRecordQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'mileage',
-        lower: [lowerMileage],
-        includeLower: includeLower,
-        upper: [upperMileage],
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'mileage',
+          lower: [lowerMileage],
+          includeLower: includeLower,
+          upper: [upperMileage],
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -562,43 +585,52 @@ extension VehicleRecordQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cost',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'cost',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      costGreaterThan(
+  costGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'cost',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'cost',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      costLessThan(
+  costLessThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'cost',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'cost',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
@@ -610,52 +642,53 @@ extension VehicleRecordQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'cost',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'cost',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> dateEqualTo(
-      DateTime value) {
+    DateTime value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'date',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'date', value: value),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      dateGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  dateGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'date',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'date',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      dateLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  dateLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'date',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'date',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -666,64 +699,69 @@ extension VehicleRecordQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'date',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'date',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  formattedCostEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'formattedCost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'formattedCost',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'formattedCost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostLessThan(
+  formattedCostGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'formattedCost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'formattedCost',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostBetween(
+  formattedCostLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'formattedCost',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  formattedCostBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -731,135 +769,140 @@ extension VehicleRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'formattedCost',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'formattedCost',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  formattedCostStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'formattedCost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'formattedCost',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  formattedCostEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'formattedCost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'formattedCost',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostContains(String value, {bool caseSensitive = true}) {
+  formattedCostContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'formattedCost',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'formattedCost',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostMatches(String pattern, {bool caseSensitive = true}) {
+  formattedCostMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'formattedCost',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'formattedCost',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostIsEmpty() {
+  formattedCostIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'formattedCost',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'formattedCost', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedCostIsNotEmpty() {
+  formattedCostIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'formattedCost',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'formattedCost', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  formattedMileageEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'formattedMileage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'formattedMileage',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'formattedMileage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageLessThan(
+  formattedMileageGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'formattedMileage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'formattedMileage',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageBetween(
+  formattedMileageLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'formattedMileage',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  formattedMileageBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -867,108 +910,109 @@ extension VehicleRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'formattedMileage',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'formattedMileage',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  formattedMileageStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'formattedMileage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'formattedMileage',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  formattedMileageEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'formattedMileage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'formattedMileage',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageContains(String value, {bool caseSensitive = true}) {
+  formattedMileageContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'formattedMileage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'formattedMileage',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageMatches(String pattern, {bool caseSensitive = true}) {
+  formattedMileageMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'formattedMileage',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'formattedMileage',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageIsEmpty() {
+  formattedMileageIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'formattedMileage',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'formattedMileage', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      formattedMileageIsNotEmpty() {
+  formattedMileageIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'formattedMileage',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'formattedMileage', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> idEqualTo(
-      Id value) {
+    Id value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -977,11 +1021,13 @@ extension VehicleRecordQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -992,138 +1038,142 @@ extension VehicleRecordQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      mileageEqualTo(int value) {
+  mileageEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'mileage',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'mileage', value: value),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      mileageGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  mileageGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'mileage',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'mileage',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      mileageLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  mileageLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'mileage',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'mileage',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      mileageBetween(
+  mileageBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'mileage',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'mileage',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesIsNull() {
+  notesIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'notes',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'notes'),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesIsNotNull() {
+  notesIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'notes',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'notes'),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  notesEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesLessThan(
+  notesGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesBetween(
+  notesLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  notesBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1131,135 +1181,140 @@ extension VehicleRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'notes',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'notes',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  notesStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  notesEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesContains(String value, {bool caseSensitive = true}) {
+  notesContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesMatches(String pattern, {bool caseSensitive = true}) {
+  notesMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'notes',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'notes',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesIsEmpty() {
+  notesIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'notes',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'notes', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      notesIsNotEmpty() {
+  notesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'notes',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'notes', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  recordIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdLessThan(
+  recordIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdBetween(
+  recordIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  recordIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1267,135 +1322,140 @@ extension VehicleRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'recordId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'recordId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  recordIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  recordIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdContains(String value, {bool caseSensitive = true}) {
+  recordIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdMatches(String pattern, {bool caseSensitive = true}) {
+  recordIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'recordId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'recordId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdIsEmpty() {
+  recordIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'recordId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'recordId', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      recordIdIsNotEmpty() {
+  recordIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'recordId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'recordId', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  titleEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleLessThan(
+  titleGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleBetween(
+  titleLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  titleBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1403,84 +1463,86 @@ extension VehicleRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'title',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'title',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  titleStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  titleEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleContains(String value, {bool caseSensitive = true}) {
+  titleContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleMatches(String pattern, {bool caseSensitive = true}) {
+  titleMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'title',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'title',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleIsEmpty() {
+  titleIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'title',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'title', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      titleIsNotEmpty() {
+  titleIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'title',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'title', value: ''),
+      );
     });
   }
 
@@ -1489,43 +1551,49 @@ extension VehicleRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'type',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      typeGreaterThan(
+  typeGreaterThan(
     RecordType value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'type',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      typeLessThan(
+  typeLessThan(
     RecordType value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'type',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1537,85 +1605,88 @@ extension VehicleRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'type',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'type',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      typeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  typeStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'type',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      typeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  typeEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'type',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      typeContains(String value, {bool caseSensitive = true}) {
+  typeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'type',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> typeMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'type',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'type',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      typeIsEmpty() {
+  typeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'type',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'type', value: ''),
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-      typeIsNotEmpty() {
+  typeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'type',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'type', value: ''),
+      );
     });
   }
 }
@@ -1653,28 +1724,28 @@ extension VehicleRecordQuerySortBy
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      sortByFormattedCost() {
+  sortByFormattedCost() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'formattedCost', Sort.asc);
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      sortByFormattedCostDesc() {
+  sortByFormattedCostDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'formattedCost', Sort.desc);
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      sortByFormattedMileage() {
+  sortByFormattedMileage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'formattedMileage', Sort.asc);
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      sortByFormattedMileageDesc() {
+  sortByFormattedMileageDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'formattedMileage', Sort.desc);
     });
@@ -1711,7 +1782,7 @@ extension VehicleRecordQuerySortBy
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      sortByRecordIdDesc() {
+  sortByRecordIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordId', Sort.desc);
     });
@@ -1769,28 +1840,28 @@ extension VehicleRecordQuerySortThenBy
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      thenByFormattedCost() {
+  thenByFormattedCost() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'formattedCost', Sort.asc);
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      thenByFormattedCostDesc() {
+  thenByFormattedCostDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'formattedCost', Sort.desc);
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      thenByFormattedMileage() {
+  thenByFormattedMileage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'formattedMileage', Sort.asc);
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      thenByFormattedMileageDesc() {
+  thenByFormattedMileageDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'formattedMileage', Sort.desc);
     });
@@ -1839,7 +1910,7 @@ extension VehicleRecordQuerySortThenBy
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-      thenByRecordIdDesc() {
+  thenByRecordIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordId', Sort.desc);
     });
@@ -1884,19 +1955,23 @@ extension VehicleRecordQueryWhereDistinct
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByFormattedCost(
-      {bool caseSensitive = true}) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct>
+  distinctByFormattedCost({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'formattedCost',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'formattedCost',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QDistinct>
-      distinctByFormattedMileage({bool caseSensitive = true}) {
+  distinctByFormattedMileage({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'formattedMileage',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'formattedMileage',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
@@ -1906,29 +1981,33 @@ extension VehicleRecordQueryWhereDistinct
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByNotes(
-      {bool caseSensitive = true}) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByNotes({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'notes', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByRecordId(
-      {bool caseSensitive = true}) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByRecordId({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'recordId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByTitle(
-      {bool caseSensitive = true}) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByTitle({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'title', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByType(
-      {bool caseSensitive = true}) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByType({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'type', caseSensitive: caseSensitive);
     });
@@ -1956,14 +2035,14 @@ extension VehicleRecordQueryProperty
   }
 
   QueryBuilder<VehicleRecord, String, QQueryOperations>
-      formattedCostProperty() {
+  formattedCostProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'formattedCost');
     });
   }
 
   QueryBuilder<VehicleRecord, String, QQueryOperations>
-      formattedMileageProperty() {
+  formattedMileageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'formattedMileage');
     });
