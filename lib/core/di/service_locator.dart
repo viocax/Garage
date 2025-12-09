@@ -1,8 +1,10 @@
 import 'package:garage/core/repositories/local_user_settings_repository.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart'
     show UserSettingsRepository;
+import 'package:garage/core/repositories/vehicle_repository.dart';
+import 'package:garage/core/repositories/local_vehicle_repository.dart';
 import 'package:get_it/get_it.dart';
-// import '../service/isar_service.dart'; // MARK: Isar 暫時不使用
+import '../service/isar_service.dart';
 import '../service/network/http_service.dart';
 import '../service/location/location_service.dart';
 import '../service/shared_preferences/shared_preferences_service.dart';
@@ -15,7 +17,7 @@ final getIt = GetIt.instance;
 /// 初始化依賴注入
 Future<void> setupServiceLocator() async {
   // Service layer
-  // getIt.registerLazySingleton<IsarService>(() => IsarService()); // MARK: Isar 暫時不使用
+  getIt.registerLazySingleton<IsarService>(() => IsarService());
   getIt.registerLazySingleton<HttpService>(() => HttpService());
   getIt.registerLazySingleton<LocationService>(
     () => LocationService(),
@@ -31,6 +33,9 @@ Future<void> setupServiceLocator() async {
   );
   getIt.registerLazySingleton<UserSettingsRepository>(
     () => LocalUserSettingsRepository(),
+  );
+  getIt.registerLazySingleton<VehicleRepository>(
+    () => LocalVehicleRepository(),
   );
 }
 
@@ -52,7 +57,7 @@ class ServiceScopes {
   ServiceScopes(this._getIt);
 
   HttpService get network => _getIt<HttpService>();
-  // IsarService get isarDB => _getIt<IsarService>(); // MARK: Isar 暫時不使用
+  IsarService get isarDB => _getIt<IsarService>();
   LocationService get location => _getIt<LocationService>();
   SharedPreferencesService get preferences =>
       _getIt<SharedPreferencesService>();
@@ -65,4 +70,5 @@ class RepositoryScopes {
 
   ISpeedCameraRepository get speedCamera => _getIt<ISpeedCameraRepository>();
   UserSettingsRepository get userSettings => _getIt<UserSettingsRepository>();
+  VehicleRepository get vehicle => _getIt<VehicleRepository>();
 }

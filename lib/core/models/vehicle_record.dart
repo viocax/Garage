@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
+
+part 'vehicle_record.g.dart';
 
 enum RecordType {
   fuel,
@@ -46,24 +49,49 @@ enum RecordType {
   }
 }
 
+@collection
 class VehicleRecord {
-  final String id;
-  final RecordType type;
-  final String title;
-  final DateTime date;
-  final double cost;
-  final int mileage;
-  final String? notes;
+  Id id = Isar.autoIncrement;
 
-  const VehicleRecord({
-    required this.id,
-    required this.type,
-    required this.title,
-    required this.date,
-    required this.cost,
-    required this.mileage,
-    this.notes,
-  });
+  @Index()
+  late String recordId;
+
+  @Enumerated(EnumType.name)
+  late RecordType type;
+
+  late String title;
+
+  @Index()
+  late DateTime date;
+
+  late double cost;
+
+  @Index()
+  late int mileage;
+
+  String? notes;
+
+  VehicleRecord();
+
+  /// Factory constructor 用於創建 VehicleRecord
+  factory VehicleRecord.create({
+    required String recordId,
+    required RecordType type,
+    required String title,
+    required DateTime date,
+    required double cost,
+    required int mileage,
+    String? notes,
+  }) {
+    return VehicleRecord()
+      ..recordId = recordId
+      ..type = type
+      ..title = title
+      ..date = date
+      ..cost = cost
+      ..mileage = mileage
+      ..notes = notes;
+  }
 
   // Helper to format cost
   String get formattedCost =>

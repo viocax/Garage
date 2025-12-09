@@ -86,8 +86,8 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
         }
       }
 
-      final record = VehicleRecord(
-        id: const Uuid().v4(),
+      final record = VehicleRecord.create(
+        recordId: const Uuid().v4(),
         type: state.recordType,
         title: title,
         date: state.date,

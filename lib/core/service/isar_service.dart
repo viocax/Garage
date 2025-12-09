@@ -1,9 +1,8 @@
-// MARK: Isar 暫時不使用 - 以下程式碼全部註解
-/*
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
-import '../models/speed_camera.dart';
+import '../models/vehicle.dart';
+import '../models/vehicle_record.dart';
 
 /// Isar 資料庫服務
 class IsarService {
@@ -23,7 +22,7 @@ class IsarService {
     final dir = await getApplicationDocumentsDirectory();
 
     final isar = await Isar.open(
-      [SpeedCameraSchema],
+      [VehicleSchema, VehicleRecordSchema],
       directory: dir.path,
       inspector: kDebugMode, // 只在 debug 模式啟用 inspector
     );
@@ -53,14 +52,15 @@ class IsarService {
   /// 取得資料庫統計資訊
   Future<Map<String, dynamic>> getStats() async {
     final db = await isar;
-    final cameraCount = await db.speedCameras.count();
+    final vehicleCount = await db.vehicles.count();
+    final recordCount = await db.vehicleRecords.count();
     final size = await db.getSize();
 
     return {
-      'speedCameraCount': cameraCount,
+      'vehicleCount': vehicleCount,
+      'vehicleRecordCount': recordCount,
       'databaseSize': size,
       'databaseSizeFormatted': '${(size / 1024).toStringAsFixed(2)} KB',
     };
   }
 }
-*/

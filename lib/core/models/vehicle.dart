@@ -1,32 +1,49 @@
 import 'dart:math';
 
+import 'package:isar/isar.dart';
 import 'vehicle_record.dart';
 import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
 
-class Vehicle implements PickerOption {
-  final String id;
-  final String carName;
-  final int currentMileage;
-  final int maintenanceInterval; // e.g., every 5000km or 10000km
-  final List<VehicleRecord> records;
+part 'vehicle.g.dart';
 
-  const Vehicle({
-    required this.id,
-    required this.carName,
-    required this.currentMileage,
-    required this.maintenanceInterval,
-    this.records = const [],
-  });
+@collection
+class Vehicle implements PickerOption {
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true)
+  late String vehicleId;
+
+  late String carName;
+
+  late int currentMileage;
+
+  late int maintenanceInterval; // e.g., every 5000km or 10000km
+
+  final records = IsarLinks<VehicleRecord>();
+
+  Vehicle();
+
+  /// Factory constructor 用於創建 Vehicle
+  factory Vehicle.create({
+    required String vehicleId,
+    required String carName,
+    required int currentMileage,
+    required int maintenanceInterval,
+  }) {
+    return Vehicle()
+      ..vehicleId = vehicleId
+      ..carName = carName
+      ..currentMileage = currentMileage
+      ..maintenanceInterval = maintenanceInterval;
+  }
 
   // Empty vehicle for placeholder/initial state
   factory Vehicle.empty() {
-    return const Vehicle(
-      id: '',
-      carName: '',
-      currentMileage: 0,
-      maintenanceInterval: 0,
-      records: [],
-    );
+    return Vehicle()
+      ..vehicleId = ''
+      ..carName = ''
+      ..currentMileage = 0
+      ..maintenanceInterval = 0;
   }
 
   // Calculate distance to next maintenance
@@ -46,7 +63,8 @@ class Vehicle implements PickerOption {
 
   // Helper to get total spent from records
   String get totalSpent {
-    double total = records.fold(0, (sum, record) => sum + record.cost);
+    final recordsList = records.toList();
+    double total = recordsList.fold(0, (sum, record) => sum + record.cost);
     return '\$ ${total.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
   }
 
@@ -56,7 +74,8 @@ class Vehicle implements PickerOption {
     final nextMonth = DateTime(now.year, now.month + 1);
 
     // Filter records from this month
-    final thisMonthRecords = records.where((record) {
+    final recordsList = records.toList();
+    final thisMonthRecords = recordsList.where((record) {
       return record.date.isAfter(thisMonth.subtract(const Duration(days: 1))) &&
              record.date.isBefore(nextMonth);
     });
@@ -78,7 +97,7 @@ class Vehicle implements PickerOption {
 
   // PickerOption implementation
   @override
-  String getIdentifier() => id;
+  String getIdentifier() => vehicleId;
 
   @override
   String getTitle() => carName;

@@ -33,6 +33,9 @@ class AppPath {
   static final addRecord =
       AppPath(name: 'addRecord', previous: records);
 
+  static final addVehicle =
+      AppPath(name: 'addVehicle', previous: records);
+
   static final settings =
       AppPath(name: 'settings', previous: home);
 
@@ -92,6 +95,14 @@ class AppRouter {
                         final vehicle =
                             state.extra as Vehicle? ?? Vehicle.empty();
                         return AddRecordPage(vehicle: vehicle);
+                      },
+                    ),
+                    GoRoute(
+                      path: AppPath.addVehicle.path,
+                      name: AppPath.addVehicle.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) {
+                        return Text('Add Vehicle');
                       },
                     ),
                   ],

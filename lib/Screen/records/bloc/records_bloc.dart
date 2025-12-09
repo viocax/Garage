@@ -2,11 +2,15 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
+import 'package:garage/core/di/service_locator.dart';
+import 'package:garage/core/repositories/vehicle_repository.dart';
 
 part 'records_event.dart';
 part 'records_state.dart';
 
 class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
+  final VehicleRepository vehicleRepository = getIt.repo.vehicle;
+
   RecordsBloc() : super(RecordsLoading()) {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
     on<SwitchVehicle>(_onSwitchVehicle);
@@ -21,41 +25,16 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
 
   void _onAddVehicleRecord(AddVehicleRecord event, Emitter<RecordsState> emit) {
     final currentState = state;
-    if (currentState is RecordsLoaded) {
+    if (currentState is! RecordsLoaded) {
       // Find current vehicle
-      final vehicleIndex = currentState.vehicles.indexWhere(
-        (v) => v.id == currentState.currentVehicleId,
-      );
-
-      if (vehicleIndex != -1) {
-        final currentVehicle = currentState.vehicles[vehicleIndex];
-
-        // Update vehicle with new record
-        final updatedRecords = List<VehicleRecord>.from(currentVehicle.records)
-          ..add(event.record);
-
-        // Use copyWith if Vehicle had it, otherwise creating new instance
-        final updatedVehicle = Vehicle(
-          id: currentVehicle.id,
-          carName: currentVehicle.carName,
-          currentMileage: event.record.mileage > currentVehicle.currentMileage
-              ? event.record.mileage
-              : currentVehicle.currentMileage,
-          maintenanceInterval: currentVehicle.maintenanceInterval,
-          records: updatedRecords,
-        );
-
-        final updatedVehicles = List<Vehicle>.from(currentState.vehicles)
-          ..[vehicleIndex] = updatedVehicle;
-
-        emit(
-          RecordsLoaded(
-            vehicles: updatedVehicles,
-            currentVehicleId: currentState.currentVehicleId,
-          ),
-        );
-      }
+      return;
     }
+    if (currentState.vehicles.isEmpty) {
+      emit(currentState.copyWith(clickAddEvent: ClickAddEvent.addVehicle));
+    } else {
+      emit(currentState.copyWith(clickAddEvent: ClickAddEvent.addRecord));
+    }
+    emit(currentState.copyWith(clickAddEvent: null));
   }
 
   Future<void> _onLoadVehicleRecord(
@@ -64,67 +43,18 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
   ) async {
     emit(RecordsLoading());
     try {
-      // Simulate API delay
-      await Future.delayed(const Duration(milliseconds: 800));
-      // emit(RecordsEmpty());
-      // return;
+      final vehicles = await vehicleRepository.loadVehicles();
 
-      // Mock Data - Create multiple vehicles
-      final mockVehicle1 = Vehicle(
-        id: 'v1',
-        carName: 'Honda Civic Type R',
-        currentMileage: 12450,
-        maintenanceInterval: 5000,
-        records: [
-          VehicleRecord(
-            id: 'r1',
-            type: RecordType.modification,
-            title: '進氣系統升級 (HKS Intake)',
-            date: DateTime.now(),
-            cost: 32000,
-            mileage: 12450,
-            notes: 'Stage 1 upgrade',
-          ),
-          VehicleRecord(
-            id: 'r2',
-            type: RecordType.maintenance,
-            title: '定期保養 (機油/濾網)',
-            date: DateTime(2023, 10, 15),
-            cost: 3500,
-            mileage: 12000,
-          ),
-          VehicleRecord(
-            id: 'r3',
-            type: RecordType.fuel,
-            title: '98無鉛汽油 (45L)',
-            date: DateTime(2023, 10, 10),
-            cost: 1500,
-            mileage: 11800,
-          ),
-        ],
-      );
+      if (vehicles.isEmpty) {
+        emit(RecordsEmpty());
+        return;
+      }
 
-      final mockVehicle2 = Vehicle(
-        id: 'v2',
-        carName: 'Toyota Supra A90',
-        currentMileage: 8500,
-        maintenanceInterval: 10000,
-        records: [
-          VehicleRecord(
-            id: 'r4',
-            type: RecordType.modification,
-            title: '排氣系統升級',
-            date: DateTime(2023, 11, 1),
-            cost: 45000,
-            mileage: 8500,
-          ),
-        ],
-      );
-
+      // Use the first vehicle as the default current vehicle
       emit(
         RecordsLoaded(
-          vehicles: [mockVehicle1, mockVehicle2],
-          currentVehicleId: 'v1',
+          vehicles: vehicles,
+          currentVehicleId: vehicles.first.vehicleId,
         ),
       );
     } catch (e) {
@@ -137,7 +67,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     if (currentState is RecordsLoaded) {
       // Check if the requested vehicle exists
       final vehicleExists = currentState.vehicles.any(
-        (v) => v.id == event.vehicleId,
+        (v) => v.vehicleId == event.vehicleId,
       );
       if (vehicleExists) {
         emit(

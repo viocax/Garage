@@ -9,7 +9,6 @@ import 'package:garage/screen/records/bloc/records_bloc.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
-import 'package:go_router/go_router.dart';
 
 class RecordsPage extends StatelessWidget {
   const RecordsPage({super.key});
@@ -35,7 +34,23 @@ class RecordsPage extends StatelessWidget {
               Positioned.fill(
                 child: CustomPaint(painter: GridBackgroundPainter()),
               ),
-              SafeArea(
+             BlocListener<RecordsBloc, RecordsState>(
+              listener: (context, state) {
+                if (state is! RecordsLoaded) {
+                  return;
+                }
+                switch (state.clickAddEvent) {
+                  case ClickAddEvent.addVehicle:
+                    context.goPath(AppPath.addVehicle);
+                    break;
+                  case ClickAddEvent.addRecord:
+                    context.goPath(AppPath.addRecord);
+                    break;
+                  default:
+                    break;
+                }
+              },
+              child: SafeArea(
                 child: BlocBuilder<RecordsBloc, RecordsState>(
                   builder: (context, state) {
                     return switch (state) {
@@ -64,6 +79,7 @@ class RecordsPage extends StatelessWidget {
                   },
                 ),
               ),
+             ),
             ],
           ),
         ),
@@ -126,7 +142,7 @@ class _RecordsContent extends StatelessWidget {
                   textSecondary: AppTheme.dashboardTextSecondary,
                   cardBg: AppTheme.dashboardCardBg,
                   accentRed: AppTheme.dashboardAccentRed,
-                  records: vehicle.records,
+                  records: vehicle.records.toList(),
                 ),
                 const SizedBox(height: 100),
               ],
@@ -249,7 +265,7 @@ class _HeroSection extends StatelessWidget {
       currentSelectedIdentifier: currentVehicleId,
       onSelected: (option) {
         final vehicle = option as Vehicle;
-        context.read<RecordsBloc>().add(SwitchVehicle(vehicle.id));
+        context.read<RecordsBloc>().add(SwitchVehicle(vehicle.vehicleId));
       },
     );
   }
@@ -444,21 +460,7 @@ class _AddButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         onPressed: () async {
-          // Open AddRecordPage and wait for result
-          final currentState = context.read<RecordsBloc>().state;
-          Vehicle vehicle = Vehicle.empty();
-          if (currentState is RecordsLoaded) {
-            vehicle = currentState.currentVehicle;
-          }
-
-          final newRecord = await context.pushNamed<VehicleRecord>(
-            AppPath.addRecord.name,
-            extra: vehicle,
-          );
-
-          if (newRecord != null && context.mounted) {
-            context.read<RecordsBloc>().add(AddVehicleRecord(newRecord));
-          }
+          context.read<RecordsBloc>().add(ClickAddButton());
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: accentRed,
