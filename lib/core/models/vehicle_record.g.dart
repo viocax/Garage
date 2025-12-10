@@ -54,7 +54,7 @@ const VehicleRecordSchema = CollectionSchema(
     r'recordId': IndexSchema(
       id: 907839981883940929,
       name: r'recordId',
-      unique: false,
+      unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
@@ -216,6 +216,63 @@ void _vehicleRecordAttach(
   VehicleRecord object,
 ) {
   object.id = id;
+}
+
+extension VehicleRecordByIndex on IsarCollection<VehicleRecord> {
+  Future<VehicleRecord?> getByRecordId(String recordId) {
+    return getByIndex(r'recordId', [recordId]);
+  }
+
+  VehicleRecord? getByRecordIdSync(String recordId) {
+    return getByIndexSync(r'recordId', [recordId]);
+  }
+
+  Future<bool> deleteByRecordId(String recordId) {
+    return deleteByIndex(r'recordId', [recordId]);
+  }
+
+  bool deleteByRecordIdSync(String recordId) {
+    return deleteByIndexSync(r'recordId', [recordId]);
+  }
+
+  Future<List<VehicleRecord?>> getAllByRecordId(List<String> recordIdValues) {
+    final values = recordIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'recordId', values);
+  }
+
+  List<VehicleRecord?> getAllByRecordIdSync(List<String> recordIdValues) {
+    final values = recordIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'recordId', values);
+  }
+
+  Future<int> deleteAllByRecordId(List<String> recordIdValues) {
+    final values = recordIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'recordId', values);
+  }
+
+  int deleteAllByRecordIdSync(List<String> recordIdValues) {
+    final values = recordIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'recordId', values);
+  }
+
+  Future<Id> putByRecordId(VehicleRecord object) {
+    return putByIndex(r'recordId', object);
+  }
+
+  Id putByRecordIdSync(VehicleRecord object, {bool saveLinks = true}) {
+    return putByIndexSync(r'recordId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByRecordId(List<VehicleRecord> objects) {
+    return putAllByIndex(r'recordId', objects);
+  }
+
+  List<Id> putAllByRecordIdSync(
+    List<VehicleRecord> objects, {
+    bool saveLinks = true,
+  }) {
+    return putAllByIndexSync(r'recordId', objects, saveLinks: saveLinks);
+  }
 }
 
 extension VehicleRecordQueryWhereSort

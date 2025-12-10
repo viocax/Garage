@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/core/models/speed_unit.dart';
+import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:geolocator/geolocator.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
@@ -10,23 +11,44 @@ import 'speed_state.dart';
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
   DateTime? _lastReportTime;
   final ISpeedCameraRepository repository = getIt.repo.speedCamera;
+  final UserSettingsRepository userSettingsRepository = getIt.repo.userSettings;
+  final double _maxSpeed = 300;
   StreamSubscription<Position>? _speedSubscription;
 
-  // TODO: maxSpeed and unit and lower and upper，到時候會在設定方式注入進來
   SpeedBloc()
     : super(
         const SpeedData(
           speed: 0.0,
           animationDuration: Duration(milliseconds: 5300),
           unit: SpeedUnit.kmh,
-          maxSpeed: 300,
-          lowerSpeed: '110',
-          upperSpeed: '120',
+          maxSpeed: 0,
         ),
       ) {
     on<UpdateSpeed>(_onUpdateSpeed);
     on<StartDetection>(_onStartDetection);
     on<StopDetection>(_onStopDetection);
+    on<SpeedInit>(_onSpeedInit);
+    add(const SpeedInit());
+  }
+
+  Future<void> _onSpeedInit(
+    SpeedInit event,
+    Emitter<SpeedState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! SpeedData) return;
+    try {
+      final settings = await userSettingsRepository.loadSettings();
+      emit(currentState.copyWith(
+        unit: settings.speedUnit,
+        maxSpeed: _maxSpeed,
+      ));
+    } catch (e) {
+      emit(currentState.copyWith(
+        unit: SpeedUnit.kmh,
+        maxSpeed: _maxSpeed,
+      ));
+    }
   }
 
   Future<void> _onUpdateSpeed(
@@ -65,7 +87,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     // 計算動畫時長
     final newDuration = _calculateDuration(
       newSpeed,
-      300,
+      _maxSpeed,
     ); // Max gauge speed 300
 
     // 判斷是否超速

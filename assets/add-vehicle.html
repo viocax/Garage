@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增車輛</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: rgba(28, 28, 30, 0.65);
+            --input-bg: rgba(44, 44, 46, 0.8);
+            --text-primary: #f5f5f7;
+            --text-secondary: #8e8e93;
+            --text-placeholder: #636366;
+            --accent-red: #d64045;
+            --accent-blue: #0a84ff;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --app-padding: 20px;
+            --card-radius: 16px;
+            --input-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: var(--app-padding);
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 414px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--accent-red);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .header-spacer {
+            width: 60px;
+        }
+
+        /* Hero Illustration */
+        .hero-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0 10px;
+        }
+
+        .car-illustration {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, rgba(44, 44, 46, 0.6), rgba(28, 28, 30, 0.8));
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .car-illustration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05), transparent 50%);
+        }
+
+        .hero-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .hero-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--input-radius);
+            padding: 16px;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-red);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-placeholder);
+        }
+
+        /* Mileage Input with Unit */
+        .mileage-input-wrapper {
+            position: relative;
+        }
+
+        .mileage-unit {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .mileage-input {
+            padding-right: 50px;
+        }
+
+        /* Input Hint */
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            padding-left: 4px;
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 4px 0;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--card-radius);
+            border: none;
+            background-color: var(--accent-red);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(214, 64, 69, 0.25);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            box-shadow: 0 6px 25px rgba(214, 64, 69, 0.35);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Secondary text */
+        .skip-text {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 16px;
+        }
+
+        .skip-text a {
+            color: var(--accent-red);
+            text-decoration: none;
+        }
+
+        /* Preview Card */
+        .preview-section {
+            margin-top: 8px;
+        }
+
+        .preview-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        .preview-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .preview-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(214, 64, 69, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .preview-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .preview-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preview-name.placeholder {
+            color: var(--text-placeholder);
+        }
+
+        .preview-mileage {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .preview-mileage span {
+            color: var(--accent-red);
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="header">
+            <button class="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                返回
+            </button>
+            <h1 class="header-title">新增車輛</h1>
+            <div class="header-spacer"></div>
+        </header>
+
+        <!-- Hero -->
+        <section class="hero-section">
+            <div class="car-illustration">🚗</div>
+            <h2 class="hero-title">添加你的愛車</h2>
+            <p class="hero-subtitle">開始記錄保養、改裝與花費</p>
+        </section>
+
+        <!-- Form -->
+        <div class="form-card">
+            <div class="form-group">
+                <label class="form-label">車輛名稱</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    placeholder="MyCar"
+                    id="carNameInput"
+                    oninput="updatePreview()"
+                >
+                <div class="input-hint">幫你的愛車取個名字吧</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="form-group">
+                <label class="form-label">目前里程</label>
+                <div class="mileage-input-wrapper">
+                    <input 
+                        type="number" 
+                        class="form-input mileage-input" 
+                        placeholder="0"
+                        inputmode="numeric"
+                        id="mileageInput"
+                        oninput="updatePreview()"
+                    >
+                    <span class="mileage-unit">km</span>
+                </div>
+                <div class="input-hint">可從儀表板上查看目前總里程</div>
+            </div>
+        </div>
+
+        <!-- Live Preview -->
+        <section class="preview-section">
+            <div class="preview-label">預覽</div>
+            <div class="preview-card">
+                <div class="preview-icon">🚗</div>
+                <div class="preview-info">
+                    <div class="preview-name placeholder" id="previewName">MyCar</div>
+                    <div class="preview-mileage">里程：<span id="previewMileage">0</span> km</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Submit -->
+        <button class="submit-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            新增車輛
+        </button>
+
+        <p class="skip-text">
+            之後可以在設定中編輯車輛資訊
+        </p>
+
+    </div>
+
+    <script>
+        function updatePreview() {
+            const nameInput = document.getElementById('carNameInput');
+            const mileageInput = document.getElementById('mileageInput');
+            const previewName = document.getElementById('previewName');
+            const previewMileage = document.getElementById('previewMileage');
+
+            // Update name
+            if (nameInput.value.trim()) {
+                previewName.textContent = nameInput.value;
+                previewName.classList.remove('placeholder');
+            } else {
+                previewName.textContent = 'MyCar';
+                previewName.classList.add('placeholder');
+            }
+
+            // Update mileage with formatting
+            const mileage = parseInt(mileageInput.value) || 0;
+            previewMileage.textContent = mileage.toLocaleString();
+        }
+    </script>
+
+</body>
+</html>

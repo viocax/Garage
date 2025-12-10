@@ -11,16 +11,12 @@ class RecordsLoading extends RecordsState {}
 
 class RecordsEmpty extends RecordsState {}
 
-enum ClickAddEvent {
-  addVehicle,
-  addRecord,
-}
+
 class RecordsLoaded extends RecordsState {
   final List<Vehicle> vehicles;
   final String currentVehicleId;
-  final ClickAddEvent? clickAddEvent;
 
-  RecordsLoaded({required this.vehicles, required this.currentVehicleId, this.clickAddEvent})
+  RecordsLoaded({required this.vehicles, required this.currentVehicleId})
     : assert(vehicles.isNotEmpty, 'vehicles list cannot be empty'),
       assert(
         vehicles.any((v) => v.vehicleId == currentVehicleId),
@@ -33,17 +29,12 @@ class RecordsLoaded extends RecordsState {
       vehicles.firstWhere((v) => v.vehicleId == currentVehicleId);
 
   @override
-  List<Object> get props => [
-    vehicles,
-    currentVehicleId,
-    if (clickAddEvent != null) clickAddEvent!
-  ];
+  List<Object> get props => [vehicles, currentVehicleId];
 
-  RecordsLoaded copyWith({List<Vehicle>? vehicles, String? currentVehicleId, ClickAddEvent? clickAddEvent}) {
+  RecordsLoaded copyWith({List<Vehicle>? vehicles, String? currentVehicleId}) {
     return RecordsLoaded(
       vehicles: vehicles ?? this.vehicles,
       currentVehicleId: currentVehicleId ?? this.currentVehicleId,
-      clickAddEvent: clickAddEvent,
     );
   }
 }

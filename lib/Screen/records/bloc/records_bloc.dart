@@ -1,12 +1,14 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:garage/core/models/vehicle.dart';
-import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/core/di/service_locator.dart';
+import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
 
 part 'records_event.dart';
 part 'records_state.dart';
+
+enum ClickAddEvent { addVehicle, addRecord }
 
 class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
   final VehicleRepository vehicleRepository = getIt.repo.vehicle;
@@ -14,27 +16,63 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
   RecordsBloc() : super(RecordsLoading()) {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
     on<SwitchVehicle>(_onSwitchVehicle);
-    on<ClickAddButton>(_onClickAddButton);
-    on<AddVehicleRecord>(_onAddVehicleRecord);
+    on<AddVehicle>(_onAddVehicle);
+    on<AddRecord>(_onAddRecord);
     add(LoadVehicleRecord());
   }
 
-  void _onClickAddButton(ClickAddButton event, Emitter<RecordsState> emit) {
-    // This is now handled by the UI opening the sheet, and dispatching AddVehicleRecord on success
-  }
-
-  void _onAddVehicleRecord(AddVehicleRecord event, Emitter<RecordsState> emit) {
-    final currentState = state;
-    if (currentState is! RecordsLoaded) {
-      // Find current vehicle
+  Future<void> _onAddVehicle(
+    AddVehicle event,
+    Emitter<RecordsState> emit,
+  ) async {
+    if (event.vehicle == null) {
+      // TODO: error handle
+      emit(RecordsError('Vehicle is null'));
       return;
     }
-    if (currentState.vehicles.isEmpty) {
-      emit(currentState.copyWith(clickAddEvent: ClickAddEvent.addVehicle));
-    } else {
-      emit(currentState.copyWith(clickAddEvent: ClickAddEvent.addRecord));
+    emit(RecordsLoading());
+    try {
+      await vehicleRepository.addVehicle(event.vehicle!);
+      add(LoadVehicleRecord());
+    } catch (e) {
+      emit(RecordsError(e.toString()));
     }
-    emit(currentState.copyWith(clickAddEvent: null));
+  }
+
+  Future<void> _onAddRecord(
+    AddRecord event,
+    Emitter<RecordsState> emit,
+  ) async {
+    if (event.record == null) {
+      // TODO: error handle
+      emit(RecordsError('Record is null'));
+      return;
+    }
+    if (state is! RecordsLoaded) {
+      return;
+    }
+    final currentState = state as RecordsLoaded;
+    final carId = currentState.currentVehicleId;
+    emit(RecordsLoading());
+    try {
+      await vehicleRepository.addRecord(carId, event.record!);
+      add(LoadVehicleRecord(vehicleId: carId));
+    } catch (e) {
+      emit(RecordsError(e.toString()));
+    }
+  }
+
+  ClickAddEvent clickAction() {
+    final state = this.state;
+    if (state is RecordsEmpty) {
+      return ClickAddEvent.addVehicle;
+    }
+    if (state is RecordsLoaded) {
+      if (state.vehicles.isEmpty) {
+        return ClickAddEvent.addVehicle;
+      }
+    }
+    return ClickAddEvent.addRecord;
   }
 
   Future<void> _onLoadVehicleRecord(
@@ -54,7 +92,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
       emit(
         RecordsLoaded(
           vehicles: vehicles,
-          currentVehicleId: vehicles.first.vehicleId,
+          currentVehicleId: event.vehicleId ?? vehicles.first.vehicleId,
         ),
       );
     } catch (e) {

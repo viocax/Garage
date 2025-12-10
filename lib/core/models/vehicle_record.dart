@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar_community/isar.dart';
+import 'package:uuid/uuid.dart';
 
 part 'vehicle_record.g.dart';
 
@@ -51,9 +52,11 @@ enum RecordType {
 
 @collection
 class VehicleRecord {
+  static const _uuid = Uuid();
+
   Id id = Isar.autoIncrement;
 
-  @Index()
+  @Index(unique: true)
   late String recordId;
 
   @Enumerated(EnumType.name)
@@ -74,8 +77,9 @@ class VehicleRecord {
   VehicleRecord();
 
   /// Factory constructor 用於創建 VehicleRecord
+  /// 如果不提供 recordId，會自動生成 UUID
   factory VehicleRecord.create({
-    required String recordId,
+    String? recordId,
     required RecordType type,
     required String title,
     required DateTime date,
@@ -84,7 +88,7 @@ class VehicleRecord {
     String? notes,
   }) {
     return VehicleRecord()
-      ..recordId = recordId
+      ..recordId = recordId ?? _uuid.v4()
       ..type = type
       ..title = title
       ..date = date

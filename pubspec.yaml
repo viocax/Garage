@@ -58,6 +58,7 @@ dependencies:
   isar_community: ^3.3.0
   isar_community_flutter_libs: ^3.3.0
   path_provider: ^2.1.5
+  uuid: ^4.5.1
   geolocator: ^14.0.2
 
   # Local storage

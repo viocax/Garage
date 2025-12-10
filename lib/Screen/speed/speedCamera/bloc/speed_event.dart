@@ -8,6 +8,11 @@ sealed class SpeedEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+// 初始化速度事件
+final class SpeedInit extends SpeedEvent {
+  const SpeedInit();
+}
+
 // 更新速度事件
 final class UpdateSpeed extends SpeedEvent {
   final Position position;

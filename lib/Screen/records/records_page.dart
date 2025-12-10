@@ -34,23 +34,7 @@ class RecordsPage extends StatelessWidget {
               Positioned.fill(
                 child: CustomPaint(painter: GridBackgroundPainter()),
               ),
-             BlocListener<RecordsBloc, RecordsState>(
-              listener: (context, state) {
-                if (state is! RecordsLoaded) {
-                  return;
-                }
-                switch (state.clickAddEvent) {
-                  case ClickAddEvent.addVehicle:
-                    context.goPath(AppPath.addVehicle);
-                    break;
-                  case ClickAddEvent.addRecord:
-                    context.goPath(AppPath.addRecord);
-                    break;
-                  default:
-                    break;
-                }
-              },
-              child: SafeArea(
+              SafeArea(
                 child: BlocBuilder<RecordsBloc, RecordsState>(
                   builder: (context, state) {
                     return switch (state) {
@@ -79,7 +63,6 @@ class RecordsPage extends StatelessWidget {
                   },
                 ),
               ),
-             ),
             ],
           ),
         ),
@@ -460,7 +443,18 @@ class _AddButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         onPressed: () async {
-          context.read<RecordsBloc>().add(ClickAddButton());
+          final bloc = context.read<RecordsBloc>();
+          final action = bloc.clickAction();
+          switch (action) {
+            case ClickAddEvent.addVehicle:
+              final vehicle = await context.goPathWithResult<Vehicle>(AppPath.addVehicle);
+              bloc.add(AddVehicle(vehicle));
+              break;
+            case ClickAddEvent.addRecord:
+              final record = await context.goPathWithResult<VehicleRecord>(AppPath.addRecord);
+              bloc.add(AddRecord(record));
+              break;
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: accentRed,

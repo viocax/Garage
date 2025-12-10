@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:isar_community/isar.dart';
+import 'package:uuid/uuid.dart';
 import 'vehicle_record.dart';
 import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
 
@@ -8,6 +9,8 @@ part 'vehicle.g.dart';
 
 @collection
 class Vehicle implements PickerOption {
+  static const _uuid = Uuid();
+
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
@@ -24,14 +27,15 @@ class Vehicle implements PickerOption {
   Vehicle();
 
   /// Factory constructor 用於創建 Vehicle
+  /// 如果不提供 vehicleId，會自動生成 UUID
   factory Vehicle.create({
-    required String vehicleId,
+    String? vehicleId,
     required String carName,
     required int currentMileage,
     required int maintenanceInterval,
   }) {
     return Vehicle()
-      ..vehicleId = vehicleId
+      ..vehicleId = vehicleId ?? _uuid.v4()
       ..carName = carName
       ..currentMileage = currentMileage
       ..maintenanceInterval = maintenanceInterval;

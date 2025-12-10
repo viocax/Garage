@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:garage/screen/app/home/garage_home_page.dart';
 import 'package:garage/screen/app/launch/launch_page.dart';
 import 'package:garage/screen/records/add_record/add_record_page.dart';
+import 'package:garage/screen/records/add_vehicle/add_vehicle_page.dart';
 import 'package:garage/core/models/vehicle.dart';
 
 
@@ -102,7 +103,7 @@ class AppRouter {
                       name: AppPath.addVehicle.name,
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) {
-                        return Text('Add Vehicle');
+                        return const AddVehiclePage();
                       },
                     ),
                   ],
@@ -135,7 +136,13 @@ class AppRouter {
 }
 
 extension AppRouterExtension on BuildContext {
-  void goPath(AppPath path) {
-    GoRouter.of(this).goNamed(path.name);
+  /// 导航到指定路径
+  void goPath(AppPath path, {Object? extra}) {
+    GoRouter.of(this).goNamed(path.name, extra: extra);
+  }
+
+  /// 导航到指定路径并等待返回结果
+  Future<T?> goPathWithResult<T>(AppPath path, {Object? extra}) async {
+    return await GoRouter.of(this).pushNamed<T>(path.name, extra: extra);
   }
 }
