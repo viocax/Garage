@@ -9,6 +9,9 @@ import 'package:garage/screen/records/bloc/records_bloc.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
+import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
+import 'package:garage/screen/app/home/bloc/garage_home_state.dart';
+import 'package:garage/core/models/tabbar_type.dart';
 
 class RecordsPage extends StatelessWidget {
   const RecordsPage({super.key});
@@ -17,7 +20,15 @@ class RecordsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => RecordsBloc(),
-      child: _body(context),
+      child: BlocListener<GarageHomeBloc, GarageHomeState>(
+        listener: (context, state) {
+          // When tab changes to RecordsTab, reload the data
+          if (state.tabbarType is RecordsTab) {
+            context.read<RecordsBloc>().add(LoadVehicleRecord());
+          }
+        },
+        child: _body(context),
+      ),
     );
   }
 
@@ -215,10 +226,7 @@ class _HeroSection extends StatelessWidget {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      vehicle.currentMileage.toString().replaceAllMapped(
-                        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                        (Match m) => '${m[1]},',
-                      ),
+                      context.read<RecordsBloc>().odometer,
                       style: const TextStyle(
                         fontSize: 45, // ~2.8rem
                         fontWeight: FontWeight.w700,
@@ -228,7 +236,7 @@ class _HeroSection extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'km',
+                      context.read<RecordsBloc>().unitString,
                       style: TextStyle(fontSize: 16, color: textSecondary),
                     ),
                   ],
@@ -405,7 +413,7 @@ class _StatsGrid extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '距離保養\n還剩 ${vehicle.distanceToNextMaintenance} km',
+                    '距離保養\n還剩 ${vehicle.kmToNextMaintenance} km',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 11.5, // 0.72rem
@@ -465,14 +473,14 @@ class _AddButton extends StatelessWidget {
           ),
           elevation: 0,
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add, size: 18),
-            SizedBox(width: 8),
+            const Icon(Icons.add, size: 18),
+            const SizedBox(width: 8),
             Text(
-              '新增紀錄',
-              style: TextStyle(
+             context.read<RecordsBloc>().state is RecordsEmpty ? '新增車輛' : '新增紀錄',
+              style: const TextStyle(
                 fontSize: 15.2, // 0.95rem
                 fontWeight: FontWeight.w600,
               ),

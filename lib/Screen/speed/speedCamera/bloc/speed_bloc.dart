@@ -27,12 +27,14 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     on<UpdateSpeed>(_onUpdateSpeed);
     on<StartDetection>(_onStartDetection);
     on<StopDetection>(_onStopDetection);
-    on<SpeedInit>(_onSpeedInit);
-    add(const SpeedInit());
+    on<SpeedLoading>(_onSpeedLoading);
+
+    // 初次載入設定
+    add(const SpeedLoading());
   }
 
-  Future<void> _onSpeedInit(
-    SpeedInit event,
+  Future<void> _onSpeedLoading(
+    SpeedLoading event,
     Emitter<SpeedState> emit,
   ) async {
     final currentState = state;
@@ -57,8 +59,13 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
   ) async {
     final currentState = state;
     if (currentState is! SpeedData) return;
-
-    final newSpeed = event.currentSpeed * 3.6; // m/s to km/h
+    final settings = await userSettingsRepository.loadSettings();
+    final unit = settings.speedUnit;
+    double newSpeed = event.currentSpeed * 3.6; // m/s to km/h
+    if (unit == SpeedUnit.mph) {
+      newSpeed = newSpeed.mile;
+    }
+    
     var limit = currentState.maxSpeed;
 
     // Calculate nearest camera
@@ -111,10 +118,12 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     debugPrint(
       'SpeedBloc: update speed=$newSpeed, limit=$limit, isOverSpeed=$isOverSpeed',
     );
+    
 
     emit(
       currentState.copyWith(
         speed: newSpeed,
+        unit: unit,
         animationDuration: newDuration,
         isOverSpeed: isOverSpeed,
         upperSpeed: limit.toString(),

@@ -9,8 +9,8 @@ sealed class SpeedEvent extends Equatable {
 }
 
 // 初始化速度事件
-final class SpeedInit extends SpeedEvent {
-  const SpeedInit();
+final class SpeedLoading extends SpeedEvent {
+  const SpeedLoading();
 }
 
 // 更新速度事件
@@ -19,6 +19,7 @@ final class UpdateSpeed extends SpeedEvent {
 
   const UpdateSpeed(this.position);
 
+  // m/s
   double get currentSpeed => position.speed;
 
   @override

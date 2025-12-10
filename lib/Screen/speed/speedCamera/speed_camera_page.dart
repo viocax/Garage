@@ -6,6 +6,9 @@ import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
 
 import 'package:garage/core/models/speed_unit.dart';
+import 'package:garage/core/models/tabbar_type.dart';
+import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
+import 'package:garage/screen/app/home/bloc/garage_home_state.dart';
 import '../car3d/car_3d_view.dart';
 import '../car3d/bloc/car_3d_bloc.dart';
 import '../car3d/bloc/car_3d_event.dart';
@@ -72,6 +75,14 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                       _roadAnimationController.repeat();
                     }
                   }
+              }
+            },
+          ),
+          BlocListener<GarageHomeBloc, GarageHomeState>(
+            listener: (context, state) {
+              // 當切換到測速 tab 時，重新載入設定
+              if (state.tabbarType is SpeedCameraTab) {
+                context.read<SpeedBloc>().add(const SpeedLoading());
               }
             },
           ),

@@ -70,7 +70,7 @@ class VehicleRecord {
   late double cost;
 
   @Index()
-  late int mileage;
+  late int km;
 
   String? notes;
 
@@ -84,7 +84,7 @@ class VehicleRecord {
     required String title,
     required DateTime date,
     required double cost,
-    required int mileage,
+    required int km,
     String? notes,
   }) {
     return VehicleRecord()
@@ -93,7 +93,7 @@ class VehicleRecord {
       ..title = title
       ..date = date
       ..cost = cost
-      ..mileage = mileage
+      ..km = km
       ..notes = notes;
   }
 
@@ -101,7 +101,7 @@ class VehicleRecord {
   String get formattedCost =>
       '\$${cost.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
 
-  // Helper to format mileage
-  String get formattedMileage =>
-      '${mileage.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} km';
+  // Helper to format km
+  String get formattedKm =>
+      '${km.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} km';
 }

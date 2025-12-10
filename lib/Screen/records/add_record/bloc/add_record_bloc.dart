@@ -11,13 +11,13 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
 
   AddRecordBloc({required this.vehicle})
     : super(
-        AddRecordState(date: DateTime.now(), mileage: vehicle.currentMileage),
+        AddRecordState(date: DateTime.now(), km: vehicle.currentKm),
       ) {
     on<RecordTypeChanged>(_onRecordTypeChanged);
     on<AmountChanged>(_onAmountChanged);
     on<DateChanged>(_onDateChanged);
-    on<MileageChanged>(_onMileageChanged);
-    on<NextMaintenanceMileageChanged>(_onNextMaintenanceMileageChanged);
+    on<KmChanged>(_onKmChanged);
+    on<NextMaintenanceKmChanged>(_onNextMaintenanceKmChanged);
     on<MaintenanceItemToggled>(_onMaintenanceItemToggled);
     on<NoteChanged>(_onNoteChanged);
     on<SubmitRecord>(_onSubmitRecord);
@@ -38,15 +38,15 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     emit(state.copyWith(date: event.date));
   }
 
-  void _onMileageChanged(MileageChanged event, Emitter<AddRecordState> emit) {
-    emit(state.copyWith(mileage: event.mileage));
+  void _onKmChanged(KmChanged event, Emitter<AddRecordState> emit) {
+    emit(state.copyWith(km: event.km));
   }
 
-  void _onNextMaintenanceMileageChanged(
-    NextMaintenanceMileageChanged event,
+  void _onNextMaintenanceKmChanged(
+    NextMaintenanceKmChanged event,
     Emitter<AddRecordState> emit,
   ) {
-    emit(state.copyWith(nextMaintenanceMileage: event.mileage));
+    emit(state.copyWith(nextMaintenanceKm: event.km));
   }
 
   void _onMaintenanceItemToggled(
@@ -92,7 +92,7 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
         title: title,
         date: state.date,
         cost: state.amount,
-        mileage: state.mileage,
+        km: state.km,
         notes: state.note,
       );
 

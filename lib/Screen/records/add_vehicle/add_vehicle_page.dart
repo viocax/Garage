@@ -256,80 +256,84 @@ class _MileageInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '目前里程',
-          style: TextStyle(
-            fontSize: 13,
-            color: AppTheme.dashboardTextSecondary,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Stack(
-          alignment: Alignment.centerRight,
+    return BlocBuilder<AddVehicleBloc, AddVehicleState>(
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              cursorColor: AppTheme.accentColor,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(
-                fontSize: 18,
-                color: AppTheme.dashboardTextPrimary,
+            const Text(
+              '目前里程',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.dashboardTextSecondary,
               ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppTheme.inputBg,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+            ),
+            const SizedBox(height: 10),
+            Stack(
+              alignment: Alignment.centerRight,
+              children: [
+                TextField(
+                  cursorColor: AppTheme.accentColor,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: AppTheme.dashboardTextPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppTheme.inputBg,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppTheme.dashboardAccentRed,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.fromLTRB(16, 16, 50, 16),
+                    hintText: '0',
+                    hintStyle: const TextStyle(color: AppTheme.placeholderGray),
+                  ),
+                  onChanged: (value) {
+                    final km = int.tryParse(value) ?? 0;
+                    context.read<AddVehicleBloc>().add(
+                      VehicleKmChanged(km),
+                    );
+                  },
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppTheme.whiteTransparent08),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: AppTheme.dashboardAccentRed,
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Text(
+                    state.speedUnit.displayName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.dashboardTextSecondary,
+                    ),
                   ),
                 ),
-                contentPadding: const EdgeInsets.fromLTRB(16, 16, 50, 16),
-                hintText: '0',
-                hintStyle: const TextStyle(color: AppTheme.placeholderGray),
-              ),
-              onChanged: (value) {
-                final mileage = int.tryParse(value) ?? 0;
-                context.read<AddVehicleBloc>().add(
-                  VehicleMileageChanged(mileage),
-                );
-              },
+              ],
             ),
+            const SizedBox(height: 8),
             const Padding(
-              padding: EdgeInsets.only(right: 16),
+              padding: EdgeInsets.only(left: 4),
               child: Text(
-                'km',
+                '可從儀表板上查看目前總里程',
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
                   color: AppTheme.dashboardTextSecondary,
                 ),
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 8),
-        const Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: Text(
-            '可從儀表板上查看目前總里程',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.dashboardTextSecondary,
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

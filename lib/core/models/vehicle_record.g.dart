@@ -24,12 +24,12 @@ const VehicleRecordSchema = CollectionSchema(
       name: r'formattedCost',
       type: IsarType.string,
     ),
-    r'formattedMileage': PropertySchema(
+    r'formattedKm': PropertySchema(
       id: 3,
-      name: r'formattedMileage',
+      name: r'formattedKm',
       type: IsarType.string,
     ),
-    r'mileage': PropertySchema(id: 4, name: r'mileage', type: IsarType.long),
+    r'km': PropertySchema(id: 4, name: r'km', type: IsarType.long),
     r'notes': PropertySchema(id: 5, name: r'notes', type: IsarType.string),
     r'recordId': PropertySchema(
       id: 6,
@@ -77,14 +77,14 @@ const VehicleRecordSchema = CollectionSchema(
         ),
       ],
     ),
-    r'mileage': IndexSchema(
-      id: 6196993076918590094,
-      name: r'mileage',
+    r'km': IndexSchema(
+      id: 8072772002229800939,
+      name: r'km',
       unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'mileage',
+          name: r'km',
           type: IndexType.value,
           caseSensitive: false,
         ),
@@ -107,7 +107,7 @@ int _vehicleRecordEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.formattedCost.length * 3;
-  bytesCount += 3 + object.formattedMileage.length * 3;
+  bytesCount += 3 + object.formattedKm.length * 3;
   {
     final value = object.notes;
     if (value != null) {
@@ -129,8 +129,8 @@ void _vehicleRecordSerialize(
   writer.writeDouble(offsets[0], object.cost);
   writer.writeDateTime(offsets[1], object.date);
   writer.writeString(offsets[2], object.formattedCost);
-  writer.writeString(offsets[3], object.formattedMileage);
-  writer.writeLong(offsets[4], object.mileage);
+  writer.writeString(offsets[3], object.formattedKm);
+  writer.writeLong(offsets[4], object.km);
   writer.writeString(offsets[5], object.notes);
   writer.writeString(offsets[6], object.recordId);
   writer.writeString(offsets[7], object.title);
@@ -147,7 +147,7 @@ VehicleRecord _vehicleRecordDeserialize(
   object.cost = reader.readDouble(offsets[0]);
   object.date = reader.readDateTime(offsets[1]);
   object.id = id;
-  object.mileage = reader.readLong(offsets[4]);
+  object.km = reader.readLong(offsets[4]);
   object.notes = reader.readStringOrNull(offsets[5]);
   object.recordId = reader.readString(offsets[6]);
   object.title = reader.readString(offsets[7]);
@@ -291,11 +291,9 @@ extension VehicleRecordQueryWhereSort
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhere> anyMileage() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhere> anyKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'mileage'),
-      );
+      return query.addWhereClause(const IndexWhereClause.any(indexName: r'km'));
     });
   }
 }
@@ -532,33 +530,34 @@ extension VehicleRecordQueryWhere
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> mileageEqualTo(
-    int mileage,
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> kmEqualTo(
+    int km,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'mileage', value: [mileage]),
+        IndexWhereClause.equalTo(indexName: r'km', value: [km]),
       );
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause>
-  mileageNotEqualTo(int mileage) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> kmNotEqualTo(
+    int km,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'mileage',
+                indexName: r'km',
                 lower: [],
-                upper: [mileage],
+                upper: [km],
                 includeUpper: false,
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'mileage',
-                lower: [mileage],
+                indexName: r'km',
+                lower: [km],
                 includeLower: false,
                 upper: [],
               ),
@@ -567,17 +566,17 @@ extension VehicleRecordQueryWhere
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'mileage',
-                lower: [mileage],
+                indexName: r'km',
+                lower: [km],
                 includeLower: false,
                 upper: [],
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'mileage',
+                indexName: r'km',
                 lower: [],
-                upper: [mileage],
+                upper: [km],
                 includeUpper: false,
               ),
             );
@@ -585,13 +584,15 @@ extension VehicleRecordQueryWhere
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause>
-  mileageGreaterThan(int mileage, {bool include = false}) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> kmGreaterThan(
+    int km, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.between(
-          indexName: r'mileage',
-          lower: [mileage],
+          indexName: r'km',
+          lower: [km],
           includeLower: include,
           upper: [],
         ),
@@ -599,35 +600,35 @@ extension VehicleRecordQueryWhere
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> mileageLessThan(
-    int mileage, {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> kmLessThan(
+    int km, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.between(
-          indexName: r'mileage',
+          indexName: r'km',
           lower: [],
-          upper: [mileage],
+          upper: [km],
           includeUpper: include,
         ),
       );
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> mileageBetween(
-    int lowerMileage,
-    int upperMileage, {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> kmBetween(
+    int lowerKm,
+    int upperKm, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.between(
-          indexName: r'mileage',
-          lower: [lowerMileage],
+          indexName: r'km',
+          lower: [lowerKm],
           includeLower: includeLower,
-          upper: [upperMileage],
+          upper: [upperKm],
           includeUpper: includeUpper,
         ),
       );
@@ -910,11 +911,11 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageEqualTo(String value, {bool caseSensitive = true}) {
+  formattedKmEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(
-          property: r'formattedMileage',
+          property: r'formattedKm',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -923,7 +924,7 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageGreaterThan(
+  formattedKmGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -932,7 +933,7 @@ extension VehicleRecordQueryFilter
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'formattedMileage',
+          property: r'formattedKm',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -941,7 +942,7 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageLessThan(
+  formattedKmLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -950,7 +951,7 @@ extension VehicleRecordQueryFilter
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'formattedMileage',
+          property: r'formattedKm',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -959,7 +960,7 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageBetween(
+  formattedKmBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -969,7 +970,7 @@ extension VehicleRecordQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'formattedMileage',
+          property: r'formattedKm',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -981,11 +982,11 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageStartsWith(String value, {bool caseSensitive = true}) {
+  formattedKmStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.startsWith(
-          property: r'formattedMileage',
+          property: r'formattedKm',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -994,11 +995,11 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageEndsWith(String value, {bool caseSensitive = true}) {
+  formattedKmEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.endsWith(
-          property: r'formattedMileage',
+          property: r'formattedKm',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1007,11 +1008,11 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageContains(String value, {bool caseSensitive = true}) {
+  formattedKmContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.contains(
-          property: r'formattedMileage',
+          property: r'formattedKm',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1020,11 +1021,11 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageMatches(String pattern, {bool caseSensitive = true}) {
+  formattedKmMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.matches(
-          property: r'formattedMileage',
+          property: r'formattedKm',
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1033,19 +1034,19 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageIsEmpty() {
+  formattedKmIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'formattedMileage', value: ''),
+        FilterCondition.equalTo(property: r'formattedKm', value: ''),
       );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  formattedMileageIsNotEmpty() {
+  formattedKmIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'formattedMileage', value: ''),
+        FilterCondition.greaterThan(property: r'formattedKm', value: ''),
       );
     });
   }
@@ -1107,43 +1108,45 @@ extension VehicleRecordQueryFilter
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  mileageEqualTo(int value) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> kmEqualTo(
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'mileage', value: value),
+        FilterCondition.equalTo(property: r'km', value: value),
       );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  mileageGreaterThan(int value, {bool include = false}) {
+  kmGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'mileage',
+          property: r'km',
           value: value,
         ),
       );
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  mileageLessThan(int value, {bool include = false}) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> kmLessThan(
+    int value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'mileage',
+          property: r'km',
           value: value,
         ),
       );
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  mileageBetween(
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> kmBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1152,7 +1155,7 @@ extension VehicleRecordQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'mileage',
+          property: r'km',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -1794,29 +1797,28 @@ extension VehicleRecordQuerySortBy
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-  sortByFormattedMileage() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByFormattedKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'formattedMileage', Sort.asc);
+      return query.addSortBy(r'formattedKm', Sort.asc);
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-  sortByFormattedMileageDesc() {
+  sortByFormattedKmDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'formattedMileage', Sort.desc);
+      return query.addSortBy(r'formattedKm', Sort.desc);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByMileage() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'mileage', Sort.asc);
+      return query.addSortBy(r'km', Sort.asc);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByMileageDesc() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByKmDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'mileage', Sort.desc);
+      return query.addSortBy(r'km', Sort.desc);
     });
   }
 
@@ -1910,17 +1912,16 @@ extension VehicleRecordQuerySortThenBy
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-  thenByFormattedMileage() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByFormattedKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'formattedMileage', Sort.asc);
+      return query.addSortBy(r'formattedKm', Sort.asc);
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
-  thenByFormattedMileageDesc() {
+  thenByFormattedKmDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'formattedMileage', Sort.desc);
+      return query.addSortBy(r'formattedKm', Sort.desc);
     });
   }
 
@@ -1936,15 +1937,15 @@ extension VehicleRecordQuerySortThenBy
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByMileage() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'mileage', Sort.asc);
+      return query.addSortBy(r'km', Sort.asc);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByMileageDesc() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByKmDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'mileage', Sort.desc);
+      return query.addSortBy(r'km', Sort.desc);
     });
   }
 
@@ -2022,19 +2023,17 @@ extension VehicleRecordQueryWhereDistinct
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct>
-  distinctByFormattedMileage({bool caseSensitive = true}) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByFormattedKm({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'formattedMileage',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'formattedKm', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByMileage() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'mileage');
+      return query.addDistinctBy(r'km');
     });
   }
 
@@ -2098,16 +2097,15 @@ extension VehicleRecordQueryProperty
     });
   }
 
-  QueryBuilder<VehicleRecord, String, QQueryOperations>
-  formattedMileageProperty() {
+  QueryBuilder<VehicleRecord, String, QQueryOperations> formattedKmProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'formattedMileage');
+      return query.addPropertyName(r'formattedKm');
     });
   }
 
-  QueryBuilder<VehicleRecord, int, QQueryOperations> mileageProperty() {
+  QueryBuilder<VehicleRecord, int, QQueryOperations> kmProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'mileage');
+      return query.addPropertyName(r'km');
     });
   }
 

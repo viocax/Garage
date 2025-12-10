@@ -35,22 +35,22 @@ class DateChanged extends AddRecordEvent {
   List<Object> get props => [date];
 }
 
-class MileageChanged extends AddRecordEvent {
-  final int mileage;
+class KmChanged extends AddRecordEvent {
+  final int km;
 
-  const MileageChanged(this.mileage);
+  const KmChanged(this.km);
 
   @override
-  List<Object> get props => [mileage];
+  List<Object> get props => [km];
 }
 
-class NextMaintenanceMileageChanged extends AddRecordEvent {
-  final int mileage;
+class NextMaintenanceKmChanged extends AddRecordEvent {
+  final int km;
 
-  const NextMaintenanceMileageChanged(this.mileage);
+  const NextMaintenanceKmChanged(this.km);
 
   @override
-  List<Object> get props => [mileage];
+  List<Object> get props => [km];
 }
 
 class MaintenanceItemToggled extends AddRecordEvent {

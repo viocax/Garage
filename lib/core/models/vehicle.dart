@@ -18,9 +18,9 @@ class Vehicle implements PickerOption {
 
   late String carName;
 
-  late int currentMileage;
+  late int currentKm;
 
-  late int maintenanceInterval; // e.g., every 5000km or 10000km
+  late int maintenanceIntervalKm; // e.g., every 5000km or 10000km
 
   final records = IsarLinks<VehicleRecord>();
 
@@ -31,14 +31,14 @@ class Vehicle implements PickerOption {
   factory Vehicle.create({
     String? vehicleId,
     required String carName,
-    required int currentMileage,
-    required int maintenanceInterval,
+    required int currentKm,
+    maintenanceIntervalKm = 0,
   }) {
     return Vehicle()
       ..vehicleId = vehicleId ?? _uuid.v4()
       ..carName = carName
-      ..currentMileage = currentMileage
-      ..maintenanceInterval = maintenanceInterval;
+      ..currentKm = currentKm
+      ..maintenanceIntervalKm = maintenanceIntervalKm;
   }
 
   // Empty vehicle for placeholder/initial state
@@ -46,23 +46,23 @@ class Vehicle implements PickerOption {
     return Vehicle()
       ..vehicleId = ''
       ..carName = ''
-      ..currentMileage = 0
-      ..maintenanceInterval = 0;
+      ..currentKm = 0
+      ..maintenanceIntervalKm = 0;
   }
 
   // Calculate distance to next maintenance
-  // Assuming maintenance is needed when (currentMileage % maintenanceInterval) == 0
+  // Assuming maintenance is needed when (currentKm % maintenanceIntervalKm) == 0
   // Or simply: remaining = interval - (current % interval)
-  int get distanceToNextMaintenance {
-    if (maintenanceInterval <= 0) return 0;
-    final remainder = currentMileage % maintenanceInterval;
-    return maintenanceInterval - remainder;
+  int get kmToNextMaintenance {
+    if (maintenanceIntervalKm <= 0) return 0;
+    final remainder = currentKm % maintenanceIntervalKm;
+    return maintenanceIntervalKm - remainder;
   }
 
   // Calculate maintenance health percentage (1.0 = fresh, 0.0 = due)
   double get maintenanceHealth {
-    if (maintenanceInterval <= 0) return 0.0;
-    return max(0.0, min(1.0, distanceToNextMaintenance / maintenanceInterval));
+    if (maintenanceIntervalKm <= 0) return 0.0;
+    return max(0.0, min(1.0, kmToNextMaintenance / maintenanceIntervalKm));
   }
 
   // Helper to get total spent from records
@@ -109,5 +109,5 @@ class Vehicle implements PickerOption {
   String getTitle() => carName;
 
   @override
-  String getSubTitle() => '$currentMileage km';
+  String getSubTitle() => '$currentKm km';
 }

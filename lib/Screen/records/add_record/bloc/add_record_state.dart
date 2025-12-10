@@ -7,8 +7,8 @@ class AddRecordState extends Equatable {
   final RecordType recordType;
   final double amount;
   final DateTime date;
-  final int mileage;
-  final int? nextMaintenanceMileage;
+  final int km;
+  final int? nextMaintenanceKm;
   final List<String> selectedMaintenanceItems;
   final String note;
   final AddRecordStatus status;
@@ -20,8 +20,8 @@ class AddRecordState extends Equatable {
         RecordType.maintenance, // Default to maintenance as per HTML
     this.amount = 0,
     required this.date,
-    this.mileage = 0,
-    this.nextMaintenanceMileage,
+    this.km = 0,
+    this.nextMaintenanceKm,
     this.selectedMaintenanceItems = const [],
     this.note = '',
     this.status = AddRecordStatus.initial,
@@ -33,8 +33,8 @@ class AddRecordState extends Equatable {
     RecordType? recordType,
     double? amount,
     DateTime? date,
-    int? mileage,
-    int? nextMaintenanceMileage,
+    int? km,
+    int? nextMaintenanceKm,
     List<String>? selectedMaintenanceItems,
     String? note,
     AddRecordStatus? status,
@@ -45,9 +45,9 @@ class AddRecordState extends Equatable {
       recordType: recordType ?? this.recordType,
       amount: amount ?? this.amount,
       date: date ?? this.date,
-      mileage: mileage ?? this.mileage,
-      nextMaintenanceMileage:
-          nextMaintenanceMileage ?? this.nextMaintenanceMileage,
+      km: km ?? this.km,
+      nextMaintenanceKm:
+          nextMaintenanceKm ?? this.nextMaintenanceKm,
       selectedMaintenanceItems:
           selectedMaintenanceItems ?? this.selectedMaintenanceItems,
       note: note ?? this.note,
@@ -62,8 +62,8 @@ class AddRecordState extends Equatable {
     recordType,
     amount,
     date,
-    mileage,
-    nextMaintenanceMileage,
+    km,
+    nextMaintenanceKm,
     selectedMaintenanceItems,
     note,
     status,

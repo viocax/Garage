@@ -16,24 +16,19 @@ final class VehicleNameChanged extends AddVehicleEvent {
   List<Object> get props => [name];
 }
 
-final class VehicleMileageChanged extends AddVehicleEvent {
-  final int mileage;
+final class VehicleKmChanged extends AddVehicleEvent {
+  final int km;
 
-  const VehicleMileageChanged(this.mileage);
-
-  @override
-  List<Object> get props => [mileage];
-}
-
-final class MaintenanceIntervalChanged extends AddVehicleEvent {
-  final int interval;
-
-  const MaintenanceIntervalChanged(this.interval);
+  const VehicleKmChanged(this.km);
 
   @override
-  List<Object> get props => [interval];
+  List<Object> get props => [km];
 }
 
 final class SubmitVehicle extends AddVehicleEvent {
   const SubmitVehicle();
+}
+
+final class LoadUserSettings extends AddVehicleEvent {
+  const LoadUserSettings();
 }

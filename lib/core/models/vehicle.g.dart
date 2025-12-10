@@ -18,14 +18,14 @@ const VehicleSchema = CollectionSchema(
   id: -21624847921258799,
   properties: {
     r'carName': PropertySchema(id: 0, name: r'carName', type: IsarType.string),
-    r'currentMileage': PropertySchema(
+    r'currentKm': PropertySchema(
       id: 1,
-      name: r'currentMileage',
+      name: r'currentKm',
       type: IsarType.long,
     ),
-    r'distanceToNextMaintenance': PropertySchema(
+    r'kmToNextMaintenance': PropertySchema(
       id: 2,
-      name: r'distanceToNextMaintenance',
+      name: r'kmToNextMaintenance',
       type: IsarType.long,
     ),
     r'maintenanceHealth': PropertySchema(
@@ -33,9 +33,9 @@ const VehicleSchema = CollectionSchema(
       name: r'maintenanceHealth',
       type: IsarType.double,
     ),
-    r'maintenanceInterval': PropertySchema(
+    r'maintenanceIntervalKm': PropertySchema(
       id: 4,
-      name: r'maintenanceInterval',
+      name: r'maintenanceIntervalKm',
       type: IsarType.long,
     ),
     r'spentThisMonth': PropertySchema(
@@ -111,10 +111,10 @@ void _vehicleSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.carName);
-  writer.writeLong(offsets[1], object.currentMileage);
-  writer.writeLong(offsets[2], object.distanceToNextMaintenance);
+  writer.writeLong(offsets[1], object.currentKm);
+  writer.writeLong(offsets[2], object.kmToNextMaintenance);
   writer.writeDouble(offsets[3], object.maintenanceHealth);
-  writer.writeLong(offsets[4], object.maintenanceInterval);
+  writer.writeLong(offsets[4], object.maintenanceIntervalKm);
   writer.writeString(offsets[5], object.spentThisMonth);
   writer.writeString(offsets[6], object.totalSpent);
   writer.writeString(offsets[7], object.vehicleId);
@@ -128,9 +128,9 @@ Vehicle _vehicleDeserialize(
 ) {
   final object = Vehicle();
   object.carName = reader.readString(offsets[0]);
-  object.currentMileage = reader.readLong(offsets[1]);
+  object.currentKm = reader.readLong(offsets[1]);
   object.id = id;
-  object.maintenanceInterval = reader.readLong(offsets[4]);
+  object.maintenanceIntervalKm = reader.readLong(offsets[4]);
   object.vehicleId = reader.readString(offsets[7]);
   return object;
 }
@@ -518,30 +518,32 @@ extension VehicleQueryFilter
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> currentMileageEqualTo(
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> currentKmEqualTo(
     int value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'currentMileage', value: value),
+        FilterCondition.equalTo(property: r'currentKm', value: value),
       );
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  currentMileageGreaterThan(int value, {bool include = false}) {
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> currentKmGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'currentMileage',
+          property: r'currentKm',
           value: value,
         ),
       );
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> currentMileageLessThan(
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> currentKmLessThan(
     int value, {
     bool include = false,
   }) {
@@ -549,14 +551,14 @@ extension VehicleQueryFilter
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'currentMileage',
+          property: r'currentKm',
           value: value,
         ),
       );
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> currentMileageBetween(
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> currentKmBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -565,65 +567,7 @@ extension VehicleQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'currentMileage',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  distanceToNextMaintenanceEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'distanceToNextMaintenance',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  distanceToNextMaintenanceGreaterThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'distanceToNextMaintenance',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  distanceToNextMaintenanceLessThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'distanceToNextMaintenance',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  distanceToNextMaintenanceBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'distanceToNextMaintenance',
+          property: r'currentKm',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -681,6 +625,61 @@ extension VehicleQueryFilter
       return query.addFilterCondition(
         FilterCondition.between(
           property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
+  kmToNextMaintenanceEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'kmToNextMaintenance', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
+  kmToNextMaintenanceGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'kmToNextMaintenance',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
+  kmToNextMaintenanceLessThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'kmToNextMaintenance',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
+  kmToNextMaintenanceBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'kmToNextMaintenance',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -766,21 +765,24 @@ extension VehicleQueryFilter
   }
 
   QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  maintenanceIntervalEqualTo(int value) {
+  maintenanceIntervalKmEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'maintenanceInterval', value: value),
+        FilterCondition.equalTo(
+          property: r'maintenanceIntervalKm',
+          value: value,
+        ),
       );
     });
   }
 
   QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  maintenanceIntervalGreaterThan(int value, {bool include = false}) {
+  maintenanceIntervalKmGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'maintenanceInterval',
+          property: r'maintenanceIntervalKm',
           value: value,
         ),
       );
@@ -788,12 +790,12 @@ extension VehicleQueryFilter
   }
 
   QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  maintenanceIntervalLessThan(int value, {bool include = false}) {
+  maintenanceIntervalKmLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'maintenanceInterval',
+          property: r'maintenanceIntervalKm',
           value: value,
         ),
       );
@@ -801,7 +803,7 @@ extension VehicleQueryFilter
   }
 
   QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
-  maintenanceIntervalBetween(
+  maintenanceIntervalKmBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -810,7 +812,7 @@ extension VehicleQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'maintenanceInterval',
+          property: r'maintenanceIntervalKm',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -1340,29 +1342,27 @@ extension VehicleQuerySortBy on QueryBuilder<Vehicle, Vehicle, QSortBy> {
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByCurrentMileage() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByCurrentKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'currentMileage', Sort.asc);
+      return query.addSortBy(r'currentKm', Sort.asc);
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByCurrentMileageDesc() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByCurrentKmDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'currentMileage', Sort.desc);
+      return query.addSortBy(r'currentKm', Sort.desc);
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy>
-  sortByDistanceToNextMaintenance() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByKmToNextMaintenance() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'distanceToNextMaintenance', Sort.asc);
+      return query.addSortBy(r'kmToNextMaintenance', Sort.asc);
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy>
-  sortByDistanceToNextMaintenanceDesc() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByKmToNextMaintenanceDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'distanceToNextMaintenance', Sort.desc);
+      return query.addSortBy(r'kmToNextMaintenance', Sort.desc);
     });
   }
 
@@ -1378,15 +1378,16 @@ extension VehicleQuerySortBy on QueryBuilder<Vehicle, Vehicle, QSortBy> {
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByMaintenanceInterval() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByMaintenanceIntervalKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'maintenanceInterval', Sort.asc);
+      return query.addSortBy(r'maintenanceIntervalKm', Sort.asc);
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByMaintenanceIntervalDesc() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy>
+  sortByMaintenanceIntervalKmDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'maintenanceInterval', Sort.desc);
+      return query.addSortBy(r'maintenanceIntervalKm', Sort.desc);
     });
   }
 
@@ -1441,29 +1442,15 @@ extension VehicleQuerySortThenBy
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByCurrentMileage() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByCurrentKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'currentMileage', Sort.asc);
+      return query.addSortBy(r'currentKm', Sort.asc);
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByCurrentMileageDesc() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByCurrentKmDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'currentMileage', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy>
-  thenByDistanceToNextMaintenance() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'distanceToNextMaintenance', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy>
-  thenByDistanceToNextMaintenanceDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'distanceToNextMaintenance', Sort.desc);
+      return query.addSortBy(r'currentKm', Sort.desc);
     });
   }
 
@@ -1479,6 +1466,18 @@ extension VehicleQuerySortThenBy
     });
   }
 
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByKmToNextMaintenance() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'kmToNextMaintenance', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByKmToNextMaintenanceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'kmToNextMaintenance', Sort.desc);
+    });
+  }
+
   QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByMaintenanceHealth() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'maintenanceHealth', Sort.asc);
@@ -1491,15 +1490,16 @@ extension VehicleQuerySortThenBy
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByMaintenanceInterval() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByMaintenanceIntervalKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'maintenanceInterval', Sort.asc);
+      return query.addSortBy(r'maintenanceIntervalKm', Sort.asc);
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByMaintenanceIntervalDesc() {
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy>
+  thenByMaintenanceIntervalKmDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'maintenanceInterval', Sort.desc);
+      return query.addSortBy(r'maintenanceIntervalKm', Sort.desc);
     });
   }
 
@@ -1550,16 +1550,15 @@ extension VehicleQueryWhereDistinct
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QDistinct> distinctByCurrentMileage() {
+  QueryBuilder<Vehicle, Vehicle, QDistinct> distinctByCurrentKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'currentMileage');
+      return query.addDistinctBy(r'currentKm');
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QDistinct>
-  distinctByDistanceToNextMaintenance() {
+  QueryBuilder<Vehicle, Vehicle, QDistinct> distinctByKmToNextMaintenance() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'distanceToNextMaintenance');
+      return query.addDistinctBy(r'kmToNextMaintenance');
     });
   }
 
@@ -1569,9 +1568,9 @@ extension VehicleQueryWhereDistinct
     });
   }
 
-  QueryBuilder<Vehicle, Vehicle, QDistinct> distinctByMaintenanceInterval() {
+  QueryBuilder<Vehicle, Vehicle, QDistinct> distinctByMaintenanceIntervalKm() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'maintenanceInterval');
+      return query.addDistinctBy(r'maintenanceIntervalKm');
     });
   }
 
@@ -1617,16 +1616,15 @@ extension VehicleQueryProperty
     });
   }
 
-  QueryBuilder<Vehicle, int, QQueryOperations> currentMileageProperty() {
+  QueryBuilder<Vehicle, int, QQueryOperations> currentKmProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'currentMileage');
+      return query.addPropertyName(r'currentKm');
     });
   }
 
-  QueryBuilder<Vehicle, int, QQueryOperations>
-  distanceToNextMaintenanceProperty() {
+  QueryBuilder<Vehicle, int, QQueryOperations> kmToNextMaintenanceProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'distanceToNextMaintenance');
+      return query.addPropertyName(r'kmToNextMaintenance');
     });
   }
 
@@ -1636,9 +1634,9 @@ extension VehicleQueryProperty
     });
   }
 
-  QueryBuilder<Vehicle, int, QQueryOperations> maintenanceIntervalProperty() {
+  QueryBuilder<Vehicle, int, QQueryOperations> maintenanceIntervalKmProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'maintenanceInterval');
+      return query.addPropertyName(r'maintenanceIntervalKm');
     });
   }
 

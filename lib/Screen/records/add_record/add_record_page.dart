@@ -362,7 +362,7 @@ class _MileageInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AddRecordBloc, AddRecordState>(
-      buildWhen: (previous, current) => previous.mileage != current.mileage,
+      buildWhen: (previous, current) => previous.km != current.km,
       builder: (context, state) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,7 +373,7 @@ class _MileageInput extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             TextFormField(
-              initialValue: state.mileage > 0 ? state.mileage.toString() : null,
+              initialValue: state.km > 0 ? state.km.toString() : null,
               keyboardType: TextInputType.number,
               style: const TextStyle(fontSize: 16, color: Colors.white),
               decoration: InputDecoration(
@@ -403,8 +403,8 @@ class _MileageInput extends StatelessWidget {
                 hintStyle: const TextStyle(color: AppTheme.placeholderGray),
               ),
               onChanged: (value) {
-                final mileage = int.tryParse(value) ?? 0;
-                context.read<AddRecordBloc>().add(MileageChanged(mileage));
+                final km = int.tryParse(value) ?? 0;
+                context.read<AddRecordBloc>().add(KmChanged(km));
               },
             ),
           ],
@@ -484,9 +484,9 @@ class _DynamicFields extends StatelessWidget {
                       hintStyle: const TextStyle(color: AppTheme.placeholderGray),
                     ),
                     onChanged: (value) {
-                      final mileage = int.tryParse(value) ?? 0;
+                      final km = int.tryParse(value) ?? 0;
                       context.read<AddRecordBloc>().add(
-                        NextMaintenanceMileageChanged(mileage),
+                        NextMaintenanceKmChanged(km),
                       );
                     },
                   ),

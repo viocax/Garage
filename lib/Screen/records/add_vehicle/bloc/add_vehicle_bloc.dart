@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:garage/core/di/service_locator.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
@@ -12,11 +14,24 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
   final VehicleRepository _vehicleRepository = getIt.repo.vehicle;
   final UserSettingsRepository _userSettingsRepository = getIt.repo.userSettings;
 
-  AddVehicleBloc() : super(const AddVehicleState()) {
+  AddVehicleBloc() : super(const AddVehicleState(speedUnit: SpeedUnit.kmh)) {
+    on<LoadUserSettings>(_onLoadUserSettings);
     on<VehicleNameChanged>(_onVehicleNameChanged);
-    on<VehicleMileageChanged>(_onVehicleMileageChanged);
-    on<MaintenanceIntervalChanged>(_onMaintenanceIntervalChanged);
+    on<VehicleKmChanged>(_onVehicleKmChanged);
     on<SubmitVehicle>(_onSubmitVehicle);
+    add(const LoadUserSettings());
+  }
+
+  Future<void> _onLoadUserSettings(
+    LoadUserSettings event,
+    Emitter<AddVehicleState> emit,
+  ) async {
+    try {
+      final userSettings = await _userSettingsRepository.loadSettings();
+      emit(state.copyWith(speedUnit: userSettings.speedUnit));
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   void _onVehicleNameChanged(
@@ -26,19 +41,13 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     emit(state.copyWith(vehicleName: event.name));
   }
 
-  void _onVehicleMileageChanged(
-    VehicleMileageChanged event,
+  void _onVehicleKmChanged(
+    VehicleKmChanged event,
     Emitter<AddVehicleState> emit,
   ) {
-    emit(state.copyWith(currentMileage: event.mileage));
+    emit(state.copyWith(currentKm: event.km));
   }
 
-  void _onMaintenanceIntervalChanged(
-    MaintenanceIntervalChanged event,
-    Emitter<AddVehicleState> emit,
-  ) {
-    emit(state.copyWith(maintenanceInterval: event.interval));
-  }
 
   Future<void> _onSubmitVehicle(
     SubmitVehicle event,
@@ -59,8 +68,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     try {
       final vehicle = Vehicle.create(
         carName: state.vehicleName,
-        currentMileage: state.currentMileage,
-        maintenanceInterval: state.maintenanceInterval,
+        currentKm: state.currentKm,
       );
 
       final success = await _vehicleRepository.addVehicle(vehicle);

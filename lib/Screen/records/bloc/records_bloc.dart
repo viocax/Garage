@@ -1,8 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:garage/core/models/speed_unit.dart';
+import 'package:garage/core/models/user_settings.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/models/vehicle_record.dart';
+import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
 
 part 'records_event.dart';
@@ -12,6 +15,7 @@ enum ClickAddEvent { addVehicle, addRecord }
 
 class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
   final VehicleRepository vehicleRepository = getIt.repo.vehicle;
+  final UserSettingsRepository userSettingsRepository = getIt.repo.userSettings;
 
   RecordsBloc() : super(RecordsLoading()) {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
@@ -21,13 +25,40 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     add(LoadVehicleRecord());
   }
 
+  String get odometer {
+    return switch (state) {
+      RecordsLoading() => '',
+      RecordsEmpty() => '0',
+      RecordsLoaded(:final currentVehicle, :final userSettings) => () {
+          final km = currentVehicle.currentKm;
+          final unit = userSettings.speedUnit;
+
+          return switch (unit) {
+            SpeedUnit.kmh => '$km',
+            SpeedUnit.mph => () {
+                final miles = km.toDouble().mile;
+                return '$miles';
+              }(),
+          };
+        }(),
+      RecordsError() => '',
+    };
+  }
+  String get unitString {
+        return switch (state) {
+      RecordsLoading() => '',
+      RecordsEmpty(:final userSettings) => userSettings.speedUnit.displayName,
+      RecordsLoaded(:final userSettings) => userSettings.speedUnit.displayName,
+      RecordsError() => '',
+    };
+  }
+
   Future<void> _onAddVehicle(
     AddVehicle event,
     Emitter<RecordsState> emit,
   ) async {
     if (event.vehicle == null) {
-      // TODO: error handle
-      emit(RecordsError('Vehicle is null'));
+      // cancel add vehicle, do not doing anything
       return;
     }
     emit(RecordsLoading());
@@ -44,8 +75,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     Emitter<RecordsState> emit,
   ) async {
     if (event.record == null) {
-      // TODO: error handle
-      emit(RecordsError('Record is null'));
+      // cancel add record, do not doing anything
       return;
     }
     if (state is! RecordsLoaded) {
@@ -82,9 +112,10 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     emit(RecordsLoading());
     try {
       final vehicles = await vehicleRepository.loadVehicles();
+      final userSettings = await userSettingsRepository.loadSettings();
 
       if (vehicles.isEmpty) {
-        emit(RecordsEmpty());
+        emit(RecordsEmpty(userSettings: userSettings));
         return;
       }
 
@@ -93,6 +124,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
         RecordsLoaded(
           vehicles: vehicles,
           currentVehicleId: event.vehicleId ?? vehicles.first.vehicleId,
+          userSettings: userSettings,
         ),
       );
     } catch (e) {
@@ -109,8 +141,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
       );
       if (vehicleExists) {
         emit(
-          RecordsLoaded(
-            vehicles: currentState.vehicles,
+          currentState.copyWith(
             currentVehicleId: event.vehicleId,
           ),
         );
