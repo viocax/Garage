@@ -17,10 +17,57 @@ platform :ios do
   end
 
   desc "Push a new beta build to TestFlight"
+  desc "Automatically increments build number from TestFlight"
   lane :beta do
-    match(type: "appstore", readonly: true)
-    build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
-    upload_to_testflight
+    # Setup App Store Connect API Key
+    # Supports both key_filepath (local) and key_content (CI/GitHub Actions)
+    if ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"]
+      api_key_params = {
+        key_id: ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"],
+        issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+        in_house: false
+      }
+      
+      # Use key_content if provided (CI), otherwise use key_filepath (local)
+      if ENV["APP_STORE_CONNECT_API_KEY_KEY_CONTENT"]
+        api_key_params[:key_content] = ENV["APP_STORE_CONNECT_API_KEY_KEY_CONTENT"]
+      else
+        api_key_params[:key_filepath] = ENV["APP_STORE_CONNECT_API_KEY_KEY_FILEPATH"]
+      end
+      
+      app_store_connect_api_key(api_key_params)
+    end
+
+    # Get latest build number from TestFlight and increment
+    latest_build = latest_testflight_build_number(
+      app_identifier: "com.drake.garage"
+    )
+    new_build = latest_build + 1
+    UI.message("📦 New build number: #{new_build}")
+
+    # Build Flutter app with new build number (outside bundler to avoid CocoaPods Ruby conflict)
+    Dir.chdir("../..") do
+      # Use Bundler.with_unbundled_env to run flutter in clean environment
+      Bundler.with_unbundled_env do
+        system("flutter", "build", "ios", "--release", "--build-number=#{new_build}") || UI.user_error!("Flutter build failed")
+      end
+    end
+
+    # Sync certificates
+    match(type: "appstore", readonly: is_ci)
+    
+    # Build and archive with Xcode
+    build_app(
+      workspace: "Runner.xcworkspace", 
+      scheme: "Runner",
+      export_method: "app-store"
+    )
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      uses_non_exempt_encryption: false
+    )
   end
 
   desc "Archive and Upload (Alias for beta)"

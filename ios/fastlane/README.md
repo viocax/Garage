@@ -39,6 +39,8 @@ Compile only (No Code Signing)
 
 Push a new beta build to TestFlight
 
+Automatically increments build number from TestFlight
+
 ### ios upload
 
 ```sh
