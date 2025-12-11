@@ -79,20 +79,10 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                         SettingsSliderItem(
                           title: '語音音量',
                           icon: Icons.volume_up,
-                          value: state.voiceVolume,
+                          value: state.voiceVolumePercentage,
                           onChanged: (value) {
                             context.read<SpeedDetectionSettingsBloc>().add(
                               ChangeVoiceVolume(value),
-                            );
-                          },
-                        ),
-                        SettingsSliderItem(
-                          title: '語音語速',
-                          icon: Icons.speed,
-                          value: state.voiceSpeechRate,
-                          onChanged: (value) {
-                            context.read<SpeedDetectionSettingsBloc>().add(
-                              ChangeVoiceSpeechRate(value),
                             );
                           },
                         ),

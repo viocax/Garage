@@ -4,7 +4,7 @@ import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
-
+import 'package:garage/core/models/speed_camera_model.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/tabbar_type.dart';
 import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
@@ -130,7 +130,6 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                         SpeedData(
                           :final speed,
                           :final unit,
-                          :final maxSpeed,
                           :final isOverSpeed,
                           :final isDetecting,
                         ) =>
@@ -142,7 +141,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                                   speed: speed.toInt().toString(),
                                   unit: unit,
                                   isOverSpeed: isOverSpeed,
-                                  maxSpeed: maxSpeed,
+                                  maxSpeed: SpeedCameraModel.maxSpeed,
                                 ),
                               ),
                               // Detection Button (Bottom Center)

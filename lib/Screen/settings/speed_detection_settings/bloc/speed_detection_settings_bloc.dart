@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'speed_detection_settings_event.dart';
@@ -31,15 +32,11 @@ class SpeedDetectionSettingsBloc
       case ChangeSpeedUnit():
         _onChangeSpeedUnit(event, emit);
       case ToggleVoiceAlert():
-        _onToggleVoiceAlert(emit);
+        await _onToggleVoiceAlert(emit);
       case ChangeVoiceVolume():
         _onChangeVoiceVolume(event, emit);
-      case ChangeVoiceSpeechRate():
-        _onChangeVoiceSpeechRate(event, emit);
       case PlayTestVoice():
         await _onPlayTestVoice(emit);
-      case ChangeVoiceEngine():
-        _onChangeVoiceEngine(event, emit);
       case ChangeAlertDistance():
         _onChangeAlertDistance(event, emit);
       case CheckLocationPermission():
@@ -59,9 +56,7 @@ class SpeedDetectionSettingsBloc
         SpeedDetectionSettingsLoaded(
           speedUnit: settings.speedUnit,
           isVoiceAlertEnabled: settings.isVoiceAlertEnabled,
-          voiceVolume: settings.voiceVolume,
-          voiceSpeechRate: settings.voiceSpeechRate,
-          voiceEngine: settings.voiceEngine,
+          voiceVolumePercentage: settings.voiceVolume,
           alertDistance: settings.alertDistance, // State 會自動驗證範圍
           hasLocationPermission: hasPermission,
         ),
@@ -72,9 +67,7 @@ class SpeedDetectionSettingsBloc
         SpeedDetectionSettingsLoaded(
           speedUnit: SpeedUnit.kmh,
           isVoiceAlertEnabled: true,
-          voiceVolume: 0.8,
-          voiceSpeechRate: 0.5,
-          voiceEngine: null,
+          voiceVolumePercentage: 0.5,
           alertDistance: 500,
           hasLocationPermission: false,
         ),
@@ -97,7 +90,7 @@ class SpeedDetectionSettingsBloc
     }
   }
 
-  void _onToggleVoiceAlert(Emitter<SpeedDetectionSettingsState> emit) {
+  Future<void> _onToggleVoiceAlert(Emitter<SpeedDetectionSettingsState> emit) async {
     final currentState = state;
     if (currentState is SpeedDetectionSettingsLoaded) {
       final newValue = !currentState.isVoiceAlertEnabled;
@@ -106,43 +99,41 @@ class SpeedDetectionSettingsBloc
           isVoiceAlertEnabled: newValue,
         ),
       );
+      try {
+        await repository.stopLocationTracking();
+        // 异步更新缓存
+        _updateRepositoryCache((settings) =>
+          settings.copyWith(isVoiceAlertEnabled: newValue)
+        );
+      } catch (e) {
+        debugPrint(e.toString());
+      }
 
-      // 异步更新缓存
-      _updateRepositoryCache((settings) =>
-        settings.copyWith(isVoiceAlertEnabled: newValue)
-      );
     }
   }
 
-  void _onChangeVoiceVolume(
+  Future<void> _onChangeVoiceVolume(
     ChangeVoiceVolume event,
     Emitter<SpeedDetectionSettingsState> emit,
-  ) {
+  ) async {
     final currentState = state;
     if (currentState is SpeedDetectionSettingsLoaded) {
-      emit(currentState.copyWith(voiceVolume: event.volume));
+      emit(currentState.copyWith(voiceVolumePercentage: event.percentage));
 
       // 异步更新缓存
-      _updateRepositoryCache((settings) =>
-        settings.copyWith(voiceVolume: event.volume)
-      );
+      try {
+        await repository.updateVolume(event.percentage);
+        _updateRepositoryCache((settings) =>
+          settings.copyWith(voiceVolume: event.percentage)
+        );
+        emit(currentState.copyWith(voiceVolumePercentage: event.percentage));
+      } catch (e) {
+        debugPrint(e.toString());
+      }
+
     }
   }
 
-  void _onChangeVoiceSpeechRate(
-    ChangeVoiceSpeechRate event,
-    Emitter<SpeedDetectionSettingsState> emit,
-  ) {
-    final currentState = state;
-    if (currentState is SpeedDetectionSettingsLoaded) {
-      emit(currentState.copyWith(voiceSpeechRate: event.rate));
-
-      // 异步更新缓存
-      _updateRepositoryCache((settings) =>
-        settings.copyWith(voiceSpeechRate: event.rate)
-      );
-    }
-  }
 
   Future<void> _onPlayTestVoice(
     Emitter<SpeedDetectionSettingsState> emit,
@@ -152,24 +143,9 @@ class SpeedDetectionSettingsBloc
       // TODO: 实现语音播放功能
       // 这里需要调用 TTS 服务播放测试音频
       // 可以播放类似 "测速提示测试" 的文本
-      print('Playing test voice with engine: ${currentState.voiceEngine}');
     }
   }
 
-  void _onChangeVoiceEngine(
-    ChangeVoiceEngine event,
-    Emitter<SpeedDetectionSettingsState> emit,
-  ) {
-    final currentState = state;
-    if (currentState is SpeedDetectionSettingsLoaded) {
-      emit(currentState.copyWith(voiceEngine: event.engineId));
-
-      // 异步更新缓存
-      _updateRepositoryCache((settings) =>
-        settings.copyWith(voiceEngine: event.engineId)
-      );
-    }
-  }
 
   void _onChangeAlertDistance(
     ChangeAlertDistance event,
@@ -230,9 +206,7 @@ class SpeedDetectionSettingsBloc
         final updatedSettings = fullSettings.copyWith(
           speedUnit: currentState.speedUnit,
           isVoiceAlertEnabled: currentState.isVoiceAlertEnabled,
-          voiceVolume: currentState.voiceVolume,
-          voiceSpeechRate: currentState.voiceSpeechRate,
-          voiceEngine: currentState.voiceEngine,
+          voiceVolume: currentState.voiceVolumePercentage,
           alertDistance: currentState.alertDistance,
         );
 

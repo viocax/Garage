@@ -1,6 +1,6 @@
 
 // Models
-export 'models/speed_camera.dart';
+export 'models/camera.dart';
 export 'models/tabbar_type.dart';
 
 // Repositories (只匯出介面，實作由 DI 處理)

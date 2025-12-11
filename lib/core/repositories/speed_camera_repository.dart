@@ -1,6 +1,5 @@
-import 'package:geolocator/geolocator.dart';
-
-import '../models/speed_camera.dart';
+import 'package:garage/core/models/speed_camera_model.dart';
+import '../models/camera.dart';
 
 /// 測速照相資料倉儲介面
 ///
@@ -13,7 +12,7 @@ abstract class ISpeedCameraRepository {
   Future<void> syncFromRemote({bool force = false});
 
   /// 取得所有測速照相點位
-  Future<List<SpeedCamera>> getAll();
+  Future<List<Camera>> getAll();
 
   /// 取得資料總數
   Future<int> getCount();
@@ -28,13 +27,11 @@ abstract class ISpeedCameraRepository {
 
   Future<bool> requestPermission();
 
-  Stream<Position> startLocationTracking();
+  Future<void> startLocationTracking(Function(SpeedCameraModel?) callback);
 
   Future<void> stopLocationTracking();
 
-  void readOverSpeedTTS(
-    Position position,
-    double speedLimit,
-    double currentSpeed,
-  );
+  Future<void> updateLocationAccuracyPolicy(double currentSpeed);
+
+  Future<void> updateVolume(double percentage);
 }

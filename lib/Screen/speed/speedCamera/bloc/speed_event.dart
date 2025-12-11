@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:garage/core/models/speed_camera_model.dart';
 
 sealed class SpeedEvent extends Equatable {
   const SpeedEvent();
@@ -15,15 +15,15 @@ final class SpeedLoading extends SpeedEvent {
 
 // 更新速度事件
 final class UpdateSpeed extends SpeedEvent {
-  final Position position;
+  final SpeedCameraModel speedCameraModel;
 
-  const UpdateSpeed(this.position);
+  const UpdateSpeed(this.speedCameraModel);
 
   // m/s
-  double get currentSpeed => position.speed;
+  double get currentSpeed => speedCameraModel.currentSpeed;
 
   @override
-  List<Object?> get props => [position];
+  List<Object?> get props => [speedCameraModel];
 }
 
 // 開始偵測

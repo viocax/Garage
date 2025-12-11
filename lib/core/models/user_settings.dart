@@ -15,9 +15,6 @@ class UserSettings {
   /// 語音語速 (0.0 - 1.0)
   final double voiceSpeechRate;
 
-  /// 語音引擎 (TTS引擎ID, null表示使用系統默認)
-  final String? voiceEngine;
-
   /// 提前提醒距離（公尺）
   final int alertDistance;
 
@@ -60,7 +57,6 @@ class UserSettings {
     this.isVoiceAlertEnabled = true,
     this.voiceVolume = 0.8,
     this.voiceSpeechRate = 0.5,
-    this.voiceEngine,
     this.alertDistance = 500,
     this.speedTolerance = 5,
 
@@ -96,7 +92,6 @@ class UserSettings {
       isVoiceAlertEnabled: json['isVoiceAlertEnabled'] ?? true,
       voiceVolume: (json['voiceVolume'] as num?)?.toDouble() ?? 0.8,
       voiceSpeechRate: (json['voiceSpeechRate'] as num?)?.toDouble() ?? 0.5,
-      voiceEngine: json['voiceEngine'] as String?,
       alertDistance: json['alertDistance'] ?? 500,
       speedTolerance: json['speedTolerance'] ?? 5,
 
@@ -131,7 +126,6 @@ class UserSettings {
       'isVoiceAlertEnabled': isVoiceAlertEnabled,
       'voiceVolume': voiceVolume,
       'voiceSpeechRate': voiceSpeechRate,
-      'voiceEngine': voiceEngine,
       'alertDistance': alertDistance,
       'speedTolerance': speedTolerance,
 
@@ -184,7 +178,6 @@ class UserSettings {
       isVoiceAlertEnabled: isVoiceAlertEnabled ?? this.isVoiceAlertEnabled,
       voiceVolume: voiceVolume ?? this.voiceVolume,
       voiceSpeechRate: voiceSpeechRate ?? this.voiceSpeechRate,
-      voiceEngine: voiceEngine ?? this.voiceEngine,
       alertDistance: alertDistance ?? this.alertDistance,
       speedTolerance: speedTolerance ?? this.speedTolerance,
 
@@ -226,7 +219,6 @@ class UserSettings {
         other.isVoiceAlertEnabled == isVoiceAlertEnabled &&
         other.voiceVolume == voiceVolume &&
         other.voiceSpeechRate == voiceSpeechRate &&
-        other.voiceEngine == voiceEngine &&
         other.alertDistance == alertDistance &&
         other.speedTolerance == speedTolerance &&
         other.isPushNotificationEnabled == isPushNotificationEnabled &&
@@ -247,7 +239,6 @@ class UserSettings {
       isVoiceAlertEnabled,
       voiceVolume,
       voiceSpeechRate,
-      voiceEngine,
       alertDistance,
       speedTolerance,
       isPushNotificationEnabled,

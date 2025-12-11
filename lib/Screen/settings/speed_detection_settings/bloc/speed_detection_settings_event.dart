@@ -21,22 +21,12 @@ final class ToggleVoiceAlert extends SpeedDetectionSettingsEvent {
 }
 
 final class ChangeVoiceVolume extends SpeedDetectionSettingsEvent {
-  final double volume;
-  const ChangeVoiceVolume(this.volume);
-}
-
-final class ChangeVoiceSpeechRate extends SpeedDetectionSettingsEvent {
-  final double rate;
-  const ChangeVoiceSpeechRate(this.rate);
+  final double percentage;
+  const ChangeVoiceVolume(this.percentage);
 }
 
 final class PlayTestVoice extends SpeedDetectionSettingsEvent {
   const PlayTestVoice();
-}
-
-final class ChangeVoiceEngine extends SpeedDetectionSettingsEvent {
-  final String? engineId;
-  const ChangeVoiceEngine(this.engineId);
 }
 
 // Alert settings

@@ -113,6 +113,7 @@ class TtsService {
   Future<void> stop() async {
     try {
       await tts.stop();
+      _speakQueue.cancelAll();
       debugPrint('TtsService: 停止播報');
     } catch (e) {
       debugPrint('TtsService: 停止失敗 - $e');
@@ -129,18 +130,6 @@ class TtsService {
     }
   }
 
-  /// 設置語速
-  ///
-  /// [rate] 語速 (0.0 - 1.0)
-  Future<void> setSpeechRate(double rate) async {
-    try {
-      await tts.setSpeechRate(rate.clamp(0.0, 1.0));
-      debugPrint('TtsService: 設置語速 - $rate');
-    } catch (e) {
-      debugPrint('TtsService: 設置語速失敗 - $e');
-    }
-  }
-
   /// 設置音量
   ///
   /// [volume] 音量 (0.0 - 1.0)
@@ -150,40 +139,6 @@ class TtsService {
       debugPrint('TtsService: 設置音量 - $volume');
     } catch (e) {
       debugPrint('TtsService: 設置音量失敗 - $e');
-    }
-  }
-
-  /// 設置音調
-  ///
-  /// [pitch] 音調 (0.5 - 2.0)
-  Future<void> setPitch(double pitch) async {
-    try {
-      await tts.setPitch(pitch.clamp(0.5, 2.0));
-      debugPrint('TtsService: 設置音調 - $pitch');
-    } catch (e) {
-      debugPrint('TtsService: 設置音調失敗 - $e');
-    }
-  }
-
-  /// 獲取可用語言列表
-  Future<List<String>> getLanguages() async {
-    try {
-      return await tts.getLanguages();
-    } catch (e) {
-      debugPrint('TtsService: 獲取語言列表失敗 - $e');
-      return [];
-    }
-  }
-
-  /// 設置語言
-  ///
-  /// [language] 語言代碼 (例如: 'zh-TW', 'en-US')
-  Future<void> setLanguage(String language) async {
-    try {
-      await tts.setLanguage(language);
-      debugPrint('TtsService: 設置語言 - $language');
-    } catch (e) {
-      debugPrint('TtsService: 設置語言失敗 - $e');
     }
   }
 

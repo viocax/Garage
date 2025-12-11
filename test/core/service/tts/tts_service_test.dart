@@ -87,41 +87,6 @@ void main() {
       });
     });
 
-    group('setSpeechRate', () {
-      test('should set speech rate within valid range', () async {
-        // Arrange
-        const rate = 0.7;
-
-        // Act
-        await ttsService.setSpeechRate(rate);
-
-        // Assert
-        expect(mockTts.speechRate, rate);
-      });
-
-      test('should clamp speech rate to minimum 0.0', () async {
-        // Arrange
-        const rate = -0.5;
-
-        // Act
-        await ttsService.setSpeechRate(rate);
-
-        // Assert
-        expect(mockTts.speechRate, 0.0);
-      });
-
-      test('should clamp speech rate to maximum 1.0', () async {
-        // Arrange
-        const rate = 1.5;
-
-        // Act
-        await ttsService.setSpeechRate(rate);
-
-        // Assert
-        expect(mockTts.speechRate, 1.0);
-      });
-    });
-
     group('setVolume', () {
       test('should set volume within valid range', () async {
         // Arrange
@@ -154,65 +119,6 @@ void main() {
 
         // Assert
         expect(mockTts.volume, 1.0);
-      });
-    });
-
-    group('setPitch', () {
-      test('should set pitch within valid range', () async {
-        // Arrange
-        const pitch = 1.2;
-
-        // Act
-        await ttsService.setPitch(pitch);
-
-        // Assert
-        expect(mockTts.pitch, pitch);
-      });
-
-      test('should clamp pitch to minimum 0.5', () async {
-        // Arrange
-        const pitch = 0.3;
-
-        // Act
-        await ttsService.setPitch(pitch);
-
-        // Assert
-        expect(mockTts.pitch, 0.5);
-      });
-
-      test('should clamp pitch to maximum 2.0', () async {
-        // Arrange
-        const pitch = 3.0;
-
-        // Act
-        await ttsService.setPitch(pitch);
-
-        // Assert
-        expect(mockTts.pitch, 2.0);
-      });
-    });
-
-    group('setLanguage', () {
-      test('should set language', () async {
-        // Arrange
-        const language = 'en-US';
-
-        // Act
-        await ttsService.setLanguage(language);
-
-        // Assert
-        expect(mockTts.language, language);
-      });
-    });
-
-    group('getLanguages', () {
-      test('should return available languages', () async {
-        // Act
-        final languages = await ttsService.getLanguages();
-
-        // Assert
-        expect(languages, isNotEmpty);
-        expect(languages, contains('zh-TW'));
       });
     });
 

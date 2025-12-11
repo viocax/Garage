@@ -15,15 +15,39 @@ class AutoReleaseQueue {
   // 用來防止同時開啟多個處理迴圈的鎖
   bool _isProcessing = false;
 
+  // 用來標記是否要取消處理
+  bool _isCancelled = false;
+
   QueueableItem? get lastItem {
     if (_queue.isEmpty) return null;
     return _queue.last;
   }
 
+  /// 取得目前隊列中的任務數量
+  int get length => _queue.length;
+
+  /// 是否正在處理中
+  bool get isProcessing => _isProcessing;
+
   /// 加入項目並嘗試觸發處理
   void enqueue(QueueableItem item) {
     _queue.add(item);
     _processNext();
+  }
+
+  /// 清空隊列中等待的任務
+  /// 不會影響當前正在執行的任務
+  void clear() {
+    _queue.clear();
+    debugPrint('AutoReleaseQueue: 已清空隊列，剩餘任務數: ${_queue.length}');
+  }
+
+  /// 取消所有任務（包括當前正在執行的）
+  /// 當前任務會執行完畢，但不會繼續處理後續任務
+  void cancelAll() {
+    _isCancelled = true;
+    _queue.clear();
+    debugPrint('AutoReleaseQueue: 已取消所有任務');
   }
 
   /// 內部的遞迴/迴圈處理邏輯
@@ -37,7 +61,7 @@ class AutoReleaseQueue {
     _isProcessing = true;
 
     // 使用 while 迴圈確保佇列清空前不會停止
-    while (_queue.isNotEmpty) {
+    while (_queue.isNotEmpty && !_isCancelled) {
       // 1. Peek: 取得隊首 (暫不移除)
       final currentItem = _queue.first;
 
@@ -54,7 +78,8 @@ class AutoReleaseQueue {
       _queue.removeAt(0);
     }
 
-    // 解除鎖定
+    // 解除鎖定並重置取消標記
     _isProcessing = false;
+    _isCancelled = false;
   }
 }

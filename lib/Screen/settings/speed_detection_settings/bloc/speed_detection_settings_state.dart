@@ -13,9 +13,7 @@ final class SpeedDetectionSettingsLoaded extends SpeedDetectionSettingsState {
 
   // Voice alert settings
   final bool isVoiceAlertEnabled;
-  final double voiceVolume; // 0.0 - 1.0
-  final double voiceSpeechRate; // 0.0 - 1.0
-  final String? voiceEngine; // TTS engine ID
+  final double voiceVolumePercentage; // 0.0 - 1.0
 
   // Alert settings
   final int alertDistance; // 提前提醒距離（公尺）
@@ -32,9 +30,7 @@ final class SpeedDetectionSettingsLoaded extends SpeedDetectionSettingsState {
   SpeedDetectionSettingsLoaded({
     required this.speedUnit,
     required this.isVoiceAlertEnabled,
-    required this.voiceVolume,
-    required this.voiceSpeechRate,
-    this.voiceEngine,
+    required this.voiceVolumePercentage,
     required int alertDistance,
     required this.hasLocationPermission,
   }) : alertDistance = alertDistance.clamp(minAlertDistance, maxAlertDistance);
@@ -42,7 +38,7 @@ final class SpeedDetectionSettingsLoaded extends SpeedDetectionSettingsState {
   SpeedDetectionSettingsLoaded copyWith({
     SpeedUnit? speedUnit,
     bool? isVoiceAlertEnabled,
-    double? voiceVolume,
+    double? voiceVolumePercentage,
     double? voiceSpeechRate,
     String? voiceEngine,
     int? alertDistance,
@@ -51,9 +47,7 @@ final class SpeedDetectionSettingsLoaded extends SpeedDetectionSettingsState {
     return SpeedDetectionSettingsLoaded(
       speedUnit: speedUnit ?? this.speedUnit,
       isVoiceAlertEnabled: isVoiceAlertEnabled ?? this.isVoiceAlertEnabled,
-      voiceVolume: voiceVolume ?? this.voiceVolume,
-      voiceSpeechRate: voiceSpeechRate ?? this.voiceSpeechRate,
-      voiceEngine: voiceEngine ?? this.voiceEngine,
+      voiceVolumePercentage: voiceVolumePercentage ?? this.voiceVolumePercentage,
       alertDistance: alertDistance ?? this.alertDistance, // constructor 會自動驗證
       hasLocationPermission: hasLocationPermission ?? this.hasLocationPermission,
     );

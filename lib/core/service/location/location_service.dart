@@ -23,6 +23,12 @@ class LatLng {
   int get hashCode => latitude.hashCode ^ longitude.hashCode;
 }
 
+enum LocationPolicy {
+  best,
+  background,
+  hightSpeed
+}
+
 class LocationService {
   final GeolocatorInterface geolocator;
 

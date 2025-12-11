@@ -5,7 +5,7 @@ import 'dart:math';
 
 /// 測速照相點位資料模型
 // @collection // MARK: Isar 暫時不使用
-class SpeedCamera {
+class Camera {
   // Id id = Isar.autoIncrement; // Auto-increment ID // MARK: Isar 暫時不使用
 
   // @Index(type: IndexType.value, caseSensitive: false) // MARK: Isar 暫時不使用
@@ -36,11 +36,11 @@ class SpeedCamera {
   late DateTime lastUpdated; // 最後更新時間
 
   /// 預設 constructor
-  SpeedCamera();
+  Camera();
 
   /// 從 JSON 資料建立 SpeedCamera 物件
-  factory SpeedCamera.fromJson(Map<String, dynamic> json) {
-    return SpeedCamera()
+  factory Camera.fromJson(Map<String, dynamic> json) {
+    return Camera()
       ..cityName = json['CityName'] ?? ''
       ..regionName = json['RegionName'] ?? ''
       ..address = json['Address'] ?? ''
