@@ -22,6 +22,8 @@ class Vehicle implements PickerOption {
 
   late int maintenanceIntervalKm; // e.g., every 5000km or 10000km
 
+  late int order; // 排序順序，數字越小越前面
+
   final records = IsarLinks<VehicleRecord>();
 
   Vehicle();
@@ -33,12 +35,14 @@ class Vehicle implements PickerOption {
     required String carName,
     required int currentKm,
     maintenanceIntervalKm = 0,
+    order = 0,
   }) {
     return Vehicle()
       ..vehicleId = vehicleId ?? _uuid.v4()
       ..carName = carName
       ..currentKm = currentKm
-      ..maintenanceIntervalKm = maintenanceIntervalKm;
+      ..maintenanceIntervalKm = maintenanceIntervalKm
+      ..order = order;
   }
 
   // Empty vehicle for placeholder/initial state
@@ -47,7 +51,8 @@ class Vehicle implements PickerOption {
       ..vehicleId = ''
       ..carName = ''
       ..currentKm = 0
-      ..maintenanceIntervalKm = 0;
+      ..maintenanceIntervalKm = 0
+      ..order = 0;
   }
 
   // Calculate distance to next maintenance

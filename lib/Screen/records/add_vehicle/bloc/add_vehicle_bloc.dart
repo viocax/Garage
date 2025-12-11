@@ -18,6 +18,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     on<LoadUserSettings>(_onLoadUserSettings);
     on<VehicleNameChanged>(_onVehicleNameChanged);
     on<VehicleKmChanged>(_onVehicleKmChanged);
+    on<MaintenanceIntervalChanged>(_onMaintenanceIntervalChanged);
     on<SubmitVehicle>(_onSubmitVehicle);
     add(const LoadUserSettings());
   }
@@ -48,6 +49,12 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     emit(state.copyWith(currentKm: event.km));
   }
 
+  void _onMaintenanceIntervalChanged(
+    MaintenanceIntervalChanged event,
+    Emitter<AddVehicleState> emit,
+  ) {
+    emit(state.copyWith(maintenanceIntervalKm: event.interval));
+  }
 
   Future<void> _onSubmitVehicle(
     SubmitVehicle event,
@@ -69,6 +76,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
       final vehicle = Vehicle.create(
         carName: state.vehicleName,
         currentKm: state.currentKm,
+        maintenanceIntervalKm: state.maintenanceIntervalKm,
       );
 
       final success = await _vehicleRepository.addVehicle(vehicle);

@@ -14,7 +14,8 @@ class LocalVehicleRepository implements VehicleRepository {
       return _cacheList;
     }
     final db = await isarService.isar;
-    final vehicles = await db.vehicles.where().findAll();
+    // Sort by order ascending (smaller order number comes first)
+    final vehicles = await db.vehicles.where().sortByOrder().findAll();
 
     // Load the related records for each vehicle
     for (final vehicle in vehicles) {
@@ -35,6 +36,15 @@ class LocalVehicleRepository implements VehicleRepository {
     try {
       final db = await isarService.isar;
       await db.writeTxn(() async {
+        // Get all existing vehicles and increment their order
+        final existingVehicles = await db.vehicles.where().findAll();
+        for (final v in existingVehicles) {
+          v.order = v.order + 1;
+          await db.vehicles.put(v);
+        }
+
+        // Set new vehicle order to 0 (insert at beginning)
+        vehicle.order = 0;
         await db.vehicles.put(vehicle);
       });
       _invalidateCache();

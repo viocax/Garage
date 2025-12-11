@@ -18,7 +18,8 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
   RecordsBloc() : super(const RecordsState()) {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
     on<SwitchVehicle>(_onSwitchVehicle);
-    on<ClickAddButton>(_onClickAddButton);
+    on<ClickAddVehicleButton>(_onClickAddVehicleButton);
+    on<ClickAddRecordButton>(_onClickAddRecordButton);
     on<AddRecord>(_onAddRecord);
     add(const LoadVehicleRecord());
   }
@@ -46,16 +47,19 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     }
   }
 
-  void _onClickAddButton(
-    ClickAddButton event,
+  void _onClickAddVehicleButton(
+    ClickAddVehicleButton event,
     Emitter<RecordsState> emit,
   ) {
-    if (state.isEmpty) {
-      emit(state.copyWith(sideEffect: RecordsSideEffect.navigateToAddVehicle));
-    } else {
-      emit(state.copyWith(sideEffect: RecordsSideEffect.navigateToAddRecord));
-    }
-
+    emit(state.copyWith(sideEffect: RecordsSideEffect.navigateToAddVehicle));
+    // Clear side effect immediately after emitting
+    emit(state.copyWith(clearSideEffect: true));
+  }
+  void _onClickAddRecordButton(
+    ClickAddRecordButton event,
+    Emitter<RecordsState> emit,
+  ) {
+    emit(state.copyWith(sideEffect: RecordsSideEffect.navigateToAddRecord));
     // Clear side effect immediately after emitting
     emit(state.copyWith(clearSideEffect: true));
   }

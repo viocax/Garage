@@ -38,18 +38,19 @@ const VehicleSchema = CollectionSchema(
       name: r'maintenanceIntervalKm',
       type: IsarType.long,
     ),
+    r'order': PropertySchema(id: 5, name: r'order', type: IsarType.long),
     r'spentThisMonth': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'spentThisMonth',
       type: IsarType.string,
     ),
     r'totalSpent': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'totalSpent',
       type: IsarType.string,
     ),
     r'vehicleId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'vehicleId',
       type: IsarType.string,
     ),
@@ -115,9 +116,10 @@ void _vehicleSerialize(
   writer.writeLong(offsets[2], object.kmToNextMaintenance);
   writer.writeDouble(offsets[3], object.maintenanceHealth);
   writer.writeLong(offsets[4], object.maintenanceIntervalKm);
-  writer.writeString(offsets[5], object.spentThisMonth);
-  writer.writeString(offsets[6], object.totalSpent);
-  writer.writeString(offsets[7], object.vehicleId);
+  writer.writeLong(offsets[5], object.order);
+  writer.writeString(offsets[6], object.spentThisMonth);
+  writer.writeString(offsets[7], object.totalSpent);
+  writer.writeString(offsets[8], object.vehicleId);
 }
 
 Vehicle _vehicleDeserialize(
@@ -131,7 +133,8 @@ Vehicle _vehicleDeserialize(
   object.currentKm = reader.readLong(offsets[1]);
   object.id = id;
   object.maintenanceIntervalKm = reader.readLong(offsets[4]);
-  object.vehicleId = reader.readString(offsets[7]);
+  object.order = reader.readLong(offsets[5]);
+  object.vehicleId = reader.readString(offsets[8]);
   return object;
 }
 
@@ -153,10 +156,12 @@ P _vehicleDeserializeProp<P>(
     case 4:
       return (reader.readLong(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readString(offset)) as P;
+    case 8:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -822,6 +827,65 @@ extension VehicleQueryFilter
     });
   }
 
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> orderEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'order', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> orderGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'order',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> orderLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'order',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> orderBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'order',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
   QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> spentThisMonthEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1391,6 +1455,18 @@ extension VehicleQuerySortBy on QueryBuilder<Vehicle, Vehicle, QSortBy> {
     });
   }
 
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByOrderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.desc);
+    });
+  }
+
   QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortBySpentThisMonth() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'spentThisMonth', Sort.asc);
@@ -1503,6 +1579,18 @@ extension VehicleQuerySortThenBy
     });
   }
 
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByOrderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.desc);
+    });
+  }
+
   QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenBySpentThisMonth() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'spentThisMonth', Sort.asc);
@@ -1574,6 +1662,12 @@ extension VehicleQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Vehicle, Vehicle, QDistinct> distinctByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'order');
+    });
+  }
+
   QueryBuilder<Vehicle, Vehicle, QDistinct> distinctBySpentThisMonth({
     bool caseSensitive = true,
   }) {
@@ -1637,6 +1731,12 @@ extension VehicleQueryProperty
   QueryBuilder<Vehicle, int, QQueryOperations> maintenanceIntervalKmProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'maintenanceIntervalKm');
+    });
+  }
+
+  QueryBuilder<Vehicle, int, QQueryOperations> orderProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'order');
     });
   }
 

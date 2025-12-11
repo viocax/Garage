@@ -87,12 +87,16 @@ class RecordsPage extends StatelessWidget {
   Future<void> _navigateToAddVehicle(BuildContext context) async {
     final vehicle = await context.goPathWithResult<Vehicle>(AppPath.addVehicle);
     if (vehicle != null && context.mounted) {
-      context.read<RecordsBloc>().add(LoadVehicleRecord(vehicleId: vehicle.vehicleId));
+      context.read<RecordsBloc>().add(
+        LoadVehicleRecord(vehicleId: vehicle.vehicleId),
+      );
     }
   }
 
   Future<void> _navigateToAddRecord(BuildContext context) async {
-    final record = await context.goPathWithResult<VehicleRecord>(AppPath.addRecord);
+    final record = await context.goPathWithResult<VehicleRecord>(
+      AppPath.addRecord,
+    );
     if (record != null && context.mounted) {
       context.read<RecordsBloc>().add(AddRecord(record));
     }
@@ -149,7 +153,28 @@ class _RecordsContent extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // 3. Add Button
-                _AddButton(accentRed: AppTheme.dashboardAccentRed),
+                if (vehicles.isNotEmpty)
+                  _AddButton(
+                    accentRed: AppTheme.dashboardAccentRed,
+                    title: '新增紀錄',
+                    onTap: () {
+                      context.read<RecordsBloc>().add(
+                        const ClickAddRecordButton(),
+                      );
+                    },
+                  ),
+
+                const SizedBox(height: 12),
+
+                _AddButton(
+                  accentRed: AppTheme.dashboardAccentRed,
+                  title: '新增車輛',
+                  onTap: () {
+                    context.read<RecordsBloc>().add(
+                      const ClickAddVehicleButton(),
+                    );
+                  },
+                ),
 
                 const SizedBox(height: 40),
 
@@ -460,8 +485,14 @@ class _StatsGrid extends StatelessWidget {
 
 class _AddButton extends StatelessWidget {
   final Color accentRed;
+  final String title;
+  final VoidCallback onTap;
 
-  const _AddButton({required this.accentRed});
+  const _AddButton({
+    required this.accentRed,
+    required this.title,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -477,9 +508,7 @@ class _AddButton extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {
-          context.read<RecordsBloc>().add(const ClickAddButton());
-        },
+        onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: accentRed,
           foregroundColor: Colors.white,
@@ -489,23 +518,19 @@ class _AddButton extends StatelessWidget {
           ),
           elevation: 0,
         ),
-        child: BlocBuilder<RecordsBloc, RecordsState>(
-          builder: (context, state) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.add, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  state.isEmpty ? '新增車輛' : '新增紀錄',
-                  style: const TextStyle(
-                    fontSize: 15.2, // 0.95rem
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            );
-          },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15.2, // 0.95rem
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

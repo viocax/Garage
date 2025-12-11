@@ -21,8 +21,12 @@ final class SwitchVehicle extends RecordsEvent {
   List<Object> get props => [vehicleId];
 }
 
-final class ClickAddButton extends RecordsEvent {
-  const ClickAddButton();
+final class ClickAddVehicleButton extends RecordsEvent {
+  const ClickAddVehicleButton();
+}
+
+final class ClickAddRecordButton extends RecordsEvent {
+  const ClickAddRecordButton();
 }
 
 final class AddRecord extends RecordsEvent {

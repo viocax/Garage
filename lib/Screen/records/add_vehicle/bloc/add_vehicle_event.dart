@@ -25,6 +25,15 @@ final class VehicleKmChanged extends AddVehicleEvent {
   List<Object> get props => [km];
 }
 
+final class MaintenanceIntervalChanged extends AddVehicleEvent {
+  final int interval;
+
+  const MaintenanceIntervalChanged(this.interval);
+
+  @override
+  List<Object> get props => [interval];
+}
+
 final class SubmitVehicle extends AddVehicleEvent {
   const SubmitVehicle();
 }

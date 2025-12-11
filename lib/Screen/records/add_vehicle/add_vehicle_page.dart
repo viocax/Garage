@@ -184,6 +184,10 @@ class _FormCard extends StatelessWidget {
           Divider(color: AppTheme.dashboardTextSecondary, height: 1),
           SizedBox(height: 20),
           _MileageInput(),
+          SizedBox(height: 4),
+          Divider(color: AppTheme.dashboardTextSecondary, height: 1),
+          SizedBox(height: 20),
+          _MaintenanceIntervalInput(),
         ],
       ),
     );
@@ -334,6 +338,89 @@ class _MileageInput extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _MaintenanceIntervalInput extends StatelessWidget {
+  const _MaintenanceIntervalInput();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '保養週期 (選填)',
+          style: TextStyle(
+            fontSize: 13,
+            color: AppTheme.dashboardTextSecondary,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Stack(
+          alignment: Alignment.centerRight,
+          children: [
+            TextField(
+              cursorColor: AppTheme.accentColor,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(
+                fontSize: 18,
+                color: AppTheme.dashboardTextPrimary,
+              ),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: AppTheme.inputBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: AppTheme.dashboardAccentRed,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.fromLTRB(16, 16, 50, 16),
+                hintText: '0',
+                hintStyle: const TextStyle(color: AppTheme.placeholderGray),
+              ),
+              onChanged: (value) {
+                final interval = int.tryParse(value) ?? 0;
+                context.read<AddVehicleBloc>().add(
+                  MaintenanceIntervalChanged(interval),
+                );
+              },
+            ),
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: Text(
+                'km',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.dashboardTextSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text(
+            '例如：每 5000 或 10000 公里保養一次',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppTheme.dashboardTextSecondary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage/screen/settings/settings_page.dart';
 import 'package:garage/screen/settings/speed_detection_settings/speed_detection_settings_page.dart';
+import 'package:garage/screen/settings/vehicle_management/vehicle_management_page.dart';
 import 'package:garage/screen/records/records_page.dart';
 import 'package:garage/screen/speed/speedCamera/speed_camera_page.dart';
 import 'package:go_router/go_router.dart';
@@ -39,6 +40,9 @@ class AppPath {
 
   static final settings =
       AppPath(name: 'settings', previous: home);
+
+  static final vehicleManagement =
+      AppPath(name: 'vehicleManagement', previous: settings);
 
   static final speedDetectionSettings =
       AppPath(name: 'speedDetectionSettings', previous: settings);
@@ -117,6 +121,12 @@ class AppRouter {
                   name: AppPath.settings.name,
                   builder: (context, state) => const SettingsPage(),
                   routes: [
+                    GoRoute(
+                      path: AppPath.vehicleManagement.path,
+                      name: AppPath.vehicleManagement.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const VehicleManagementPage(),
+                    ),
                     GoRoute(
                       path: AppPath.speedDetectionSettings.path,
                       name: AppPath.speedDetectionSettings.name,

@@ -64,6 +64,13 @@ class SettingsPage extends StatelessWidget {
                       // 一般設定
                       const SettingsSectionHeader(title: '一般'),
                       SettingsItem(
+                        title: '車輛管理',
+                        icon: Icons.directions_car_outlined,
+                        onTap: () {
+                          context.goPath(AppPath.vehicleManagement);
+                        },
+                      ),
+                      SettingsItem(
                         title: '測速設置',
                         icon: Icons.radar_outlined,
                         onTap: () {
