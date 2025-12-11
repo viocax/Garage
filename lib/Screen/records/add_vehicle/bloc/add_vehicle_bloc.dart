@@ -57,7 +57,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
       emit(
         state.copyWith(
           status: AddVehicleStatus.failure,
-          errorMessage: '請填寫車輛名稱',
+          errorMessage: '請填寫完整',
         ),
       );
       return;

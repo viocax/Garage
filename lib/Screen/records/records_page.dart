@@ -46,31 +46,34 @@ class RecordsPage extends StatelessWidget {
                 child: CustomPaint(painter: GridBackgroundPainter()),
               ),
               SafeArea(
-                child: BlocBuilder<RecordsBloc, RecordsState>(
+                child: BlocConsumer<RecordsBloc, RecordsState>(
+                  listener: (context, state) {
+                    // Handle error message
+                    if (state.errorMessage != null) {
+                      // TODO: Show toast or snackbar
+                      debugPrint('Error: ${state.errorMessage}');
+                    }
+
+                    // Handle side effects
+                    if (state.sideEffect != null) {
+                      switch (state.sideEffect!) {
+                        case RecordsSideEffect.navigateToAddVehicle:
+                          _navigateToAddVehicle(context);
+                          break;
+                        case RecordsSideEffect.navigateToAddRecord:
+                          _navigateToAddRecord(context);
+                          break;
+                      }
+                    }
+                  },
                   builder: (context, state) {
-                    return switch (state) {
-                      RecordsLoading() => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      RecordsEmpty() => _RecordsContent(
-                        vehicle: Vehicle.empty(),
-                        vehicles: const [],
-                        currentVehicleId: '',
-                      ),
-                      RecordsError(:final message) => Center(
-                        child: Text('Error: $message'),
-                      ),
-                      RecordsLoaded(
-                        :final currentVehicle,
-                        :final vehicles,
-                        :final currentVehicleId,
-                      ) =>
-                        _RecordsContent(
-                          vehicle: currentVehicle,
-                          vehicles: vehicles,
-                          currentVehicleId: currentVehicleId,
-                        ),
-                    };
+                    return _RecordsContent(
+                      vehicle: state.currentVehicle,
+                      vehicles: state.vehicles,
+                      currentVehicleId: state.currentVehicleId,
+                      odometerString: state.odometerString,
+                      unitString: state.unitString,
+                    );
                   },
                 ),
               ),
@@ -80,17 +83,35 @@ class RecordsPage extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _navigateToAddVehicle(BuildContext context) async {
+    final vehicle = await context.goPathWithResult<Vehicle>(AppPath.addVehicle);
+    if (vehicle != null && context.mounted) {
+      context.read<RecordsBloc>().add(LoadVehicleRecord(vehicleId: vehicle.vehicleId));
+    }
+  }
+
+  Future<void> _navigateToAddRecord(BuildContext context) async {
+    final record = await context.goPathWithResult<VehicleRecord>(AppPath.addRecord);
+    if (record != null && context.mounted) {
+      context.read<RecordsBloc>().add(AddRecord(record));
+    }
+  }
 }
 
 class _RecordsContent extends StatelessWidget {
   final Vehicle vehicle;
   final List<Vehicle> vehicles;
   final String currentVehicleId;
+  final String odometerString;
+  final String unitString;
 
   const _RecordsContent({
     required this.vehicle,
     required this.vehicles,
     required this.currentVehicleId,
+    required this.odometerString,
+    required this.unitString,
   });
 
   @override
@@ -110,6 +131,8 @@ class _RecordsContent extends StatelessWidget {
                   vehicle: vehicle,
                   vehicles: vehicles,
                   currentVehicleId: currentVehicleId,
+                  odometerString: odometerString,
+                  unitString: unitString,
                 ),
 
                 const SizedBox(height: 24),
@@ -154,6 +177,8 @@ class _HeroSection extends StatelessWidget {
   final Vehicle vehicle;
   final List<Vehicle> vehicles;
   final String currentVehicleId;
+  final String odometerString;
+  final String unitString;
 
   const _HeroSection({
     required this.textSecondary,
@@ -161,6 +186,8 @@ class _HeroSection extends StatelessWidget {
     required this.vehicle,
     required this.vehicles,
     required this.currentVehicleId,
+    required this.odometerString,
+    required this.unitString,
   });
 
   @override
@@ -226,7 +253,7 @@ class _HeroSection extends StatelessWidget {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      context.read<RecordsBloc>().odometer,
+                      odometerString,
                       style: const TextStyle(
                         fontSize: 45, // ~2.8rem
                         fontWeight: FontWeight.w700,
@@ -236,7 +263,7 @@ class _HeroSection extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      context.read<RecordsBloc>().unitString,
+                      unitString,
                       style: TextStyle(fontSize: 16, color: textSecondary),
                     ),
                   ],
@@ -450,19 +477,8 @@ class _AddButton extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () async {
-          final bloc = context.read<RecordsBloc>();
-          final action = bloc.clickAction();
-          switch (action) {
-            case ClickAddEvent.addVehicle:
-              final vehicle = await context.goPathWithResult<Vehicle>(AppPath.addVehicle);
-              bloc.add(AddVehicle(vehicle));
-              break;
-            case ClickAddEvent.addRecord:
-              final record = await context.goPathWithResult<VehicleRecord>(AppPath.addRecord);
-              bloc.add(AddRecord(record));
-              break;
-          }
+        onPressed: () {
+          context.read<RecordsBloc>().add(const ClickAddButton());
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: accentRed,
@@ -473,19 +489,23 @@ class _AddButton extends StatelessWidget {
           ),
           elevation: 0,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.add, size: 18),
-            const SizedBox(width: 8),
-            Text(
-             context.read<RecordsBloc>().state is RecordsEmpty ? '新增車輛' : '新增紀錄',
-              style: const TextStyle(
-                fontSize: 15.2, // 0.95rem
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        child: BlocBuilder<RecordsBloc, RecordsState>(
+          builder: (context, state) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.add, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  state.isEmpty ? '新增車輛' : '新增紀錄',
+                  style: const TextStyle(
+                    fontSize: 15.2, // 0.95rem
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

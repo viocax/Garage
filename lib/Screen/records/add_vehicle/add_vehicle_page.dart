@@ -228,7 +228,7 @@ class _VehicleNameInput extends StatelessWidget {
               borderSide: const BorderSide(color: AppTheme.dashboardAccentRed),
             ),
             contentPadding: const EdgeInsets.all(16),
-            hintText: 'Nickname',
+            hintText: '愛車名稱',
             hintStyle: const TextStyle(color: AppTheme.placeholderGray),
           ),
           onChanged: (value) {
