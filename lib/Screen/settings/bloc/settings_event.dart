@@ -11,3 +11,11 @@ final class ExportData extends SettingsEvent {
 final class ClearData extends SettingsEvent {
   const ClearData();
 }
+
+final class ClickSpeedSetting extends SettingsEvent {
+  const ClickSpeedSetting();
+}
+
+final class StopTracking extends SettingsEvent {
+  const StopTracking();
+}

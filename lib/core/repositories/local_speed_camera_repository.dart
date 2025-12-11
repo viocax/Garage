@@ -27,6 +27,8 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 資料載入時間
   DateTime? _loadedAt;
 
+  @override
+  bool get isTracking => _speedSubscription != null;
   /// 從本地 JSON 檔案載入所有測速照相資料（私有方法）
   ///
   /// 只在第一次呼叫時讀取並解析 JSON，之後使用快取資料
