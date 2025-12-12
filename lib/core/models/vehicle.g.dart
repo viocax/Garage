@@ -132,6 +132,7 @@ Vehicle _vehicleDeserialize(
   object.carName = reader.readString(offsets[0]);
   object.currentKm = reader.readLong(offsets[1]);
   object.id = id;
+  object.kmToNextMaintenance = reader.readLong(offsets[2]);
   object.maintenanceIntervalKm = reader.readLong(offsets[4]);
   object.order = reader.readLong(offsets[5]);
   object.vehicleId = reader.readString(offsets[8]);

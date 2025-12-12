@@ -36,12 +36,23 @@ class LocalVehicleRepository implements VehicleRepository {
     try {
       final db = await isarService.isar;
       await db.writeTxn(() async {
-        // Get all existing vehicles and increment their order
+        // Get all existing vehicles
         final existingVehicles = await db.vehicles.where().findAll();
-        for (final v in existingVehicles) {
-          v.order = v.order + 1;
-          await db.vehicles.put(v);
-        }
+
+        // Create clean vehicle instances without link state to avoid nested transactions
+        final updatedVehicles = existingVehicles.map((v) {
+          return Vehicle()
+            ..id = v.id
+            ..vehicleId = v.vehicleId
+            ..carName = v.carName
+            ..currentKm = v.currentKm
+            ..maintenanceIntervalKm = v.maintenanceIntervalKm
+            ..kmToNextMaintenance = v.kmToNextMaintenance
+            ..order = v.order + 1;
+        }).toList();
+
+        // Batch update all existing vehicles
+        await db.vehicles.putAll(updatedVehicles);
 
         // Set new vehicle order to 0 (insert at beginning)
         vehicle.order = 0;
@@ -69,12 +80,14 @@ class LocalVehicleRepository implements VehicleRepository {
         return false;
       }
 
+      // Load records outside of transaction to avoid nested transaction error
+      await vehicle.records.load();
+
       await db.writeTxn(() async {
         // Save the record
         await db.vehicleRecords.put(record);
 
         // Link the record to the vehicle
-        await vehicle.records.load();
         vehicle.records.add(record);
         await vehicle.records.save();
       });
@@ -100,9 +113,11 @@ class LocalVehicleRepository implements VehicleRepository {
         return false;
       }
 
+      // Load records outside of transaction to avoid nested transaction error
+      await vehicle.records.load();
+
       await db.writeTxn(() async {
-        // Load and delete all related records
-        await vehicle.records.load();
+        // Delete all related records
         for (final record in vehicle.records) {
           await db.vehicleRecords.delete(record.id);
         }

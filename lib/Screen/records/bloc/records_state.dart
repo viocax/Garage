@@ -3,6 +3,7 @@ part of 'records_bloc.dart';
 enum RecordsSideEffect {
   navigateToAddVehicle,
   navigateToAddRecord,
+  navigateToEditVehicle,
 }
 
 class RecordsState extends Equatable {

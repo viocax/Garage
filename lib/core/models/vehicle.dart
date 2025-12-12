@@ -22,6 +22,8 @@ class Vehicle implements PickerOption {
 
   late int maintenanceIntervalKm; // e.g., every 5000km or 10000km
 
+  late int kmToNextMaintenance;
+
   late int order; // 排序順序，數字越小越前面
 
   final records = IsarLinks<VehicleRecord>();
@@ -34,7 +36,7 @@ class Vehicle implements PickerOption {
     String? vehicleId,
     required String carName,
     required int currentKm,
-    maintenanceIntervalKm = 0,
+    required int maintenanceIntervalKm,
     order = 0,
   }) {
     return Vehicle()
@@ -42,6 +44,7 @@ class Vehicle implements PickerOption {
       ..carName = carName
       ..currentKm = currentKm
       ..maintenanceIntervalKm = maintenanceIntervalKm
+      ..kmToNextMaintenance = currentKm + maintenanceIntervalKm
       ..order = order;
   }
 
@@ -52,24 +55,18 @@ class Vehicle implements PickerOption {
       ..carName = ''
       ..currentKm = 0
       ..maintenanceIntervalKm = 0
+      ..kmToNextMaintenance = 0
       ..order = 0;
-  }
-
-  // Calculate distance to next maintenance
-  // Assuming maintenance is needed when (currentKm % maintenanceIntervalKm) == 0
-  // Or simply: remaining = interval - (current % interval)
-  int get kmToNextMaintenance {
-    if (maintenanceIntervalKm <= 0) return 0;
-    final remainder = currentKm % maintenanceIntervalKm;
-    return maintenanceIntervalKm - remainder;
   }
 
   // Calculate maintenance health percentage (1.0 = fresh, 0.0 = due)
   double get maintenanceHealth {
-    if (maintenanceIntervalKm <= 0) return 0.0;
-    return max(0.0, min(1.0, kmToNextMaintenance / maintenanceIntervalKm));
+    if (maintenanceIntervalKm <= 0) return 1.0;
+    return max(0.0, min(1.0, remindKm / maintenanceIntervalKm));
   }
-
+  int get remindKm {
+    return max(kmToNextMaintenance - currentKm, 0);
+  }
   // Helper to get total spent from records
   String get totalSpent {
     final recordsList = records.toList();

@@ -27,18 +27,83 @@ class RecordsPage extends StatelessWidget {
             context.read<RecordsBloc>().add(LoadVehicleRecord());
           }
         },
-        child: _body(context),
+        child: BlocConsumer<RecordsBloc, RecordsState>(
+          listener: (context, state) {
+            // Handle error message
+            if (state.errorMessage != null) {
+              // TODO: Show toast or snackbar
+              debugPrint('Error: ${state.errorMessage}');
+            }
+
+            // Handle side effects
+            if (state.sideEffect != null) {
+              switch (state.sideEffect!) {
+                case RecordsSideEffect.navigateToAddVehicle:
+                  _navigateToAddVehicle(context);
+                  break;
+                case RecordsSideEffect.navigateToAddRecord:
+                  _navigateToAddRecord(context);
+                  break;
+                case RecordsSideEffect.navigateToEditVehicle:
+                  _navigateToEditVehicle(context);
+                  break;
+              }
+            }
+          },
+          builder: (context, state) {
+            return _body(context, state);
+          },
+        ),
       ),
     );
   }
 
-  Widget _body(BuildContext context) {
+  Widget _body(BuildContext context, RecordsState state) {
     return Theme(
       data: AppTheme.darkTheme,
       child: ThemedStatusBar(
         theme: StatusBarTheme.light,
         child: Scaffold(
           backgroundColor: AppTheme.dashboardBg,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            actions: [
+              // 編輯車輛 - 只在有車輛時顯示
+              if (state.vehicles.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () {
+                    context.read<RecordsBloc>().add(
+                      const ClickEditVehicleButton(),
+                    );
+                  },
+                  tooltip: '編輯車輛',
+                ),
+              // 新增車輛 - 總是顯示
+              IconButton(
+                icon: const Icon(Icons.directions_car),
+                onPressed: () {
+                  context.read<RecordsBloc>().add(
+                    const ClickAddVehicleButton(),
+                  );
+                },
+                tooltip: '新增車輛',
+              ),
+              // 新增紀錄 - 只在有車輛時顯示
+              if (state.vehicles.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: () {
+                    context.read<RecordsBloc>().add(
+                      const ClickAddRecordButton(),
+                    );
+                  },
+                  tooltip: '新增紀錄',
+                ),
+            ],
+          ),
           body: Stack(
             children: [
               // Background Grid Pattern
@@ -46,35 +111,12 @@ class RecordsPage extends StatelessWidget {
                 child: CustomPaint(painter: GridBackgroundPainter()),
               ),
               SafeArea(
-                child: BlocConsumer<RecordsBloc, RecordsState>(
-                  listener: (context, state) {
-                    // Handle error message
-                    if (state.errorMessage != null) {
-                      // TODO: Show toast or snackbar
-                      debugPrint('Error: ${state.errorMessage}');
-                    }
-
-                    // Handle side effects
-                    if (state.sideEffect != null) {
-                      switch (state.sideEffect!) {
-                        case RecordsSideEffect.navigateToAddVehicle:
-                          _navigateToAddVehicle(context);
-                          break;
-                        case RecordsSideEffect.navigateToAddRecord:
-                          _navigateToAddRecord(context);
-                          break;
-                      }
-                    }
-                  },
-                  builder: (context, state) {
-                    return _RecordsContent(
-                      vehicle: state.currentVehicle,
-                      vehicles: state.vehicles,
-                      currentVehicleId: state.currentVehicleId,
-                      odometerString: state.odometerString,
-                      unitString: state.unitString,
-                    );
-                  },
+                child: _RecordsContent(
+                  vehicle: state.currentVehicle,
+                  vehicles: state.vehicles,
+                  currentVehicleId: state.currentVehicleId,
+                  odometerString: state.odometerString,
+                  unitString: state.unitString,
                 ),
               ),
             ],
@@ -100,6 +142,14 @@ class RecordsPage extends StatelessWidget {
     if (record != null && context.mounted) {
       context.read<RecordsBloc>().add(AddRecord(record));
     }
+  }
+
+  Future<void> _navigateToEditVehicle(BuildContext context) async {
+    // await context.goPathWithResult(AppPath.vehicleManagement);
+    // if (context.mounted) {
+    //   // Reload vehicle data after returning from vehicle management
+    //   context.read<RecordsBloc>().add(const LoadVehicleRecord());
+    // }
   }
 }
 
@@ -152,33 +202,7 @@ class _RecordsContent extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // 3. Add Button
-                if (vehicles.isNotEmpty)
-                  _AddButton(
-                    accentRed: AppTheme.dashboardAccentRed,
-                    title: '新增紀錄',
-                    onTap: () {
-                      context.read<RecordsBloc>().add(
-                        const ClickAddRecordButton(),
-                      );
-                    },
-                  ),
-
-                const SizedBox(height: 12),
-
-                _AddButton(
-                  accentRed: AppTheme.dashboardAccentRed,
-                  title: '新增車輛',
-                  onTap: () {
-                    context.read<RecordsBloc>().add(
-                      const ClickAddVehicleButton(),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 40),
-
-                // 4. Recent Activity Stack
+                // 3. Recent Activity Stack
                 _RecentActivitySection(
                   textPrimary: AppTheme.dashboardTextPrimary,
                   textSecondary: AppTheme.dashboardTextSecondary,
@@ -465,7 +489,7 @@ class _StatsGrid extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '距離保養\n還剩 ${vehicle.kmToNextMaintenance} km',
+                    '距離保養\n還剩 ${vehicle.remindKm} km',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 11.5, // 0.72rem
@@ -478,60 +502,6 @@ class _StatsGrid extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AddButton extends StatelessWidget {
-  final Color accentRed;
-  final String title;
-  final VoidCallback onTap;
-
-  const _AddButton({
-    required this.accentRed,
-    required this.title,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: accentRed.withValues(alpha: 0.25),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: accentRed,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.add, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 15.2, // 0.95rem
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

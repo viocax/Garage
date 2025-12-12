@@ -29,6 +29,10 @@ final class ClickAddRecordButton extends RecordsEvent {
   const ClickAddRecordButton();
 }
 
+final class ClickEditVehicleButton extends RecordsEvent {
+  const ClickEditVehicleButton();
+}
+
 final class AddRecord extends RecordsEvent {
   final VehicleRecord? record;
   const AddRecord(this.record);
