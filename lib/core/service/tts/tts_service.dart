@@ -92,7 +92,6 @@ class TtsService {
         }
 
         try {
-          // TODO: unit, 語音 要根據user設定去切換
           final text = '超速警告，前方 ${t.distance.toStringAsFixed(0)} 公尺，'
               '限速 ${t.speedLimit.toStringAsFixed(0)} 公里，'
               '目前速度 ${t.currentSpeed.toStringAsFixed(0)} 公里';
