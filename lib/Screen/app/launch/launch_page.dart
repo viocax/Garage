@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
 import 'package:garage/screen/app/launch/bloc/launch_state.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
 import 'package:garage/theme/speed_line_painter.dart';
-import 'package:garage/core/di/service_locator.dart';
 import 'dart:math' as math;
 
 /// 啟動頁面
@@ -26,7 +24,7 @@ class _LaunchPageState extends State<LaunchPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt.bloc.launch(this),
+      create: (_) => LaunchBloc(this),
       child: const LaunchView(),
     );
   }
@@ -43,7 +41,7 @@ class LaunchView extends StatelessWidget {
       listener: (context, state) {
         switch (state) {
           case LaunchCompleted():
-            context.go(AppRouter.speedometer);
+            context.goPath(AppPath.speedometer);
           case LaunchError(:final message):
             ScaffoldMessenger.of(
               context,
@@ -52,12 +50,8 @@ class LaunchView extends StatelessWidget {
             break;
         }
       },
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
-        ),
+      child: ThemedStatusBar(
+        theme: StatusBarTheme.light,
         child: Scaffold(
           backgroundColor: AppTheme.primaryColor,
           body: Stack(
@@ -221,8 +215,8 @@ class LaunchView extends StatelessWidget {
               center: const Alignment(0, 0.5),
               radius: 1.2,
               colors: [
-                const Color(0xFF1E1E1E).withValues(alpha: 0.8),
-                const Color(0xFF0A0A0A),
+                AppTheme.launchGradientStart.withValues(alpha: 0.8),
+                AppTheme.launchGradientEnd,
               ],
               stops: const [0.0, 0.7],
             ),
@@ -257,16 +251,9 @@ class LaunchView extends StatelessWidget {
       height: 6,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isActive
-            ? AppTheme.accentColor
-            : AppTheme.accentColor.withValues(alpha: 0.3),
+        color: isActive ? AppTheme.accentColor : AppTheme.whiteTransparent30,
         boxShadow: isActive
-            ? [
-                BoxShadow(
-                  color: AppTheme.accentColor.withValues(alpha: 0.5),
-                  blurRadius: 10,
-                ),
-              ]
+            ? [BoxShadow(color: AppTheme.whiteTransparent50, blurRadius: 10)]
             : null,
       ),
     );
@@ -309,7 +296,7 @@ class LaunchView extends StatelessWidget {
               fontSize: 18,
               letterSpacing: 4,
               fontWeight: FontWeight.w300,
-              color: AppTheme.accentColor.withValues(alpha: 0.5),
+              color: AppTheme.whiteTransparent50,
             ),
           ),
         ),
@@ -330,13 +317,13 @@ class WheelRimPainter extends CustomPainter {
     final radius = math.min(size.width, size.height) / 2;
 
     final paint = Paint()
-      ..color = AppTheme.accentColor.withValues(alpha: 0.8)
+      ..color = AppTheme.whiteTransparent80
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
     final glowPaint = Paint()
-      ..color = AppTheme.accentColor.withValues(alpha: 0.3)
+      ..color = AppTheme.whiteTransparent30
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:flutter/services.dart';
+import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
-
+import 'package:garage/core/models/speed_camera_model.dart';
 import 'package:garage/core/models/speed_unit.dart';
+import 'package:garage/core/models/tabbar_type.dart';
+import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
+import 'package:garage/screen/app/home/bloc/garage_home_state.dart';
 import '../car3d/car_3d_view.dart';
 import '../car3d/bloc/car_3d_bloc.dart';
 import '../car3d/bloc/car_3d_event.dart';
@@ -75,13 +78,17 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               }
             },
           ),
-        ],
-        child: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light,
-            statusBarBrightness: Brightness.dark,
+          BlocListener<GarageHomeBloc, GarageHomeState>(
+            listener: (context, state) {
+              // 當切換到測速 tab 時，重新載入設定
+              if (state.tabbarType is SpeedCameraTab) {
+                context.read<SpeedBloc>().add(const SpeedLoading());
+              }
+            },
           ),
+        ],
+        child: ThemedStatusBar(
+          theme: StatusBarTheme.light,
           child: Scaffold(
             backgroundColor: AppTheme.primaryColor,
             body: Stack(
@@ -123,7 +130,6 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                         SpeedData(
                           :final speed,
                           :final unit,
-                          :final maxSpeed,
                           :final isOverSpeed,
                           :final isDetecting,
                         ) =>
@@ -135,7 +141,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                                   speed: speed.toInt().toString(),
                                   unit: unit,
                                   isOverSpeed: isOverSpeed,
-                                  maxSpeed: maxSpeed,
+                                  maxSpeed: SpeedCameraModel.maxSpeed,
                                 ),
                               ),
                               // Detection Button (Bottom Center)
@@ -659,7 +665,7 @@ class _DetectionButtonState extends State<DetectionButton>
                             end: Alignment.bottomRight,
                             colors: [
                               AppTheme.accentColor,
-                              AppTheme.accentColor.withValues(alpha: 0.8),
+                              AppTheme.whiteTransparent80,
                             ],
                           )
                         : LinearGradient(
@@ -761,7 +767,7 @@ class _SpeedDetectionButtonState extends State<SpeedDetectionButton>
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.6), // 半透明深色背景
+              color: AppTheme.blackTransparent60,
               shape: BoxShape.circle,
               border: Border.all(
                 color: widget.isDetecting ? activeColor : inactiveColor,

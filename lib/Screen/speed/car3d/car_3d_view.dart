@@ -143,6 +143,7 @@ class _Car3DViewState extends State<Car3DView>
                   padding: EdgeInsets.all(24),
                   child: AbsorbPointer(
                     child: ModelViewer(
+                      key: ValueKey(modelSrc), // 添加 key 防止重复创建 Platform View
                       src: modelSrc,
                       alt: "A 3D car model",
                       autoRotate: false,

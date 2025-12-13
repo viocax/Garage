@@ -23,6 +23,12 @@ class LatLng {
   int get hashCode => latitude.hashCode ^ longitude.hashCode;
 }
 
+enum LocationPolicy {
+  best,
+  background,
+  hightSpeed
+}
+
 class LocationService {
   final GeolocatorInterface geolocator;
 
@@ -35,8 +41,19 @@ class LocationService {
     ),
   });
 
+  Future<bool> checkPermission() async {
+    final permission = await geolocator.checkPermission();
+    switch (permission) {
+      case LocationPermission.always:
+      case LocationPermission.whileInUse:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   /// 檢查並請求定位權限
-  Future<bool> _handlePermission() async {
+  Future<bool> requestPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -68,7 +85,7 @@ class LocationService {
   ///
   /// 如果權限不足或服務未開啟，可能拋出異常或返回 null
   Future<Position?> getCurrentPosition() async {
-    final hasPermission = await _handlePermission();
+    final hasPermission = await requestPermission();
     if (!hasPermission) {
       return null;
     }
@@ -109,17 +126,17 @@ class LocationService {
   }
 
   /// 監聽速度變化（單位：公尺/秒）
-  Stream<double> getSpeedStream() {
-    return getPositionStream().map((position) => position.speed);
-  }
+  // Stream<double> getSpeedStream() {
+  //   return getPositionStream().map((position) => position.speed);
+  // }
 
-  /// 監聽速度變化（單位：公里/小時）
-  Stream<double> getSpeedKmhStream() {
-    return getPositionStream().map((position) => position.speed * 3.6);
-  }
+  // /// 監聽速度變化（單位：公里/小時）
+  // Stream<double> getSpeedKmhStream() {
+  //   return getPositionStream().map((position) => position.speed * 3.6);
+  // }
 
-  /// 監聽經緯度變化
-  Stream<LatLng> getLatLngStream() {
-    return getPositionStream().map((position) => LatLng(position.latitude, position.longitude));
-  }
+  // /// 監聽經緯度變化
+  // Stream<LatLng> getLatLngStream() {
+  //   return getPositionStream().map((position) => LatLng(position.latitude, position.longitude));
+  // }
 }

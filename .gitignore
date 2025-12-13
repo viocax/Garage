@@ -43,3 +43,22 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Fastlane & Ruby
+vendor/
+.bundle/
+
+# Fastlane
+*/fastlane/report.xml
+*/fastlane/screenshots
+
+
+# Fastlane secrets
+ios/fastlane/.env
+ios/fastlane/*.p8
+
+# iOS build artifacts
+ios/*.ipa
+ios/*.dSYM.zip
+ios/Runner.ipa
+ios/Runner.app.dSYM.zip

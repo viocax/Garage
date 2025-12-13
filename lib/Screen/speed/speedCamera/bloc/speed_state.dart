@@ -9,7 +9,6 @@ final class SpeedData extends SpeedState {
   final double speed; // 當前速度
   final Duration animationDuration; // 動畫時長
   final SpeedUnit unit; // 速度單位
-  final double maxSpeed;
   final String? lowerSpeed; // 最低速限
   final String? upperSpeed; // 最高速限
   final bool isOverSpeed; // 是否超速
@@ -19,7 +18,6 @@ final class SpeedData extends SpeedState {
     required this.speed,
     required this.animationDuration,
     required this.unit,
-    required this.maxSpeed,
     this.lowerSpeed,
     this.upperSpeed,
     this.isOverSpeed = false,
@@ -30,7 +28,6 @@ final class SpeedData extends SpeedState {
     double? speed,
     Duration? animationDuration,
     SpeedUnit? unit,
-    double? maxSpeed,
     String? lowerSpeed,
     String? upperSpeed,
     bool? isOverSpeed,
@@ -40,7 +37,6 @@ final class SpeedData extends SpeedState {
       speed: speed ?? this.speed,
       animationDuration: animationDuration ?? this.animationDuration,
       unit: unit ?? this.unit,
-      maxSpeed: maxSpeed ?? this.maxSpeed,
       lowerSpeed: lowerSpeed ?? this.lowerSpeed,
       upperSpeed: upperSpeed ?? this.upperSpeed,
       isOverSpeed: isOverSpeed ?? this.isOverSpeed,

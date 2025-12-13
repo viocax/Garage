@@ -1,72 +1,140 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/material.dart';
 import 'package:garage/screen/settings/settings_page.dart';
-import 'package:garage/core/core.dart';
+import 'package:garage/screen/settings/speed_detection_settings/speed_detection_settings_page.dart';
+import 'package:garage/screen/settings/vehicle_management/vehicle_management_page.dart';
 import 'package:garage/screen/records/records_page.dart';
 import 'package:garage/screen/speed/speedCamera/speed_camera_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:garage/screen/app/home/garage_home_page.dart';
 import 'package:garage/screen/app/launch/launch_page.dart';
+import 'package:garage/screen/records/add_record/add_record_page.dart';
+import 'package:garage/screen/records/add_vehicle/add_vehicle_page.dart';
+import 'package:garage/core/models/vehicle.dart';
 
+
+/// 路由路徑枚舉，統一管理所有路由的 path 和 name
+class AppPath {
+  final String name;
+  final AppPath? previous;
+
+  const AppPath({
+    required this.name,
+    this.previous,
+  });
+
+  // static instances
+  static final launch = AppPath(name: 'launch');
+  static final home = AppPath(name: 'home');
+
+  static final speedometer =
+      AppPath(name: 'speedometer', previous: home);
+
+  static final records =
+      AppPath(name: 'records', previous: home);
+
+  static final addRecord =
+      AppPath(name: 'addRecord', previous: records);
+
+  static final addVehicle =
+      AppPath(name: 'addVehicle', previous: records);
+
+  static final settings =
+      AppPath(name: 'settings', previous: home);
+
+  static final vehicleManagement =
+      AppPath(name: 'vehicleManagement', previous: settings);
+
+  static final speedDetectionSettings =
+      AppPath(name: 'speedDetectionSettings', previous: settings);
+
+  /// compute full path
+  String get path {
+    if (previous == null) {
+      return '/$name';
+    }
+    return '${previous!.path}/$name';
+  }
+}
 /// 應用程式的路由配置
 class AppRouter {
-  /// 路由路徑
-  static const String launch = '/';
-  static const String home = 'home';
-  static const String speedometer = '/speedometer';
-  static const String records = '/records';
-  static const String settings = '/settings';
+  /// Root navigator key - 用於全屏路由
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
   /// 建立並返回 GoRouter 實例
   static GoRouter createRouter() {
     return GoRouter(
-      initialLocation: launch,
+      navigatorKey: _rootNavigatorKey,
+      initialLocation: AppPath.launch.path,
       routes: [
         GoRoute(
-          path: launch,
-          name: 'launch',
+          path: AppPath.launch.path,
+          name: AppPath.launch.name,
           builder: (context, state) => const LaunchPage(),
         ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) {
-            return BlocProvider(
-              create: (context) => getIt.bloc.home,
-              child: GarageHomePage(shell: shell),
-            );
+            return GarageHomePage(shell: shell);
           },
           branches: [
             StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: speedometer,
-                  name: 'speedometer',
-                  builder: (context, state) => BlocProvider(
-                    create: (context) => getIt.bloc.speed,
-                    child: const SpeedCameraPage(),
-                  ),
+                  path: AppPath.speedometer.path,
+                  name: AppPath.speedometer.name,
+                  builder: (context, state) => const SpeedCameraPage(),
                 ),
               ],
             ),
             StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: records,
-                  name: 'records',
-                  builder: (context, state) => BlocProvider(
-                    create: (context) => getIt.bloc.car3d,
-                    child: const RecordsPage(),
-                  ),
+                  path: AppPath.records.path,
+                  name: AppPath.records.name,
+                  builder: (context, state) => const RecordsPage(),
+                  routes: [
+                    GoRoute(
+                      path: AppPath.addRecord.path,
+                      name: AppPath.addRecord.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) {
+                        final vehicle =
+                            state.extra as Vehicle? ?? Vehicle.empty();
+                        return AddRecordPage(vehicle: vehicle);
+                      },
+                    ),
+                    GoRoute(
+                      path: AppPath.addVehicle.path,
+                      name: AppPath.addVehicle.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) {
+                        return const AddVehiclePage();
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
             StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: settings,
-                  name: 'settings',
-                  builder: (context, state) => BlocProvider(
-                    create: (context) => getIt.bloc.settings,
-                    child: const SettingsPage(),
-                  ),
+                  path: AppPath.settings.path,
+                  name: AppPath.settings.name,
+                  builder: (context, state) => const SettingsPage(),
+                  routes: [
+                    GoRoute(
+                      path: AppPath.vehicleManagement.path,
+                      name: AppPath.vehicleManagement.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const VehicleManagementPage(),
+                    ),
+                    GoRoute(
+                      path: AppPath.speedDetectionSettings.path,
+                      name: AppPath.speedDetectionSettings.name,
+                      // 使用 root navigator，跳過 shell 直接全屏顯示
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const SpeedDetectionSettingsPage(),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -74,5 +142,17 @@ class AppRouter {
         ),
       ],
     );
+  }
+}
+
+extension AppRouterExtension on BuildContext {
+  /// 导航到指定路径
+  void goPath(AppPath path, {Object? extra}) {
+    GoRouter.of(this).goNamed(path.name, extra: extra);
+  }
+
+  /// 导航到指定路径并等待返回结果
+  Future<T?> goPathWithResult<T>(AppPath path, {Object? extra}) async {
+    return await GoRouter.of(this).pushNamed<T>(path.name, extra: extra);
   }
 }

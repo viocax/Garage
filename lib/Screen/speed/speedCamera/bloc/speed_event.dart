@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:garage/core/models/speed_camera_model.dart';
 
 sealed class SpeedEvent extends Equatable {
   const SpeedEvent();
@@ -7,14 +8,22 @@ sealed class SpeedEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+// 初始化速度事件
+final class SpeedLoading extends SpeedEvent {
+  const SpeedLoading();
+}
+
 // 更新速度事件
 final class UpdateSpeed extends SpeedEvent {
-  final double speed;
+  final SpeedCameraModel speedCameraModel;
 
-  const UpdateSpeed(this.speed);
+  const UpdateSpeed(this.speedCameraModel);
+
+  // m/s
+  double get currentSpeed => speedCameraModel.currentSpeed;
 
   @override
-  List<Object?> get props => [speed];
+  List<Object?> get props => [speedCameraModel];
 }
 
 // 開始偵測

@@ -30,10 +30,6 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
       // 取得 SpeedCamera Repository
       final speedCameraRepo = getIt.repo.speedCamera;
 
-      // 載入測速照相資料
-      debugPrint('LaunchBloc: 載入測速照相資料...');
-      await speedCameraRepo.syncFromRemote();
-
       final count = await speedCameraRepo.getCount();
       debugPrint('LaunchBloc: 測速照相資料載入完成，共 $count 筆');
 

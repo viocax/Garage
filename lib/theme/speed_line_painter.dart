@@ -36,12 +36,12 @@ class SpeedLinesPainter extends CustomPainter {
     final paint = Paint()
       ..shader = LinearGradient(
         colors: [
-          AppTheme.accentColor.withValues(alpha: 0),
-          AppTheme.accentColor.withValues(alpha: 0.3 * opacity),
-          AppTheme.accentColor.withValues(alpha: 0),
+          AppTheme.systemRed.withValues(alpha: 0),
+          AppTheme.systemRed.withValues(alpha: 0.3 * opacity),
+          AppTheme.systemRed.withValues(alpha: 0),
         ],
       ).createShader(Rect.fromLTWH(left, top + yOffset, width, 1))
-      ..strokeWidth = 1;
+      ..strokeWidth = 2;
 
     canvas.drawLine(
       Offset(left, top + yOffset),

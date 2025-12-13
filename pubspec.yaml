@@ -21,6 +21,10 @@ version: 1.0.0+1
 environment:
   sdk: ^3.10.1
 
+# 平台限制：僅支援 iOS
+platforms:
+  ios:
+
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
 # consider running `flutter pub upgrade --major-versions`. Alternatively,
@@ -55,9 +59,10 @@ dependencies:
   csv: ^6.0.0
 
   # Local database - Isar
-  isar: ^3.1.0+1
-  isar_community_flutter_libs: ^3.1.0+1
+  isar_community: ^3.3.0
+  isar_community_flutter_libs: ^3.3.0
   path_provider: ^2.1.5
+  uuid: ^4.5.1
   geolocator: ^14.0.2
 
   # Local storage
@@ -65,6 +70,7 @@ dependencies:
 
   # Text-to-Speech
   flutter_tts: ^4.2.0
+  bloc: ^8.1.4
 
 dev_dependencies:
   flutter_test:
@@ -78,7 +84,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   # Isar code generation
-  isar_generator: ^3.1.0+1
+  isar_community_generator: ^3.3.0
   build_runner: ^2.4.13
 
 # For information on the generic Dart part of this file, see the

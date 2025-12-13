@@ -1,11 +1,11 @@
-// import 'package:isar/isar.dart'; // MARK: Isar 暫時不使用
+// import 'package:isar_community/isar.dart'; // MARK: Isar 暫時不使用
 import 'dart:math';
 
 // part 'speed_camera.g.dart'; // MARK: Isar 暫時不使用
 
 /// 測速照相點位資料模型
 // @collection // MARK: Isar 暫時不使用
-class SpeedCamera {
+class Camera {
   // Id id = Isar.autoIncrement; // Auto-increment ID // MARK: Isar 暫時不使用
 
   // @Index(type: IndexType.value, caseSensitive: false) // MARK: Isar 暫時不使用
@@ -36,11 +36,11 @@ class SpeedCamera {
   late DateTime lastUpdated; // 最後更新時間
 
   /// 預設 constructor
-  SpeedCamera();
+  Camera();
 
   /// 從 JSON 資料建立 SpeedCamera 物件
-  factory SpeedCamera.fromJson(Map<String, dynamic> json) {
-    return SpeedCamera()
+  factory Camera.fromJson(Map<String, dynamic> json) {
+    return Camera()
       ..cityName = json['CityName'] ?? ''
       ..regionName = json['RegionName'] ?? ''
       ..address = json['Address'] ?? ''
@@ -74,7 +74,8 @@ class SpeedCamera {
     final double dLat = _toRadians(lat - latitude);
     final double dLon = _toRadians(lon - longitude);
 
-    final double a = sin(dLat / 2) * sin(dLat / 2) +
+    final double a =
+        sin(dLat / 2) * sin(dLat / 2) +
         cos(_toRadians(latitude)) *
             cos(_toRadians(lat)) *
             sin(dLon / 2) *
