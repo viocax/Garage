@@ -33,7 +33,10 @@ final class ClickEditVehicleButton extends RecordsEvent {
   const ClickEditVehicleButton();
 }
 
-final class AddRecord extends RecordsEvent {
-  final VehicleRecord? record;
-  const AddRecord(this.record);
+final class AddRecords extends RecordsEvent {
+  final List<VehicleRecord> records;
+  const AddRecords(this.records);
+
+  @override
+  List<Object> get props => [records];
 }

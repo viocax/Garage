@@ -65,6 +65,7 @@ class RecordsPage extends StatelessWidget {
         theme: StatusBarTheme.light,
         child: Scaffold(
           backgroundColor: AppTheme.dashboardBg,
+          extendBodyBehindAppBar: true,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -111,6 +112,7 @@ class RecordsPage extends StatelessWidget {
                 child: CustomPaint(painter: GridBackgroundPainter()),
               ),
               SafeArea(
+                top: false,
                 child: _RecordsContent(
                   vehicle: state.currentVehicle,
                   vehicles: state.vehicles,
@@ -136,11 +138,11 @@ class RecordsPage extends StatelessWidget {
   }
 
   Future<void> _navigateToAddRecord(BuildContext context) async {
-    final record = await context.goPathWithResult<VehicleRecord>(
+    final records = await context.goPathWithResult<List<VehicleRecord>>(
       AppPath.addRecord,
     );
-    if (record != null && context.mounted) {
-      context.read<RecordsBloc>().add(AddRecord(record));
+    if (records != null && records.isNotEmpty && context.mounted) {
+      context.read<RecordsBloc>().add(AddRecords(records));
     }
   }
 
@@ -178,6 +180,7 @@ class _RecordsContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const SizedBox(height: 24),
                 // 1. Hero Section
                 _HeroSection(
                   textSecondary: AppTheme.dashboardTextSecondary,

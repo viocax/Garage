@@ -29,19 +29,32 @@ const VehicleRecordSchema = CollectionSchema(
       name: r'formattedKm',
       type: IsarType.string,
     ),
-    r'km': PropertySchema(id: 4, name: r'km', type: IsarType.long),
-    r'notes': PropertySchema(id: 5, name: r'notes', type: IsarType.string),
-    r'recordId': PropertySchema(
+    r'fuelData': PropertySchema(
+      id: 4,
+      name: r'fuelData',
+      type: IsarType.object,
+
+      target: r'FuelData',
+    ),
+    r'km': PropertySchema(id: 5, name: r'km', type: IsarType.long),
+    r'maintenanceData': PropertySchema(
       id: 6,
+      name: r'maintenanceData',
+      type: IsarType.object,
+
+      target: r'MaintenanceData',
+    ),
+    r'notes': PropertySchema(id: 7, name: r'notes', type: IsarType.string),
+    r'recordId': PropertySchema(
+      id: 8,
       name: r'recordId',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(id: 7, name: r'title', type: IsarType.string),
-    r'type': PropertySchema(
-      id: 8,
-      name: r'type',
+    r'title': PropertySchema(id: 9, name: r'title', type: IsarType.string),
+    r'typeName': PropertySchema(
+      id: 10,
+      name: r'typeName',
       type: IsarType.string,
-      enumMap: _VehicleRecordtypeEnumValueMap,
     ),
   },
 
@@ -59,6 +72,19 @@ const VehicleRecordSchema = CollectionSchema(
       properties: [
         IndexPropertySchema(
           name: r'recordId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
+    ),
+    r'typeName': IndexSchema(
+      id: -5888759043734302821,
+      name: r'typeName',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'typeName',
           type: IndexType.hash,
           caseSensitive: true,
         ),
@@ -92,7 +118,10 @@ const VehicleRecordSchema = CollectionSchema(
     ),
   },
   links: {},
-  embeddedSchemas: {},
+  embeddedSchemas: {
+    r'FuelData': FuelDataSchema,
+    r'MaintenanceData': MaintenanceDataSchema,
+  },
 
   getId: _vehicleRecordGetId,
   getLinks: _vehicleRecordGetLinks,
@@ -109,6 +138,26 @@ int _vehicleRecordEstimateSize(
   bytesCount += 3 + object.formattedCost.length * 3;
   bytesCount += 3 + object.formattedKm.length * 3;
   {
+    final value = object.fuelData;
+    if (value != null) {
+      bytesCount +=
+          3 +
+          FuelDataSchema.estimateSize(value, allOffsets[FuelData]!, allOffsets);
+    }
+  }
+  {
+    final value = object.maintenanceData;
+    if (value != null) {
+      bytesCount +=
+          3 +
+          MaintenanceDataSchema.estimateSize(
+            value,
+            allOffsets[MaintenanceData]!,
+            allOffsets,
+          );
+    }
+  }
+  {
     final value = object.notes;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -116,7 +165,7 @@ int _vehicleRecordEstimateSize(
   }
   bytesCount += 3 + object.recordId.length * 3;
   bytesCount += 3 + object.title.length * 3;
-  bytesCount += 3 + object.type.name.length * 3;
+  bytesCount += 3 + object.typeName.length * 3;
   return bytesCount;
 }
 
@@ -130,11 +179,23 @@ void _vehicleRecordSerialize(
   writer.writeDateTime(offsets[1], object.date);
   writer.writeString(offsets[2], object.formattedCost);
   writer.writeString(offsets[3], object.formattedKm);
-  writer.writeLong(offsets[4], object.km);
-  writer.writeString(offsets[5], object.notes);
-  writer.writeString(offsets[6], object.recordId);
-  writer.writeString(offsets[7], object.title);
-  writer.writeString(offsets[8], object.type.name);
+  writer.writeObject<FuelData>(
+    offsets[4],
+    allOffsets,
+    FuelDataSchema.serialize,
+    object.fuelData,
+  );
+  writer.writeLong(offsets[5], object.km);
+  writer.writeObject<MaintenanceData>(
+    offsets[6],
+    allOffsets,
+    MaintenanceDataSchema.serialize,
+    object.maintenanceData,
+  );
+  writer.writeString(offsets[7], object.notes);
+  writer.writeString(offsets[8], object.recordId);
+  writer.writeString(offsets[9], object.title);
+  writer.writeString(offsets[10], object.typeName);
 }
 
 VehicleRecord _vehicleRecordDeserialize(
@@ -146,14 +207,22 @@ VehicleRecord _vehicleRecordDeserialize(
   final object = VehicleRecord();
   object.cost = reader.readDouble(offsets[0]);
   object.date = reader.readDateTime(offsets[1]);
+  object.fuelData = reader.readObjectOrNull<FuelData>(
+    offsets[4],
+    FuelDataSchema.deserialize,
+    allOffsets,
+  );
   object.id = id;
-  object.km = reader.readLong(offsets[4]);
-  object.notes = reader.readStringOrNull(offsets[5]);
-  object.recordId = reader.readString(offsets[6]);
-  object.title = reader.readString(offsets[7]);
-  object.type =
-      _VehicleRecordtypeValueEnumMap[reader.readStringOrNull(offsets[8])] ??
-      RecordType.fuel;
+  object.km = reader.readLong(offsets[5]);
+  object.maintenanceData = reader.readObjectOrNull<MaintenanceData>(
+    offsets[6],
+    MaintenanceDataSchema.deserialize,
+    allOffsets,
+  );
+  object.notes = reader.readStringOrNull(offsets[7]);
+  object.recordId = reader.readString(offsets[8]);
+  object.title = reader.readString(offsets[9]);
+  object.typeName = reader.readString(offsets[10]);
   return object;
 }
 
@@ -173,34 +242,33 @@ P _vehicleRecordDeserializeProp<P>(
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
-    case 5:
-      return (reader.readStringOrNull(offset)) as P;
-    case 6:
-      return (reader.readString(offset)) as P;
-    case 7:
-      return (reader.readString(offset)) as P;
-    case 8:
-      return (_VehicleRecordtypeValueEnumMap[reader.readStringOrNull(offset)] ??
-              RecordType.fuel)
+      return (reader.readObjectOrNull<FuelData>(
+            offset,
+            FuelDataSchema.deserialize,
+            allOffsets,
+          ))
           as P;
+    case 5:
+      return (reader.readLong(offset)) as P;
+    case 6:
+      return (reader.readObjectOrNull<MaintenanceData>(
+            offset,
+            MaintenanceDataSchema.deserialize,
+            allOffsets,
+          ))
+          as P;
+    case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
+      return (reader.readString(offset)) as P;
+    case 9:
+      return (reader.readString(offset)) as P;
+    case 10:
+      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
-
-const _VehicleRecordtypeEnumValueMap = {
-  r'fuel': r'fuel',
-  r'maintenance': r'maintenance',
-  r'modification': r'modification',
-  r'other': r'other',
-};
-const _VehicleRecordtypeValueEnumMap = {
-  r'fuel': RecordType.fuel,
-  r'maintenance': RecordType.maintenance,
-  r'modification': RecordType.modification,
-  r'other': RecordType.other,
-};
 
 Id _vehicleRecordGetId(VehicleRecord object) {
   return object.id;
@@ -418,6 +486,59 @@ extension VehicleRecordQueryWhere
                 indexName: r'recordId',
                 lower: [],
                 upper: [recordId],
+                includeUpper: false,
+              ),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause> typeNameEqualTo(
+    String typeName,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'typeName', value: [typeName]),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause>
+  typeNameNotEqualTo(String typeName) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'typeName',
+                lower: [],
+                upper: [typeName],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'typeName',
+                lower: [typeName],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'typeName',
+                lower: [typeName],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'typeName',
+                lower: [],
+                upper: [typeName],
                 includeUpper: false,
               ),
             );
@@ -1051,6 +1172,24 @@ extension VehicleRecordQueryFilter
     });
   }
 
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  fuelDataIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'fuelData'),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  fuelDataIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'fuelData'),
+      );
+    });
+  }
+
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> idEqualTo(
     Id value,
   ) {
@@ -1161,6 +1300,24 @@ extension VehicleRecordQueryFilter
           upper: upper,
           includeUpper: includeUpper,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceDataIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'maintenanceData'),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceDataIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'maintenanceData'),
       );
     });
   }
@@ -1606,14 +1763,12 @@ extension VehicleRecordQueryFilter
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> typeEqualTo(
-    RecordType value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  typeNameEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(
-          property: r'type',
+          property: r'typeName',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1622,8 +1777,8 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  typeGreaterThan(
-    RecordType value, {
+  typeNameGreaterThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1631,7 +1786,7 @@ extension VehicleRecordQueryFilter
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'type',
+          property: r'typeName',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1640,8 +1795,8 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  typeLessThan(
-    RecordType value, {
+  typeNameLessThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1649,7 +1804,7 @@ extension VehicleRecordQueryFilter
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'type',
+          property: r'typeName',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1657,9 +1812,10 @@ extension VehicleRecordQueryFilter
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> typeBetween(
-    RecordType lower,
-    RecordType upper, {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  typeNameBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1667,7 +1823,7 @@ extension VehicleRecordQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'type',
+          property: r'typeName',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -1679,11 +1835,11 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  typeStartsWith(String value, {bool caseSensitive = true}) {
+  typeNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.startsWith(
-          property: r'type',
+          property: r'typeName',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1692,11 +1848,11 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  typeEndsWith(String value, {bool caseSensitive = true}) {
+  typeNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.endsWith(
-          property: r'type',
+          property: r'typeName',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1705,11 +1861,11 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  typeContains(String value, {bool caseSensitive = true}) {
+  typeNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.contains(
-          property: r'type',
+          property: r'typeName',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1717,14 +1873,12 @@ extension VehicleRecordQueryFilter
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> typeMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  typeNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.matches(
-          property: r'type',
+          property: r'typeName',
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1733,26 +1887,41 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  typeIsEmpty() {
+  typeNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'type', value: ''),
+        FilterCondition.equalTo(property: r'typeName', value: ''),
       );
     });
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  typeIsNotEmpty() {
+  typeNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'type', value: ''),
+        FilterCondition.greaterThan(property: r'typeName', value: ''),
       );
     });
   }
 }
 
 extension VehicleRecordQueryObject
-    on QueryBuilder<VehicleRecord, VehicleRecord, QFilterCondition> {}
+    on QueryBuilder<VehicleRecord, VehicleRecord, QFilterCondition> {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> fuelData(
+    FilterQuery<FuelData> q,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'fuelData');
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceData(FilterQuery<MaintenanceData> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'maintenanceData');
+    });
+  }
+}
 
 extension VehicleRecordQueryLinks
     on QueryBuilder<VehicleRecord, VehicleRecord, QFilterCondition> {}
@@ -1859,15 +2028,16 @@ extension VehicleRecordQuerySortBy
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByType() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByTypeName() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.asc);
+      return query.addSortBy(r'typeName', Sort.asc);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByTypeDesc() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
+  sortByTypeNameDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.desc);
+      return query.addSortBy(r'typeName', Sort.desc);
     });
   }
 }
@@ -1986,15 +2156,16 @@ extension VehicleRecordQuerySortThenBy
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByType() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByTypeName() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.asc);
+      return query.addSortBy(r'typeName', Sort.asc);
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByTypeDesc() {
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
+  thenByTypeNameDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.desc);
+      return query.addSortBy(r'typeName', Sort.desc);
     });
   }
 }
@@ -2061,11 +2232,11 @@ extension VehicleRecordQueryWhereDistinct
     });
   }
 
-  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByType({
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByTypeName({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'type', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'typeName', caseSensitive: caseSensitive);
     });
   }
 }
@@ -2103,9 +2274,22 @@ extension VehicleRecordQueryProperty
     });
   }
 
+  QueryBuilder<VehicleRecord, FuelData?, QQueryOperations> fuelDataProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fuelData');
+    });
+  }
+
   QueryBuilder<VehicleRecord, int, QQueryOperations> kmProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'km');
+    });
+  }
+
+  QueryBuilder<VehicleRecord, MaintenanceData?, QQueryOperations>
+  maintenanceDataProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'maintenanceData');
     });
   }
 
@@ -2127,9 +2311,1230 @@ extension VehicleRecordQueryProperty
     });
   }
 
-  QueryBuilder<VehicleRecord, RecordType, QQueryOperations> typeProperty() {
+  QueryBuilder<VehicleRecord, String, QQueryOperations> typeNameProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'type');
+      return query.addPropertyName(r'typeName');
     });
   }
 }
+
+// **************************************************************************
+// IsarEmbeddedGenerator
+// **************************************************************************
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const FuelDataSchema = Schema(
+  name: r'FuelData',
+  id: 4739064174969176637,
+  properties: {
+    r'calculatedCost': PropertySchema(
+      id: 0,
+      name: r'calculatedCost',
+      type: IsarType.double,
+    ),
+    r'formattedSummary': PropertySchema(
+      id: 1,
+      name: r'formattedSummary',
+      type: IsarType.string,
+    ),
+    r'fuelAmount': PropertySchema(
+      id: 2,
+      name: r'fuelAmount',
+      type: IsarType.double,
+    ),
+    r'fuelType': PropertySchema(
+      id: 3,
+      name: r'fuelType',
+      type: IsarType.string,
+      enumMap: _FuelDatafuelTypeEnumValueMap,
+    ),
+    r'pricePerLiter': PropertySchema(
+      id: 4,
+      name: r'pricePerLiter',
+      type: IsarType.double,
+    ),
+    r'remainingFuel': PropertySchema(
+      id: 5,
+      name: r'remainingFuel',
+      type: IsarType.long,
+    ),
+  },
+
+  estimateSize: _fuelDataEstimateSize,
+  serialize: _fuelDataSerialize,
+  deserialize: _fuelDataDeserialize,
+  deserializeProp: _fuelDataDeserializeProp,
+);
+
+int _fuelDataEstimateSize(
+  FuelData object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.formattedSummary.length * 3;
+  bytesCount += 3 + object.fuelType.name.length * 3;
+  return bytesCount;
+}
+
+void _fuelDataSerialize(
+  FuelData object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeDouble(offsets[0], object.calculatedCost);
+  writer.writeString(offsets[1], object.formattedSummary);
+  writer.writeDouble(offsets[2], object.fuelAmount);
+  writer.writeString(offsets[3], object.fuelType.name);
+  writer.writeDouble(offsets[4], object.pricePerLiter);
+  writer.writeLong(offsets[5], object.remainingFuel);
+}
+
+FuelData _fuelDataDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = FuelData(
+    fuelAmount: reader.readDoubleOrNull(offsets[2]) ?? 0,
+    fuelType:
+        _FuelDatafuelTypeValueEnumMap[reader.readStringOrNull(offsets[3])] ??
+        FuelType.octane95,
+    pricePerLiter: reader.readDoubleOrNull(offsets[4]) ?? 0,
+    remainingFuel: reader.readLongOrNull(offsets[5]) ?? 90,
+  );
+  return object;
+}
+
+P _fuelDataDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readDouble(offset)) as P;
+    case 1:
+      return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readDoubleOrNull(offset) ?? 0) as P;
+    case 3:
+      return (_FuelDatafuelTypeValueEnumMap[reader.readStringOrNull(offset)] ??
+              FuelType.octane95)
+          as P;
+    case 4:
+      return (reader.readDoubleOrNull(offset) ?? 0) as P;
+    case 5:
+      return (reader.readLongOrNull(offset) ?? 90) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+const _FuelDatafuelTypeEnumValueMap = {
+  r'octane92': r'octane92',
+  r'octane95': r'octane95',
+  r'octane98': r'octane98',
+};
+const _FuelDatafuelTypeValueEnumMap = {
+  r'octane92': FuelType.octane92,
+  r'octane95': FuelType.octane95,
+  r'octane98': FuelType.octane98,
+};
+
+extension FuelDataQueryFilter
+    on QueryBuilder<FuelData, FuelData, QFilterCondition> {
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> calculatedCostEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'calculatedCost',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  calculatedCostGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'calculatedCost',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  calculatedCostLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'calculatedCost',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> calculatedCostBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'calculatedCost',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'formattedSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'formattedSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'formattedSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'formattedSummary',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'formattedSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'formattedSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'formattedSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'formattedSummary',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'formattedSummary', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  formattedSummaryIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'formattedSummary', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelAmountEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'fuelAmount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelAmountGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'fuelAmount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelAmountLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'fuelAmount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelAmountBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'fuelAmount',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeEqualTo(
+    FuelType value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'fuelType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeGreaterThan(
+    FuelType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'fuelType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeLessThan(
+    FuelType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'fuelType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeBetween(
+    FuelType lower,
+    FuelType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'fuelType',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'fuelType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'fuelType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'fuelType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'fuelType',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'fuelType', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> fuelTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'fuelType', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> pricePerLiterEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'pricePerLiter',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  pricePerLiterGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'pricePerLiter',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> pricePerLiterLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'pricePerLiter',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> pricePerLiterBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'pricePerLiter',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> remainingFuelEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'remainingFuel', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition>
+  remainingFuelGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'remainingFuel',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> remainingFuelLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'remainingFuel',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FuelData, FuelData, QAfterFilterCondition> remainingFuelBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'remainingFuel',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+}
+
+extension FuelDataQueryObject
+    on QueryBuilder<FuelData, FuelData, QFilterCondition> {}
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const MaintenanceDataSchema = Schema(
+  name: r'MaintenanceData',
+  id: -1816869155871174686,
+  properties: {
+    r'amount': PropertySchema(id: 0, name: r'amount', type: IsarType.double),
+    r'item': PropertySchema(id: 1, name: r'item', type: IsarType.string),
+    r'nextMaintenanceKm': PropertySchema(
+      id: 2,
+      name: r'nextMaintenanceKm',
+      type: IsarType.long,
+    ),
+    r'note': PropertySchema(id: 3, name: r'note', type: IsarType.string),
+  },
+
+  estimateSize: _maintenanceDataEstimateSize,
+  serialize: _maintenanceDataSerialize,
+  deserialize: _maintenanceDataDeserialize,
+  deserializeProp: _maintenanceDataDeserializeProp,
+);
+
+int _maintenanceDataEstimateSize(
+  MaintenanceData object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.item.length * 3;
+  bytesCount += 3 + object.note.length * 3;
+  return bytesCount;
+}
+
+void _maintenanceDataSerialize(
+  MaintenanceData object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeDouble(offsets[0], object.amount);
+  writer.writeString(offsets[1], object.item);
+  writer.writeLong(offsets[2], object.nextMaintenanceKm);
+  writer.writeString(offsets[3], object.note);
+}
+
+MaintenanceData _maintenanceDataDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = MaintenanceData(
+    amount: reader.readDoubleOrNull(offsets[0]) ?? 0,
+    item: reader.readStringOrNull(offsets[1]) ?? '',
+    nextMaintenanceKm: reader.readLongOrNull(offsets[2]),
+    note: reader.readStringOrNull(offsets[3]) ?? '',
+  );
+  return object;
+}
+
+P _maintenanceDataDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readDoubleOrNull(offset) ?? 0) as P;
+    case 1:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 2:
+      return (reader.readLongOrNull(offset)) as P;
+    case 3:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension MaintenanceDataQueryFilter
+    on QueryBuilder<MaintenanceData, MaintenanceData, QFilterCondition> {
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  amountEqualTo(double value, {double epsilon = Query.epsilon}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'amount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  amountGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'amount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  amountLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'amount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  amountBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'amount',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'item',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'item',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'item',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'item',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'item',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'item',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'item',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'item',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'item', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  itemIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'item', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  nextMaintenanceKmIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'nextMaintenanceKm'),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  nextMaintenanceKmIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'nextMaintenanceKm'),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  nextMaintenanceKmEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'nextMaintenanceKm', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  nextMaintenanceKmGreaterThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'nextMaintenanceKm',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  nextMaintenanceKmLessThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'nextMaintenanceKm',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  nextMaintenanceKmBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'nextMaintenanceKm',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'note',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'note',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'note', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceData, MaintenanceData, QAfterFilterCondition>
+  noteIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'note', value: ''),
+      );
+    });
+  }
+}
+
+extension MaintenanceDataQueryObject
+    on QueryBuilder<MaintenanceData, MaintenanceData, QFilterCondition> {}

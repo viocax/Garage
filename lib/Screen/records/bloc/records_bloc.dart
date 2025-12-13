@@ -21,22 +21,34 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     on<ClickAddVehicleButton>(_onClickAddVehicleButton);
     on<ClickAddRecordButton>(_onClickAddRecordButton);
     on<ClickEditVehicleButton>(_onClickEditVehicleButton);
-    on<AddRecord>(_onAddRecord);
+    on<AddRecords>(_onAddRecords);
     add(const LoadVehicleRecord());
   }
 
-  Future<void> _onAddRecord(
-    AddRecord event,
+  Future<void> _onAddRecords(
+    AddRecords event,
     Emitter<RecordsState> emit,
   ) async {
-    if (event.record == null || state.isEmpty) {
+    if (event.records.isEmpty || state.isEmpty) {
       return;
     }
 
     final carId = state.currentVehicleId;
 
     try {
-      await vehicleRepository.addRecord(carId, event.record!);
+      for (final record in event.records) {
+        await vehicleRepository.addRecord(carId, record);
+      }
+
+      // 更新車輛里程數為記錄中的最高里程
+      
+      final maxKm = event.records.reduce((a, b) => a.km > b.km ? a : b).km;
+      final vehicle = state.vehicles.firstWhere((v) => v.vehicleId == carId);
+      if (maxKm > vehicle.currentKm) {
+        vehicle.currentKm = maxKm;
+        await vehicleRepository.updateVehicle(vehicle);
+      }
+
       add(LoadVehicleRecord(vehicleId: carId));
     } catch (e) {
       emit(state.copyWith(

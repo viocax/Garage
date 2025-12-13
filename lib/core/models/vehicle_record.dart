@@ -4,50 +4,171 @@ import 'package:uuid/uuid.dart';
 
 part 'vehicle_record.g.dart';
 
-enum RecordType {
-  fuel,
-  maintenance,
-  modification,
-  other;
+/// 燃油種類
+enum FuelType {
+  octane92,
+  octane95,
+  octane98;
 
   String get label {
     switch (this) {
-      case RecordType.fuel:
-        return '加油';
-      case RecordType.maintenance:
-        return '保養';
-      case RecordType.modification:
-        return '改裝';
-      case RecordType.other:
-        return '其他';
+      case FuelType.octane92:
+        return '92';
+      case FuelType.octane95:
+        return '95';
+      case FuelType.octane98:
+        return '98';
     }
+  }
+}
+
+/// 加油記錄專屬資料（embedded object）
+@embedded
+class FuelData {
+  @Enumerated(EnumType.name)
+  FuelType fuelType;
+
+  double fuelAmount; // 加油量（公升）
+
+  double pricePerLiter; // 每公升油價
+
+  int remainingFuel; // 剩餘油量百分比（50-100）
+
+  FuelData({
+    this.fuelType = FuelType.octane95,
+    this.fuelAmount = 0,
+    this.pricePerLiter = 0,
+    this.remainingFuel = 90,
+  });
+
+  FuelData copyWith({
+    FuelType? fuelType,
+    double? fuelAmount,
+    double? pricePerLiter,
+    int? remainingFuel,
+  }) {
+    return FuelData(
+      fuelType: fuelType ?? this.fuelType,
+      fuelAmount: fuelAmount ?? this.fuelAmount,
+      pricePerLiter: pricePerLiter ?? this.pricePerLiter,
+      remainingFuel: remainingFuel ?? this.remainingFuel,
+    );
   }
 
-  IconData get icon {
-    switch (this) {
-      case RecordType.fuel:
-        return Icons.local_gas_station;
-      case RecordType.maintenance:
-        return Icons.build;
-      case RecordType.modification:
-        return Icons.settings;
-      case RecordType.other:
-        return Icons.receipt;
-    }
-  }
+  /// 計算總金額
+  double get calculatedCost => fuelAmount * pricePerLiter;
 
-  Color get color {
-    switch (this) {
-      case RecordType.fuel:
-        return const Color(0xFFD9923B); // Orange
-      case RecordType.maintenance:
-        return const Color(0xFF7A8A99); // Grey Blue
-      case RecordType.modification:
-        return const Color(0xFFD64045); // Red
-      case RecordType.other:
-        return const Color(0xFF8E8E93); // Grey
+  /// 格式化顯示
+  String get formattedSummary =>
+      '${fuelType.label} ${fuelAmount.toStringAsFixed(1)}L';
+}
+
+/// 保養項目資料（embedded object）
+@embedded
+class MaintenanceData {
+  String item; // 保養項目名稱
+  double amount; // 金額
+  int? nextMaintenanceKm; // 下次保養里程
+  String note; // 備註
+
+  MaintenanceData({
+    this.item = '',
+    this.amount = 0,
+    this.nextMaintenanceKm,
+    this.note = '',
+  });
+
+  MaintenanceData copyWith({
+    String? item,
+    double? amount,
+    int? nextMaintenanceKm,
+    String? note,
+  }) {
+    return MaintenanceData(
+      item: item ?? this.item,
+      amount: amount ?? this.amount,
+      nextMaintenanceKm: nextMaintenanceKm ?? this.nextMaintenanceKm,
+      note: note ?? this.note,
+    );
+  }
+}
+
+/// Sealed class for record types with associated data
+sealed class RecordType {
+  const RecordType();
+
+  String get label;
+  IconData get icon;
+  Color get color;
+  String get typeName;
+
+  static RecordType fromTypeName(
+    String typeName, {
+    FuelData? fuelData,
+    MaintenanceData? maintenanceData,
+  }) {
+    switch (typeName) {
+      case 'fuel':
+        return RecordTypeFuel(fuelData ?? FuelData());
+      case 'maintenance':
+        return RecordTypeMaintenance(maintenanceData ?? MaintenanceData());
+      case 'other':
+      default:
+        return const RecordTypeOther();
     }
   }
+}
+
+class RecordTypeFuel extends RecordType {
+  final FuelData data;
+
+  const RecordTypeFuel(this.data);
+
+  @override
+  String get label => '加油';
+
+  @override
+  IconData get icon => Icons.local_gas_station;
+
+  @override
+  Color get color => const Color(0xFFD9923B); // Orange
+
+  @override
+  String get typeName => 'fuel';
+}
+
+class RecordTypeMaintenance extends RecordType {
+  final MaintenanceData data;
+
+  const RecordTypeMaintenance(this.data);
+
+  @override
+  String get label => '保養';
+
+  @override
+  IconData get icon => Icons.build;
+
+  @override
+  Color get color => const Color(0xFF7A8A99); // Grey Blue
+
+  @override
+  String get typeName => 'maintenance';
+}
+
+class RecordTypeOther extends RecordType {
+  const RecordTypeOther();
+
+  @override
+  String get label => '其他';
+
+  @override
+  IconData get icon => Icons.receipt;
+
+  @override
+  Color get color => const Color(0xFF8E8E93); // Grey
+
+  @override
+  String get typeName => 'other';
 }
 
 @collection
@@ -59,8 +180,9 @@ class VehicleRecord {
   @Index(unique: true)
   late String recordId;
 
-  @Enumerated(EnumType.name)
-  late RecordType type;
+  /// 記錄類型名稱（fuel, maintenance, other）
+  @Index()
+  late String typeName;
 
   late String title;
 
@@ -74,7 +196,21 @@ class VehicleRecord {
 
   String? notes;
 
+  /// 加油記錄專屬資料（僅當 typeName == 'fuel' 時使用）
+  FuelData? fuelData;
+
+  /// 保養記錄專屬資料（僅當 typeName == 'maintenance' 時使用）
+  MaintenanceData? maintenanceData;
+
   VehicleRecord();
+
+  /// 取得 RecordType sealed class
+  @ignore
+  RecordType get type => RecordType.fromTypeName(
+        typeName,
+        fuelData: fuelData,
+        maintenanceData: maintenanceData,
+      );
 
   /// Factory constructor 用於創建 VehicleRecord
   /// 如果不提供 recordId，會自動生成 UUID
@@ -87,14 +223,26 @@ class VehicleRecord {
     required int km,
     String? notes,
   }) {
-    return VehicleRecord()
+    final record = VehicleRecord()
       ..recordId = recordId ?? _uuid.v4()
-      ..type = type
+      ..typeName = type.typeName
       ..title = title
       ..date = date
       ..cost = cost
       ..km = km
       ..notes = notes;
+
+    // 根據類型設置對應的資料
+    switch (type) {
+      case RecordTypeFuel(:final data):
+        record.fuelData = data;
+      case RecordTypeMaintenance(:final data):
+        record.maintenanceData = data;
+      case RecordTypeOther():
+        break;
+    }
+
+    return record;
   }
 
   // Helper to format cost

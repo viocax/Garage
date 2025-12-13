@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/core/extensions/dialog_extension.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_bloc.dart';
 import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_event.dart';
@@ -84,25 +85,12 @@ class _VehicleManagementBody extends StatelessWidget {
                 key: ValueKey(vehicle.vehicleId),
                 direction: DismissDirection.endToStart,
                 confirmDismiss: (direction) async {
-                  return await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('確認刪除'),
-                      content: Text('確定要刪除「${vehicle.carName}」嗎？\n這將同時刪除所有相關記錄。'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text('取消'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          style: TextButton.styleFrom(
-                            foregroundColor: theme.colorScheme.error,
-                          ),
-                          child: const Text('刪除'),
-                        ),
-                      ],
-                    ),
+                  return await context.showAdaptiveConfirmDialog(
+                    title: '確認刪除',
+                    message: '確定要刪除「${vehicle.carName}」嗎？\n這將同時刪除所有相關記錄。',
+                    cancelText: '取消',
+                    confirmText: '刪除',
+                    isDestructiveAction: true,
                   );
                 },
                 onDismissed: (direction) {

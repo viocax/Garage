@@ -64,9 +64,11 @@ class Vehicle implements PickerOption {
     if (maintenanceIntervalKm <= 0) return 1.0;
     return max(0.0, min(1.0, remindKm / maintenanceIntervalKm));
   }
+
   int get remindKm {
     return max(kmToNextMaintenance - currentKm, 0);
   }
+
   // Helper to get total spent from records
   String get totalSpent {
     final recordsList = records.toList();
