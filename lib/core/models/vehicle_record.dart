@@ -93,6 +93,28 @@ class MaintenanceData {
   }
 }
 
+/// 其他記錄專屬資料（embedded object）
+@embedded
+class OtherData {
+  double amount; // 金額
+  String note; // 備註
+
+  OtherData({
+    this.amount = 0,
+    this.note = '',
+  });
+
+  OtherData copyWith({
+    double? amount,
+    String? note,
+  }) {
+    return OtherData(
+      amount: amount ?? this.amount,
+      note: note ?? this.note,
+    );
+  }
+}
+
 /// Sealed class for record types with associated data
 sealed class RecordType {
   const RecordType();
@@ -102,19 +124,23 @@ sealed class RecordType {
   Color get color;
   String get typeName;
 
+  /// 驗證資料是否有效，回傳 null 表示有效，否則回傳錯誤訊息
+  String? get validationError;
+
   static RecordType fromTypeName(
     String typeName, {
     FuelData? fuelData,
-    MaintenanceData? maintenanceData,
+    List<MaintenanceData>? maintenanceData,
+    OtherData? otherData,
   }) {
     switch (typeName) {
       case 'fuel':
         return RecordTypeFuel(fuelData ?? FuelData());
       case 'maintenance':
-        return RecordTypeMaintenance(maintenanceData ?? MaintenanceData());
+        return RecordTypeMaintenance(maintenanceData ?? []);
       case 'other':
       default:
-        return const RecordTypeOther();
+        return RecordTypeOther(otherData ?? OtherData());
     }
   }
 }
@@ -135,10 +161,18 @@ class RecordTypeFuel extends RecordType {
 
   @override
   String get typeName => 'fuel';
+
+  @override
+  String? get validationError {
+    if (data.fuelAmount <= 0) {
+      return '請輸入有效的加油量';
+    }
+    return null;
+  }
 }
 
 class RecordTypeMaintenance extends RecordType {
-  final MaintenanceData data;
+  final List<MaintenanceData> data;
 
   const RecordTypeMaintenance(this.data);
 
@@ -153,10 +187,27 @@ class RecordTypeMaintenance extends RecordType {
 
   @override
   String get typeName => 'maintenance';
+
+  /// 取得有效的保養項目
+  List<MaintenanceData> get validEntries =>
+      data.where((e) => e.item.trim().isNotEmpty).toList();
+
+  /// 計算總金額
+  double get totalAmount => validEntries.fold(0, (sum, e) => sum + e.amount);
+
+  @override
+  String? get validationError {
+    if (validEntries.isEmpty) {
+      return '請至少輸入一個保養項目';
+    }
+    return null;
+  }
 }
 
 class RecordTypeOther extends RecordType {
-  const RecordTypeOther();
+  final OtherData data;
+
+  const RecordTypeOther(this.data);
 
   @override
   String get label => '其他';
@@ -169,6 +220,9 @@ class RecordTypeOther extends RecordType {
 
   @override
   String get typeName => 'other';
+
+  @override
+  String? get validationError => null; // 其他類別無特殊驗證
 }
 
 @collection
@@ -200,7 +254,10 @@ class VehicleRecord {
   FuelData? fuelData;
 
   /// 保養記錄專屬資料（僅當 typeName == 'maintenance' 時使用）
-  MaintenanceData? maintenanceData;
+  List<MaintenanceData>? maintenanceData;
+
+  /// 其他記錄專屬資料（僅當 typeName == 'other' 時使用）
+  OtherData? otherData;
 
   VehicleRecord();
 
@@ -210,6 +267,7 @@ class VehicleRecord {
         typeName,
         fuelData: fuelData,
         maintenanceData: maintenanceData,
+        otherData: otherData,
       );
 
   /// Factory constructor 用於創建 VehicleRecord
@@ -238,8 +296,8 @@ class VehicleRecord {
         record.fuelData = data;
       case RecordTypeMaintenance(:final data):
         record.maintenanceData = data;
-      case RecordTypeOther():
-        break;
+      case RecordTypeOther(:final data):
+        record.otherData = data;
     }
 
     return record;

@@ -11,7 +11,7 @@ class AddRecordState extends Equatable {
   final String note; // 用於其他類型
   final AddRecordStatus status;
   final String? errorMessage;
-  final List<VehicleRecord> createdRecords;
+  final VehicleRecord? createdRecord;
 
   // 保養相關狀態 - 支援批次新增
   final List<MaintenanceData> maintenanceEntries;
@@ -31,7 +31,7 @@ class AddRecordState extends Equatable {
     this.note = '',
     this.status = AddRecordStatus.initial,
     this.errorMessage,
-    this.createdRecords = const [],
+    this.createdRecord,
     // 保養相關預設值
     this.maintenanceEntries = const [],
     // 加油相關預設值
@@ -40,11 +40,30 @@ class AddRecordState extends Equatable {
     this.pricePerLiter = 0,
     this.remainingFuel = 90,
     this.isAmountManuallyEdited = false,
-  }) : recordType = recordType ?? RecordTypeMaintenance(MaintenanceData());
+  }) : recordType = recordType ?? RecordTypeMaintenance([]);
 
   /// 計算保養項目總金額
   double get totalMaintenanceAmount =>
       maintenanceEntries.fold(0, (sum, entry) => sum + entry.amount);
+
+  /// 取得當前狀態對應的 RecordType 實例
+  RecordType get activeRecordType {
+    switch (recordType) {
+      case RecordTypeMaintenance():
+        return RecordTypeMaintenance(maintenanceEntries);
+      case RecordTypeFuel():
+        return RecordTypeFuel(
+          FuelData(
+            fuelType: fuelType,
+            fuelAmount: fuelAmount,
+            pricePerLiter: pricePerLiter,
+            remainingFuel: remainingFuel,
+          ),
+        );
+      case RecordTypeOther():
+        return RecordTypeOther(OtherData(amount: amount, note: note));
+    }
+  }
 
   AddRecordState copyWith({
     RecordType? recordType,
@@ -54,7 +73,7 @@ class AddRecordState extends Equatable {
     String? note,
     AddRecordStatus? status,
     String? errorMessage,
-    List<VehicleRecord>? createdRecords,
+    VehicleRecord? createdRecord,
     // 保養相關
     List<MaintenanceData>? maintenanceEntries,
     // 加油相關
@@ -72,7 +91,7 @@ class AddRecordState extends Equatable {
       note: note ?? this.note,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
-      createdRecords: createdRecords ?? this.createdRecords,
+      createdRecord: createdRecord ?? this.createdRecord,
       // 保養相關
       maintenanceEntries: maintenanceEntries ?? this.maintenanceEntries,
       // 加油相關
@@ -94,7 +113,7 @@ class AddRecordState extends Equatable {
     note,
     status,
     errorMessage,
-    createdRecords,
+    createdRecord,
     // 保養相關
     maintenanceEntries,
     // 加油相關

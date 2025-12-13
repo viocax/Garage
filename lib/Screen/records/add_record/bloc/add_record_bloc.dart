@@ -148,93 +148,61 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     SubmitRecord event,
     Emitter<AddRecordState> emit,
   ) async {
-    // 驗證欄位
-    final validationError = _validateFields();
-    if (validationError != null) {
+    // 1. 驗證里程數（依賴 Vehicle 資料，保留在 Bloc）
+    if (state.recordType.validationError != null) {
       emit(
         state.copyWith(
           status: AddRecordStatus.failure,
-          errorMessage: validationError,
+          errorMessage: state.recordType.validationError,
         ),
       );
       return;
     }
 
+    // 2. 取得 activeRecordType 並驗證
+    final type = state.activeRecordType;
+
     emit(state.copyWith(status: AddRecordStatus.submitting));
 
     try {
-      final List<VehicleRecord> records = [];
+      late final String title;
+      late final double cost;
 
-      // 根據記錄類型建立記錄
-      switch (state.recordType) {
-        case RecordTypeMaintenance():
-          // 保養類型：為每個有效的保養項目建立獨立記錄
-          final validEntries = state.maintenanceEntries
-              .where((e) => e.item.isNotEmpty)
-              .toList();
-
-          for (final entry in validEntries) {
-            final record = VehicleRecord.create(
-              recordId: const Uuid().v4(),
-              type: RecordTypeMaintenance(entry),
-              title: entry.item,
-              date: state.date,
-              cost: entry.amount,
-              km: state.km,
-              notes: entry.note.isNotEmpty ? entry.note : null,
-            );
-            records.add(record);
-          }
-
-        case RecordTypeFuel():
-          // 加油類型建立單筆記錄
-          final fuelData = FuelData(
-            fuelType: state.fuelType,
-            fuelAmount: state.fuelAmount,
-            pricePerLiter: state.pricePerLiter,
-            remainingFuel: state.remainingFuel,
-          );
-
-          final record = VehicleRecord.create(
-            recordId: const Uuid().v4(),
-            type: RecordTypeFuel(fuelData),
-            title: fuelData.formattedSummary,
-            date: state.date,
-            cost: state.amount,
-            km: state.km,
-            notes: state.note.isNotEmpty ? state.note : null,
-          );
-          records.add(record);
-
+      switch (type) {
+        case RecordTypeMaintenance(:final validEntries, :final totalAmount):
+          title = validEntries.length == 1
+              ? validEntries.first.item
+              : '${type.label} (${validEntries.length} 項)';
+          cost = totalAmount;
+        case RecordTypeFuel(:final data):
+          title = data.formattedSummary;
+          cost = state.amount;
         case RecordTypeOther():
-          // 其他類型建立單筆記錄
-          String title = state.recordType.label;
+          String tempTitle = type.label;
           if (state.note.isNotEmpty) {
             final firstLine = state.note.split('\n').first;
             if (firstLine.length < 20) {
-              title = '$title - $firstLine';
+              tempTitle = '$tempTitle - $firstLine';
             }
           }
-
-          final record = VehicleRecord.create(
-            recordId: const Uuid().v4(),
-            type: const RecordTypeOther(),
-            title: title,
-            date: state.date,
-            cost: state.amount,
-            km: state.km,
-            notes: state.note.isNotEmpty ? state.note : null,
-          );
-          records.add(record);
+          title = tempTitle;
+          cost = state.amount;
       }
+
+      final record = VehicleRecord.create(
+        recordId: const Uuid().v4(),
+        type: type,
+        title: title,
+        date: state.date,
+        cost: cost,
+        km: state.km,
+        notes: state.note.isNotEmpty ? state.note : null,
+      );
 
       await Future.delayed(const Duration(milliseconds: 500));
 
       emit(
-        state.copyWith(
-          status: AddRecordStatus.success,
-          createdRecords: records,
-        ),
+        state.copyWith(status: AddRecordStatus.success, createdRecord: record),
       );
     } catch (e) {
       emit(
@@ -244,39 +212,5 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
         ),
       );
     }
-  }
-
-  String? _validateFields() {
-    // 1. 驗證里程數：輸入的目前里程數要高於車輛目前的里程
-    if (state.km <= vehicle.currentKm) {
-      return '目前里程數 必須大於車輛目前里程';
-    }
-
-    // 2. 根據類別驗證
-    switch (state.recordType) {
-      case RecordTypeMaintenance():
-        // 保養類別：檢查是否有有效的保養項目
-        final validEntries = state.maintenanceEntries
-            .where((e) => e.item.trim().isNotEmpty)
-            .toList();
-
-        if (validEntries.isEmpty) {
-          return '請至少輸入一個保養項目';
-        }
-
-      case RecordTypeFuel():
-        // 加油類別：檢查加油量
-        if (state.fuelAmount <= 0) {
-          return '請輸入有效的加油量';
-        }
-
-      case RecordTypeOther():
-        // 其他類別無特殊驗證
-        break;
-    }
-
-    // 備註欄位都是 optional，無需驗證
-
-    return null;
   }
 }

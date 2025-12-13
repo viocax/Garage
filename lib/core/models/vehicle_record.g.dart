@@ -40,19 +40,26 @@ const VehicleRecordSchema = CollectionSchema(
     r'maintenanceData': PropertySchema(
       id: 6,
       name: r'maintenanceData',
-      type: IsarType.object,
+      type: IsarType.objectList,
 
       target: r'MaintenanceData',
     ),
     r'notes': PropertySchema(id: 7, name: r'notes', type: IsarType.string),
-    r'recordId': PropertySchema(
+    r'otherData': PropertySchema(
       id: 8,
+      name: r'otherData',
+      type: IsarType.object,
+
+      target: r'OtherData',
+    ),
+    r'recordId': PropertySchema(
+      id: 9,
       name: r'recordId',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(id: 9, name: r'title', type: IsarType.string),
+    r'title': PropertySchema(id: 10, name: r'title', type: IsarType.string),
     r'typeName': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'typeName',
       type: IsarType.string,
     ),
@@ -121,6 +128,7 @@ const VehicleRecordSchema = CollectionSchema(
   embeddedSchemas: {
     r'FuelData': FuelDataSchema,
     r'MaintenanceData': MaintenanceDataSchema,
+    r'OtherData': OtherDataSchema,
   },
 
   getId: _vehicleRecordGetId,
@@ -146,21 +154,38 @@ int _vehicleRecordEstimateSize(
     }
   }
   {
-    final value = object.maintenanceData;
-    if (value != null) {
-      bytesCount +=
-          3 +
-          MaintenanceDataSchema.estimateSize(
+    final list = object.maintenanceData;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        final offsets = allOffsets[MaintenanceData]!;
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += MaintenanceDataSchema.estimateSize(
             value,
-            allOffsets[MaintenanceData]!,
+            offsets,
             allOffsets,
           );
+        }
+      }
     }
   }
   {
     final value = object.notes;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.otherData;
+    if (value != null) {
+      bytesCount +=
+          3 +
+          OtherDataSchema.estimateSize(
+            value,
+            allOffsets[OtherData]!,
+            allOffsets,
+          );
     }
   }
   bytesCount += 3 + object.recordId.length * 3;
@@ -186,16 +211,22 @@ void _vehicleRecordSerialize(
     object.fuelData,
   );
   writer.writeLong(offsets[5], object.km);
-  writer.writeObject<MaintenanceData>(
+  writer.writeObjectList<MaintenanceData>(
     offsets[6],
     allOffsets,
     MaintenanceDataSchema.serialize,
     object.maintenanceData,
   );
   writer.writeString(offsets[7], object.notes);
-  writer.writeString(offsets[8], object.recordId);
-  writer.writeString(offsets[9], object.title);
-  writer.writeString(offsets[10], object.typeName);
+  writer.writeObject<OtherData>(
+    offsets[8],
+    allOffsets,
+    OtherDataSchema.serialize,
+    object.otherData,
+  );
+  writer.writeString(offsets[9], object.recordId);
+  writer.writeString(offsets[10], object.title);
+  writer.writeString(offsets[11], object.typeName);
 }
 
 VehicleRecord _vehicleRecordDeserialize(
@@ -214,15 +245,21 @@ VehicleRecord _vehicleRecordDeserialize(
   );
   object.id = id;
   object.km = reader.readLong(offsets[5]);
-  object.maintenanceData = reader.readObjectOrNull<MaintenanceData>(
+  object.maintenanceData = reader.readObjectList<MaintenanceData>(
     offsets[6],
     MaintenanceDataSchema.deserialize,
     allOffsets,
+    MaintenanceData(),
   );
   object.notes = reader.readStringOrNull(offsets[7]);
-  object.recordId = reader.readString(offsets[8]);
-  object.title = reader.readString(offsets[9]);
-  object.typeName = reader.readString(offsets[10]);
+  object.otherData = reader.readObjectOrNull<OtherData>(
+    offsets[8],
+    OtherDataSchema.deserialize,
+    allOffsets,
+  );
+  object.recordId = reader.readString(offsets[9]);
+  object.title = reader.readString(offsets[10]);
+  object.typeName = reader.readString(offsets[11]);
   return object;
 }
 
@@ -251,19 +288,27 @@ P _vehicleRecordDeserializeProp<P>(
     case 5:
       return (reader.readLong(offset)) as P;
     case 6:
-      return (reader.readObjectOrNull<MaintenanceData>(
+      return (reader.readObjectList<MaintenanceData>(
             offset,
             MaintenanceDataSchema.deserialize,
             allOffsets,
+            MaintenanceData(),
           ))
           as P;
     case 7:
       return (reader.readStringOrNull(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readObjectOrNull<OtherData>(
+            offset,
+            OtherDataSchema.deserialize,
+            allOffsets,
+          ))
+          as P;
     case 9:
       return (reader.readString(offset)) as P;
     case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1323,6 +1368,65 @@ extension VehicleRecordQueryFilter
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceDataLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'maintenanceData', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceDataIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'maintenanceData', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceDataIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'maintenanceData', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceDataLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'maintenanceData', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceDataLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'maintenanceData',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  maintenanceDataLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'maintenanceData',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
   notesIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1477,6 +1581,24 @@ extension VehicleRecordQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'notes', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  otherDataIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'otherData'),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  otherDataIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'otherData'),
       );
     });
   }
@@ -1916,9 +2038,17 @@ extension VehicleRecordQueryObject
   }
 
   QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
-  maintenanceData(FilterQuery<MaintenanceData> q) {
+  maintenanceDataElement(FilterQuery<MaintenanceData> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'maintenanceData');
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition> otherData(
+    FilterQuery<OtherData> q,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'otherData');
     });
   }
 }
@@ -2286,7 +2416,7 @@ extension VehicleRecordQueryProperty
     });
   }
 
-  QueryBuilder<VehicleRecord, MaintenanceData?, QQueryOperations>
+  QueryBuilder<VehicleRecord, List<MaintenanceData>?, QQueryOperations>
   maintenanceDataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'maintenanceData');
@@ -2296,6 +2426,13 @@ extension VehicleRecordQueryProperty
   QueryBuilder<VehicleRecord, String?, QQueryOperations> notesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'notes');
+    });
+  }
+
+  QueryBuilder<VehicleRecord, OtherData?, QQueryOperations>
+  otherDataProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'otherData');
     });
   }
 
@@ -3538,3 +3675,295 @@ extension MaintenanceDataQueryFilter
 
 extension MaintenanceDataQueryObject
     on QueryBuilder<MaintenanceData, MaintenanceData, QFilterCondition> {}
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const OtherDataSchema = Schema(
+  name: r'OtherData',
+  id: 5851794133580080387,
+  properties: {
+    r'amount': PropertySchema(id: 0, name: r'amount', type: IsarType.double),
+    r'note': PropertySchema(id: 1, name: r'note', type: IsarType.string),
+  },
+
+  estimateSize: _otherDataEstimateSize,
+  serialize: _otherDataSerialize,
+  deserialize: _otherDataDeserialize,
+  deserializeProp: _otherDataDeserializeProp,
+);
+
+int _otherDataEstimateSize(
+  OtherData object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.note.length * 3;
+  return bytesCount;
+}
+
+void _otherDataSerialize(
+  OtherData object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeDouble(offsets[0], object.amount);
+  writer.writeString(offsets[1], object.note);
+}
+
+OtherData _otherDataDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = OtherData(
+    amount: reader.readDoubleOrNull(offsets[0]) ?? 0,
+    note: reader.readStringOrNull(offsets[1]) ?? '',
+  );
+  return object;
+}
+
+P _otherDataDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readDoubleOrNull(offset) ?? 0) as P;
+    case 1:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension OtherDataQueryFilter
+    on QueryBuilder<OtherData, OtherData, QFilterCondition> {
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> amountEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'amount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> amountGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'amount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> amountLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'amount',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> amountBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'amount',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'note',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'note',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'note',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'note', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<OtherData, OtherData, QAfterFilterCondition> noteIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'note', value: ''),
+      );
+    });
+  }
+}
+
+extension OtherDataQueryObject
+    on QueryBuilder<OtherData, OtherData, QFilterCondition> {}

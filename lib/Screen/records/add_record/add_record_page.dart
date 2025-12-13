@@ -21,8 +21,8 @@ class AddRecordPage extends StatelessWidget {
         listenWhen: (previous, current) => previous.status != current.status,
         listener: (context, state) {
           if (state.status == AddRecordStatus.success &&
-              state.createdRecords.isNotEmpty) {
-            Navigator.pop(context, state.createdRecords);
+              state.createdRecord != null) {
+            Navigator.pop(context, state.createdRecord);
           } else if (state.status == AddRecordStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Error: ${state.errorMessage}')),
@@ -147,8 +147,8 @@ class _CategorySection extends StatelessWidget {
 
   static final categories = [
     RecordTypeFuel(FuelData()),
-    RecordTypeMaintenance(MaintenanceData()),
-    const RecordTypeOther(),
+    RecordTypeMaintenance([]),
+    RecordTypeOther(OtherData()),
   ];
 
   @override

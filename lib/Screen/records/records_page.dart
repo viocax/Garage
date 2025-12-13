@@ -138,11 +138,11 @@ class RecordsPage extends StatelessWidget {
   }
 
   Future<void> _navigateToAddRecord(BuildContext context) async {
-    final records = await context.goPathWithResult<List<VehicleRecord>>(
+    final record = await context.goPathWithResult<VehicleRecord>(
       AppPath.addRecord,
     );
-    if (records != null && records.isNotEmpty && context.mounted) {
-      context.read<RecordsBloc>().add(AddRecords(records));
+    if (record != null && context.mounted) {
+      context.read<RecordsBloc>().add(AddRecord(record));
     }
   }
 
