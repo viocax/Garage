@@ -40,9 +40,11 @@ class _AddRecordViewContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.dashboardBg,
-      appBar: AppBar(
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        backgroundColor: AppTheme.dashboardBg,
+        appBar: AppBar(
         backgroundColor: AppTheme.dashboardBg,
         surfaceTintColor: Colors.transparent, // Disable Material 3 surface tint
         centerTitle: true,
@@ -138,6 +140,7 @@ class _AddRecordViewContent extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -145,10 +148,26 @@ class _AddRecordViewContent extends StatelessWidget {
 class _CategorySection extends StatelessWidget {
   const _CategorySection();
 
+  // 用於類別選擇的模板（date 和 odometer 只是占位，實際值在 bloc 中設定）
+  static final _placeholderDate = DateTime(2000);
+  static const _placeholderOdometer = 0;
+
   static final categories = [
-    RecordTypeFuel(FuelData()),
-    RecordTypeMaintenance([]),
-    RecordTypeOther(OtherData()),
+    RecordTypeFuel(
+      data: FuelData(),
+      recordDate: _placeholderDate,
+      odometer: _placeholderOdometer,
+    ),
+    RecordTypeMaintenance(
+      data: [],
+      recordDate: _placeholderDate,
+      odometer: _placeholderOdometer,
+    ),
+    RecordTypeOther(
+      data: OtherData(),
+      recordDate: _placeholderDate,
+      odometer: _placeholderOdometer,
+    ),
   ];
 
   @override

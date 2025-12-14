@@ -12,10 +12,12 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
   AddRecordBloc({required this.vehicle})
     : super(
         AddRecordState(
-          date: DateTime.now(),
-          km: vehicle.currentKm,
-          // 預設新增一個空的保養項目
-          maintenanceEntries: [MaintenanceData()],
+          // 預設為加油類型，帶入當前日期和車輛里程
+          recordType: RecordTypeFuel(
+            data: FuelData(),
+            recordDate: DateTime.now(),
+            odometer: vehicle.currentKm,
+          ),
         ),
       ) {
     on<RecordTypeChanged>(_onRecordTypeChanged);
@@ -39,23 +41,79 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     RecordTypeChanged event,
     Emitter<AddRecordState> emit,
   ) {
-    emit(state.copyWith(recordType: event.type));
+    // 切換類型時，保留 date 和 km，並保留該類型的資料
+    final currentDate = state.date;
+    final currentKm = state.km;
+
+    final RecordType newType = switch (event.type) {
+      RecordTypeFuel() =>
+        state.recordType is RecordTypeFuel
+            ? state.recordType
+            : RecordTypeFuel(
+                data: FuelData(),
+                recordDate: currentDate,
+                odometer: currentKm,
+              ),
+      RecordTypeMaintenance() =>
+        state.recordType is RecordTypeMaintenance
+            ? state.recordType
+            : RecordTypeMaintenance(
+                data: [MaintenanceData()],
+                recordDate: currentDate,
+                odometer: currentKm,
+              ),
+      RecordTypeOther() =>
+        state.recordType is RecordTypeOther
+            ? state.recordType
+            : RecordTypeOther(
+                data: OtherData(),
+                recordDate: currentDate,
+                odometer: currentKm,
+              ),
+    };
+
+    emit(
+      state.copyWith(
+        recordType: newType,
+        errorMessage: null,
+        isAmountManuallyEdited: false,
+      ),
+    );
   }
 
   void _onAmountChanged(AmountChanged event, Emitter<AddRecordState> emit) {
-    emit(state.copyWith(amount: event.amount, isAmountManuallyEdited: true));
+    // 根據當前類型更新金額
+    switch (state.recordType) {
+      case RecordTypeFuel():
+        emit(
+          state.copyWithFuelData(
+            fuelAmount: event.amount,
+            isAmountManuallyEdited: true,
+          ),
+        );
+        break;
+      case RecordTypeOther():
+        emit(state.copyWithOtherData(amount: event.amount));
+        break;
+      case RecordTypeMaintenance():
+        // 保養類型的金額在各項目中輸入，這裡不處理
+        break;
+    }
   }
 
   void _onDateChanged(DateChanged event, Emitter<AddRecordState> emit) {
-    emit(state.copyWith(date: event.date));
+    emit(state.copyWithCommonFields(date: event.date));
   }
 
   void _onKmChanged(KmChanged event, Emitter<AddRecordState> emit) {
-    emit(state.copyWith(km: event.km));
+    emit(state.copyWithCommonFields(km: event.km));
   }
 
   void _onNoteChanged(NoteChanged event, Emitter<AddRecordState> emit) {
-    emit(state.copyWith(note: event.note));
+    // 只有 Other 類型需要處理備註
+    if (state.recordType is RecordTypeOther) {
+      emit(state.copyWithOtherData(note: event.note));
+    }
   }
 
   // 保養項目批次新增事件處理
@@ -65,7 +123,7 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
   ) {
     final entries = List<MaintenanceData>.from(state.maintenanceEntries);
     entries.add(MaintenanceData());
-    emit(state.copyWith(maintenanceEntries: entries));
+    emit(state.copyWithMaintenanceEntries(entries));
   }
 
   void _onRemoveMaintenanceEntry(
@@ -75,7 +133,7 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     final entries = List<MaintenanceData>.from(state.maintenanceEntries);
     if (event.index >= 0 && event.index < entries.length) {
       entries.removeAt(event.index);
-      emit(state.copyWith(maintenanceEntries: entries));
+      emit(state.copyWithMaintenanceEntries(entries));
     }
   }
 
@@ -97,58 +155,40 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
       note: event.note,
     );
 
-    emit(state.copyWith(maintenanceEntries: entries));
+    emit(state.copyWithMaintenanceEntries(entries));
   }
 
   // 加油相關事件處理
   void _onFuelTypeChanged(FuelTypeChanged event, Emitter<AddRecordState> emit) {
-    emit(state.copyWith(fuelType: event.fuelType));
+    emit(state.copyWithFuelData(fuelType: event.fuelType));
   }
 
   void _onFuelAmountChanged(
     FuelAmountChanged event,
     Emitter<AddRecordState> emit,
   ) {
-    final newFuelAmount = event.amount;
-    final calculatedAmount = newFuelAmount * state.pricePerLiter;
-
-    if (state.isAmountManuallyEdited) {
-      // 用戶已手動編輯金額，不自動更新
-      emit(state.copyWith(fuelAmount: newFuelAmount));
-    } else {
-      // 自動更新金額
-      emit(state.copyWith(fuelAmount: newFuelAmount, amount: calculatedAmount));
-    }
+    emit(state.copyWithFuelData(fuelAmount: event.amount));
   }
 
   void _onPricePerLiterChanged(
     PricePerLiterChanged event,
     Emitter<AddRecordState> emit,
   ) {
-    final newPrice = event.price;
-    final calculatedAmount = state.fuelAmount * newPrice;
-
-    if (state.isAmountManuallyEdited) {
-      // 用戶已手動編輯金額，不自動更新
-      emit(state.copyWith(pricePerLiter: newPrice));
-    } else {
-      // 自動更新金額
-      emit(state.copyWith(pricePerLiter: newPrice, amount: calculatedAmount));
-    }
+    emit(state.copyWithFuelData(pricePerLiter: event.price));
   }
 
   void _onRemainingFuelChanged(
     RemainingFuelChanged event,
     Emitter<AddRecordState> emit,
   ) {
-    emit(state.copyWith(remainingFuel: event.remaining));
+    emit(state.copyWithFuelData(remainingFuel: event.remaining));
   }
 
   Future<void> _onSubmitRecord(
     SubmitRecord event,
     Emitter<AddRecordState> emit,
   ) async {
-    // 1. 驗證里程數（依賴 Vehicle 資料，保留在 Bloc）
+    // 1. 驗證 RecordType 資料
     if (state.recordType.validationError != null) {
       emit(
         state.copyWith(
@@ -159,44 +199,43 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
       return;
     }
 
-    // 2. 取得 activeRecordType 並驗證
-    final type = state.activeRecordType;
-
     emit(state.copyWith(status: AddRecordStatus.submitting));
 
     try {
       late final String title;
       late final double cost;
+      String? notes;
 
-      switch (type) {
+      switch (state.recordType) {
         case RecordTypeMaintenance(:final validEntries, :final totalAmount):
           title = validEntries.length == 1
               ? validEntries.first.item
-              : '${type.label} (${validEntries.length} 項)';
+              : '保養 (${validEntries.length} 項)';
           cost = totalAmount;
         case RecordTypeFuel(:final data):
           title = data.formattedSummary;
-          cost = state.amount;
-        case RecordTypeOther():
-          String tempTitle = type.label;
-          if (state.note.isNotEmpty) {
-            final firstLine = state.note.split('\n').first;
+          cost = data.calculatedCost;
+        case RecordTypeOther(:final data):
+          String tempTitle = '其他';
+          if (data.note.isNotEmpty) {
+            final firstLine = data.note.split('\n').first;
             if (firstLine.length < 20) {
               tempTitle = '$tempTitle - $firstLine';
             }
           }
           title = tempTitle;
-          cost = state.amount;
+          cost = data.amount;
+          notes = data.note.isNotEmpty ? data.note : null;
       }
 
       final record = VehicleRecord.create(
         recordId: const Uuid().v4(),
-        type: type,
+        type: state.recordType,
         title: title,
         date: state.date,
         cost: cost,
         km: state.km,
-        notes: state.note.isNotEmpty ? state.note : null,
+        notes: notes,
       );
 
       await Future.delayed(const Duration(milliseconds: 500));

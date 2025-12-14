@@ -8,7 +8,8 @@ part 'vehicle_record.g.dart';
 enum FuelType {
   octane92,
   octane95,
-  octane98;
+  octane98,
+  diesel;
 
   String get label {
     switch (this) {
@@ -18,6 +19,8 @@ enum FuelType {
         return '95';
       case FuelType.octane98:
         return '98';
+      case FuelType.diesel:
+        return '柴油';
     }
   }
 }
@@ -59,8 +62,16 @@ class FuelData {
   double get calculatedCost => fuelAmount * pricePerLiter;
 
   /// 格式化顯示
-  String get formattedSummary =>
-      '${fuelType.label} ${fuelAmount.toStringAsFixed(1)}L';
+  String get formattedSummary {
+    final amount = '${fuelAmount.toStringAsFixed(1)}L';
+    switch (fuelType) {
+      case FuelType.diesel:
+        return '柴油  $amount';
+      default:
+        return '無鉛${fuelType.label}  $amount';
+    }
+  }
+    
 }
 
 /// 保養項目資料（embedded object）
@@ -117,7 +128,13 @@ class OtherData {
 
 /// Sealed class for record types with associated data
 sealed class RecordType {
-  const RecordType();
+  final DateTime recordDate;
+  final int odometer;
+
+  const RecordType({
+    required this.recordDate,
+    required this.odometer,
+  });
 
   String get label;
   IconData get icon;
@@ -129,18 +146,32 @@ sealed class RecordType {
 
   static RecordType fromTypeName(
     String typeName, {
+    required DateTime recordDate,
+    required int odometer,
     FuelData? fuelData,
     List<MaintenanceData>? maintenanceData,
     OtherData? otherData,
   }) {
     switch (typeName) {
       case 'fuel':
-        return RecordTypeFuel(fuelData ?? FuelData());
+        return RecordTypeFuel(
+          data: fuelData ?? FuelData(),
+          recordDate: recordDate,
+          odometer: odometer,
+        );
       case 'maintenance':
-        return RecordTypeMaintenance(maintenanceData ?? []);
+        return RecordTypeMaintenance(
+          data: maintenanceData ?? [],
+          recordDate: recordDate,
+          odometer: odometer,
+        );
       case 'other':
       default:
-        return RecordTypeOther(otherData ?? OtherData());
+        return RecordTypeOther(
+          data: otherData ?? OtherData(),
+          recordDate: recordDate,
+          odometer: odometer,
+        );
     }
   }
 }
@@ -148,7 +179,11 @@ sealed class RecordType {
 class RecordTypeFuel extends RecordType {
   final FuelData data;
 
-  const RecordTypeFuel(this.data);
+  const RecordTypeFuel({
+    required this.data,
+    required super.recordDate,
+    required super.odometer,
+  });
 
   @override
   String get label => '加油';
@@ -174,7 +209,11 @@ class RecordTypeFuel extends RecordType {
 class RecordTypeMaintenance extends RecordType {
   final List<MaintenanceData> data;
 
-  const RecordTypeMaintenance(this.data);
+  const RecordTypeMaintenance({
+    required this.data,
+    required super.recordDate,
+    required super.odometer,
+  });
 
   @override
   String get label => '保養';
@@ -207,7 +246,11 @@ class RecordTypeMaintenance extends RecordType {
 class RecordTypeOther extends RecordType {
   final OtherData data;
 
-  const RecordTypeOther(this.data);
+  const RecordTypeOther({
+    required this.data,
+    required super.recordDate,
+    required super.odometer,
+  });
 
   @override
   String get label => '其他';
@@ -265,6 +308,8 @@ class VehicleRecord {
   @ignore
   RecordType get type => RecordType.fromTypeName(
         typeName,
+        recordDate: date,
+        odometer: km,
         fuelData: fuelData,
         maintenanceData: maintenanceData,
         otherData: otherData,

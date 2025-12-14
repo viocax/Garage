@@ -37,9 +37,11 @@ class _AddVehicleViewContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.dashboardBg,
-      appBar: AppBar(
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        backgroundColor: AppTheme.dashboardBg,
+        appBar: AppBar(
         backgroundColor: AppTheme.dashboardBg,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
@@ -83,6 +85,7 @@ class _AddVehicleViewContent extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }
