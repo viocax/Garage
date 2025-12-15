@@ -21,7 +21,9 @@ class AppTheme {
   static const Color systemGray6 = Color(
     0xFFF5F5F7,
   ); // iOS system gray 6 (light)
-  static const Color placeholderGray = Color(0xFF636366); // Placeholder text color
+  static const Color placeholderGray = Color(
+    0xFF636366,
+  ); // Placeholder text color
 
   // iOS System Colors
   static const Color systemGreen = Color(0xFF34C759); // iOS system green
@@ -79,8 +81,12 @@ class AppTheme {
   ); // Input field background
 
   // Launch Page Colors
-  static const Color launchGradientStart = Color(0xFF1E1E1E); // Launch gradient start
-  static const Color launchGradientEnd = Color(0xFF0A0A0A); // Launch gradient end
+  static const Color launchGradientStart = Color(
+    0xFF1E1E1E,
+  ); // Launch gradient start
+  static const Color launchGradientEnd = Color(
+    0xFF0A0A0A,
+  ); // Launch gradient end
 
   // Transparent/Opacity Colors
   // White transparent variants
@@ -98,20 +104,29 @@ class AppTheme {
   static Color blackTransparent15 = Colors.black.withValues(alpha: 0.15);
   static Color blackTransparent50 = Colors.black.withValues(alpha: 0.5);
   static Color blackTransparent60 = Colors.black.withValues(alpha: 0.6);
-
+  static Color blackTransparent75 = Colors.black.withValues(alpha: 0.75);
+  static Color blackTransparent90 = Colors.black.withValues(alpha: 0.9);
   // Grey transparent variants
   static Color greyTransparent10 = Colors.grey.withValues(alpha: 0.1);
   static Color greyTransparent20 = Colors.grey.withValues(alpha: 0.2);
 
   // Red transparent variants
-  static Color redTransparent30 = const Color(0xFFFF3B30).withValues(alpha: 0.3);
-  static Color redTransparent90 = const Color(0xFFFF3B30).withValues(alpha: 0.9);
+  static Color redTransparent30 = const Color(
+    0xFFFF3B30,
+  ).withValues(alpha: 0.3);
+  static Color redTransparent90 = const Color(
+    0xFFFF3B30,
+  ).withValues(alpha: 0.9);
 
   // Green transparent variants
-  static Color greenTransparent10 = const Color(0xFF34C759).withValues(alpha: 0.1);
+  static Color greenTransparent10 = const Color(
+    0xFF34C759,
+  ).withValues(alpha: 0.1);
 
   // Accent red transparent variants
-  static Color accentRedTransparent15 = dashboardAccentRed.withValues(alpha: 0.15);
+  static Color accentRedTransparent15 = dashboardAccentRed.withValues(
+    alpha: 0.15,
+  );
 
   // Dark surface transparent variants
   static Color darkSurfaceTransparent85 = darkSurface.withValues(alpha: 0.85);

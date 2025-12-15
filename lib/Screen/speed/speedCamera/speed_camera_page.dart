@@ -1,10 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'dart:ui' as ui;
+import 'package:flutter_map/flutter_map.dart';
+import 'package:garage/theme/grid_background_painter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
-import 'package:garage/theme/grid_background_painter.dart';
-import 'package:garage/core/models/speed_camera_model.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/tabbar_type.dart';
 import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
@@ -24,8 +27,10 @@ class SpeedCameraPage extends StatefulWidget {
 }
 
 class _SpeedCameraPageState extends State<SpeedCameraPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _roadAnimationController;
+  late AnimationController _mapAnimationController;
+  final MapController _mapController = MapController();
 
   @override
   void initState() {
@@ -35,12 +40,54 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
       vsync: this,
       duration: const Duration(milliseconds: 5300),
     );
+    // 初始化地圖動畫控制器
+    _mapAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
   }
 
   @override
   void dispose() {
     _roadAnimationController.dispose();
+    _mapAnimationController.dispose();
+    _mapController.dispose();
     super.dispose();
+  }
+
+  // 帶動畫的地圖移動
+  void _animatedMapMove(LatLng destLocation, double destZoom) {
+    final camera = _mapController.camera;
+    final startLocation = camera.center;
+    final startZoom = camera.zoom;
+
+    final latTween = Tween<double>(
+      begin: startLocation.latitude,
+      end: destLocation.latitude,
+    );
+    final lngTween = Tween<double>(
+      begin: startLocation.longitude,
+      end: destLocation.longitude,
+    );
+    final zoomTween = Tween<double>(begin: startZoom, end: destZoom);
+
+    final Animation<double> animation = CurvedAnimation(
+      parent: _mapAnimationController,
+      curve: Curves.easeInOut,
+    );
+
+    void listener() {
+      _mapController.move(
+        LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
+        zoomTween.evaluate(animation),
+      );
+    }
+
+    _mapAnimationController.addListener(listener);
+
+    _mapAnimationController.forward(from: 0).whenComplete(() {
+      _mapAnimationController.removeListener(listener);
+    });
   }
 
   @override
@@ -55,7 +102,11 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
           BlocListener<SpeedBloc, SpeedState>(
             listener: (context, state) {
               switch (state) {
-                case SpeedData(:final speed, :final animationDuration):
+                case SpeedData(
+                  :final speed,
+                  :final animationDuration,
+                  :final currentLocation,
+                ):
                   // 更新道路動畫時長
                   _roadAnimationController.duration = animationDuration;
 
@@ -75,6 +126,19 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                       _roadAnimationController.repeat();
                     }
                   }
+
+                  // 更新地圖位置（往南偏移讓使用者位置在上方）
+                  if (currentLocation != null) {
+                    final currentZoom = _mapController.camera.zoom;
+                    _mapController.move(
+                      LatLng(
+                        currentLocation.latitude -
+                            _getLatitudeOffset(currentZoom),
+                        currentLocation.longitude,
+                      ),
+                      currentZoom,
+                    );
+                  }
               }
             },
           ),
@@ -90,92 +154,80 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
         child: ThemedStatusBar(
           theme: StatusBarTheme.light,
           child: Scaffold(
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: AppTheme.blackTransparent90,
             body: Stack(
               children: [
-                // 1. Background Gradient
-                _backgroundGradient(),
-
-                // 2. Grid Background (Top part)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: MediaQuery.of(context).size.height * 0.4,
-                  child: CustomPaint(painter: GridBackgroundPainter()),
-                ),
-
-                // 3. Speed Limit Overlay (Top Left)
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 20,
-                  left: 20,
+                // 1. Map (Full Screen Background)
+                Positioned.fill(
                   child: BlocBuilder<SpeedBloc, SpeedState>(
                     builder: (context, state) {
                       return switch (state) {
-                        SpeedData(:final lowerSpeed, :final upperSpeed) =>
-                          _buildSpeedLimitOverlay(lowerSpeed, upperSpeed),
+                        SpeedData(:final currentLocation) =>
+                          _buildFullScreenMap(currentLocation),
                       };
                     },
                   ),
                 ),
 
-                // 4. Speedometer (Center)
+                // 2. Speed Limit Overlay (Top Left - over map)
                 Positioned(
-                  top: MediaQuery.of(context).size.height * 0.25,
-                  left: 0,
-                  right: 0,
+                  top: MediaQuery.of(context).padding.top + 16,
+                  left: 16,
                   child: BlocBuilder<SpeedBloc, SpeedState>(
                     builder: (context, state) {
                       return switch (state) {
                         SpeedData(
+                          :final lowerSpeed,
+                          :final upperSpeed,
                           :final speed,
-                          :final unit,
-                          :final isOverSpeed,
                           :final isDetecting,
+                          :final isOverSpeed,
+                          :final unit,
                         ) =>
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Center(
-                                child: Speedometer(
-                                  speed: speed.toInt().toString(),
-                                  unit: unit,
-                                  isOverSpeed: isOverSpeed,
-                                  maxSpeed: SpeedCameraModel.maxSpeed,
-                                ),
-                              ),
-                              // Detection Button (Bottom Center)
-                              Positioned(
-                                bottom: 0,
-                                child: SpeedDetectionButton(
-                                  isDetecting: isDetecting,
-                                  onTap: () {
-                                    if (isDetecting) {
-                                      context.read<SpeedBloc>().add(
-                                        const StopDetection(),
-                                      );
-                                    } else {
-                                      context.read<SpeedBloc>().add(
-                                        const StartDetection(),
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
+                          _buildSpeedLimitOverlay(
+                            lowerSpeed: lowerSpeed,
+                            upperSpeed: upperSpeed,
+                            currentSpeed: speed,
+                            unit: unit,
+                            isDetecting: isDetecting,
+                            isOverSpeed: isOverSpeed,
                           ),
                       };
                     },
                   ),
                 ),
 
+                // 3. Map Zoom Controls (Top Right)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 16,
+                  right: 16,
+                  child: BlocBuilder<SpeedBloc, SpeedState>(
+                    builder: (context, state) {
+                      return switch (state) {
+                        SpeedData(:final currentLocation, :final isDetecting) =>
+                          _buildMapControls(
+                            context,
+                            isDetecting,
+                            currentLocation,
+                          ),
+                      };
+                    },
+                  ),
+                ),
                 // 5. Road & Car (Bottom)
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  height: MediaQuery.of(context).size.height * 0.3,
-                  child: _roadPath(),
+                  height: MediaQuery.of(context).size.height * 0.35,
+                  child: BlocBuilder<SpeedBloc, SpeedState>(
+                    builder: (context, state) {
+                      final isDetecting = state is SpeedData
+                          ? state.isDetecting
+                          : false;
+                      return _roadPath(context, isDetecting);
+                    },
+                  ),
                 ),
               ],
             ),
@@ -185,27 +237,60 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     );
   }
 
-  Widget _buildSpeedLimitOverlay(String? lowerSpeed, String? upperSpeed) {
-    // if (lowerSpeed == null && upperSpeed == null)
-    //   return const SizedBox.shrink();
-
+  Widget _buildSpeedLimitOverlay({
+    required String? lowerSpeed,
+    required String? upperSpeed,
+    required double currentSpeed,
+    required SpeedUnit unit,
+    required bool isDetecting,
+    required bool isOverSpeed,
+  }) {
+    if (!isDetecting) {
+      return const SizedBox.shrink();
+    }
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(12),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppTheme.whiteTransparent10,
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.black.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppTheme.whiteTransparent20, width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            spacing: 12,
             children: [
+              Text(
+                currentSpeed.toInt().toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                unit.displayName,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (lowerSpeed != null || upperSpeed != null)
+                Container(
+                  width: 1,
+                  height: 24,
+                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                  color: Colors.white24,
+                ),
+
               if (upperSpeed != null)
                 _speedLimitCircle(upperSpeed, AppTheme.systemRed),
+              if (lowerSpeed != null && upperSpeed != null)
+                const SizedBox(width: 8),
               if (lowerSpeed != null)
                 _speedLimitCircle(lowerSpeed, AppTheme.systemGray),
             ],
@@ -243,7 +328,261 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     );
   }
 
-  Widget _roadPath() {
+  Widget _buildMapControls(
+    BuildContext context,
+    bool isDetecting,
+    LocationData? currentLocation,
+  ) {
+    final defaultLocation = LatLng(25.0330, 121.5654);
+    final currentLatLng = currentLocation != null
+        ? LatLng(currentLocation.latitude, currentLocation.longitude)
+        : defaultLocation;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppTheme.whiteTransparent20,
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Zoom In
+                  _buildZoomButton(
+                    icon: Icons.add,
+                    onTap: () {
+                      final currentZoom = _mapController.camera.zoom;
+                      if (currentZoom < 18) {
+                        final newZoom = currentZoom + 1;
+                        _animatedMapMove(
+                          LatLng(
+                            currentLatLng.latitude -
+                                _getLatitudeOffset(newZoom),
+                            currentLatLng.longitude,
+                          ),
+                          newZoom,
+                        );
+                      }
+                    },
+                  ),
+                  Container(
+                    height: 1,
+                    width: 30,
+                    color: AppTheme.whiteTransparent20,
+                  ),
+                  // Zoom Out
+                  _buildZoomButton(
+                    icon: Icons.remove,
+                    onTap: () {
+                      final currentZoom = _mapController.camera.zoom;
+                      if (currentZoom > 10) {
+                        final newZoom = currentZoom - 1;
+                        _animatedMapMove(
+                          LatLng(
+                            currentLatLng.latitude -
+                                _getLatitudeOffset(newZoom),
+                            currentLatLng.longitude,
+                          ),
+                          newZoom,
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (isDetecting) ...[
+          const SizedBox(height: 16),
+          // Stop Button
+          GestureDetector(
+            onTap: () {
+              context.read<SpeedBloc>().add(const StopDetection());
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.systemRed.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.whiteTransparent20,
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.systemRed.withValues(alpha: 0.4),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.stop_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildZoomButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        child: Icon(icon, color: AppTheme.accentColor, size: 22),
+      ),
+    );
+  }
+
+  // 基準緯度偏移量（在 zoom 16 時的偏移）
+  static const double _baseLatitudeOffset = 0.001;
+  static const double _baseZoom = 16.0;
+
+  // 根據當前 zoom level 動態計算緯度偏移量
+  // zoom 越大（越近），偏移量越小；zoom 越小（越遠），偏移量越大
+  double _getLatitudeOffset(double zoom) {
+    return _baseLatitudeOffset * pow(2, _baseZoom - zoom);
+  }
+
+  Widget _buildFullScreenMap(LocationData? location) {
+    final defaultLocation = LatLng(25.0330, 121.5654);
+    final currentLatLng = location != null
+        ? LatLng(location.latitude, location.longitude)
+        : defaultLocation;
+    // 地圖中心往南偏移，讓使用者位置顯示在上方（初始使用基準偏移量，對應 zoom 16）
+    final mapCenter = LatLng(
+      currentLatLng.latitude - _baseLatitudeOffset,
+      currentLatLng.longitude,
+    );
+
+    return Stack(
+      children: [
+        // 地圖
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: mapCenter,
+            initialZoom: 16.0,
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.none,
+            ),
+          ),
+          children: [
+            TileLayer(
+              urlTemplate:
+                  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+              userAgentPackageName: 'com.example.garage',
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: currentLatLng,
+                  width: 30,
+                  height: 30,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.blackTransparent15,
+                          blurRadius: 8,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.navigation,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        if (location == null) ...[
+          Container(color: AppTheme.blackTransparent75),
+          CustomPaint(painter: GridBackgroundPainter(), size: Size.infinite),
+        ] else ...[
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.of(context).size.height * 0.25,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppTheme.darkSurface,
+                    AppTheme.darkSurface.withValues(alpha: 0.9),
+                    AppTheme.darkSurface.withValues(alpha: 0.7),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 0.2, 0.45, 1.0],
+                ),
+              ),
+            ),
+          ),
+          // 中間漸層遮罩（讓速度表清楚顯示，但保留底部道路區域）
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    AppTheme.darkSurface.withValues(alpha: 0.7),
+                    AppTheme.darkSurface.withValues(alpha: 0.9),
+                    AppTheme.darkSurface,
+                  ],
+                  stops: const [0.0, 0.6, 0.85, 1.0],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _roadPath(BuildContext context, bool isDetecting) {
     final screenWidth = MediaQuery.of(context).size.width;
     final carWidth = screenWidth * 0.6 - 20;
     final carHeight = carWidth * 1.5;
@@ -251,46 +590,37 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     return AnimatedBuilder(
       animation: _roadAnimationController,
       builder: (context, child) {
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            // Road Visualization with animation
-            CustomPaint(
-              size: Size.infinite,
-              painter: RoadPainter(
-                activeLaneColor: AppTheme.blackTransparent15,
-                animationValue: _roadAnimationController.value,
+        return GestureDetector(
+          onDoubleTap: () {
+            if (!isDetecting) {
+              context.read<SpeedBloc>().add(const StartDetection());
+            }
+          },
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Road Visualization with animation
+              CustomPaint(
+                size: Size.infinite,
+                painter: RoadPainter(
+                  activeLaneColor: AppTheme.whiteTransparent20,
+                  animationValue: _roadAnimationController.value,
+                ),
               ),
-            ),
 
-            // Car Model (3D)
-            Positioned(
-              bottom: 20,
-              child: SizedBox(
-                width: carWidth,
-                height: carHeight,
-                child: const Car3DView(),
+              // Car Model (3D)
+              Positioned(
+                bottom: 20,
+                child: SizedBox(
+                  width: carWidth,
+                  height: carHeight,
+                  child: const Car3DView(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
-    );
-  }
-
-  Widget _backgroundGradient() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppTheme.darkSurface, // Dark top
-            AppTheme.systemGray5, // Light bottom
-          ],
-          stops: [0.3, 1.0],
-        ),
-      ),
     );
   }
 }
@@ -299,7 +629,8 @@ class Speedometer extends StatefulWidget {
   final String speed;
   final SpeedUnit unit;
   final bool isOverSpeed;
-  final double maxSpeed; // 假設最大速度
+  final double maxSpeed;
+  final double size;
 
   const Speedometer({
     super.key,
@@ -307,6 +638,7 @@ class Speedometer extends StatefulWidget {
     required this.unit,
     required this.maxSpeed,
     this.isOverSpeed = false,
+    this.size = 300,
   });
 
   @override
@@ -348,14 +680,15 @@ class _SpeedometerState extends State<Speedometer>
     final textTheme = Theme.of(context).textTheme;
     final double currentSpeed = double.tryParse(widget.speed) ?? 0;
     final double progress = (currentSpeed / widget.maxSpeed).clamp(0.0, 1.0);
+    final double sizeRatio = widget.size / 300;
 
     return Stack(
       alignment: Alignment.center,
       children: [
         // Arc Progress Bar
         SizedBox(
-          width: 300,
-          height: 300,
+          width: widget.size,
+          height: widget.size,
           child: CustomPaint(
             painter: SpeedometerArcPainter(
               progress: progress,
@@ -383,21 +716,21 @@ class _SpeedometerState extends State<Speedometer>
                 Text(
                   widget.speed,
                   style: textTheme.displayLarge?.copyWith(
-                    fontSize: 100,
+                    fontSize: 100 * sizeRatio,
                     fontWeight: FontWeight.w400,
                     color: speedColor,
                     height: 1.0,
-                    letterSpacing: -4,
+                    letterSpacing: -4 * sizeRatio,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8 * sizeRatio),
                 Text(
                   widget.unit.displayName,
                   style: textTheme.titleMedium?.copyWith(
                     color: widget.isOverSpeed
                         ? AppTheme.redTransparent90
                         : AppTheme.whiteTransparent70,
-                    fontSize: 20,
+                    fontSize: 20 * sizeRatio,
                     letterSpacing: 1,
                   ),
                 ),
@@ -538,7 +871,7 @@ class RoadPainter extends CustomPainter {
     double dashWidth = 5,
     double dashSpace = 5,
   }) {
-    final path = Path()
+    final path = ui.Path()
       ..moveTo(start.dx, start.dy)
       ..lineTo(end.dx, end.dy);
 
@@ -655,7 +988,7 @@ class _DetectionButtonState extends State<DetectionButton>
             child: ClipRRect(
               borderRadius: BorderRadius.circular(40),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -703,120 +1036,3 @@ class _DetectionButtonState extends State<DetectionButton>
     );
   }
 }
-
-class SpeedDetectionButton extends StatefulWidget {
-  final bool isDetecting;
-  final VoidCallback onTap;
-
-  const SpeedDetectionButton({
-    Key? key,
-    required this.isDetecting,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  State<SpeedDetectionButton> createState() => _SpeedDetectionButtonState();
-}
-
-class _SpeedDetectionButtonState extends State<SpeedDetectionButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true); // 讓呼吸燈效果循環
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // 定義顏色
-    final activeColor = const Color.fromARGB(
-      255,
-      223,
-      162,
-      162,
-    ); // 偵測中 (停止按鈕顏色)
-    final inactiveColor = const Color.fromARGB(
-      255,
-      152,
-      220,
-      204,
-    ); // 未啟動 (啟動按鈕顏色 - 類似賽博龐克綠)
-
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          // 計算呼吸燈陰影擴散半徑 (只在偵測中時有呼吸效果)
-          double glowRadius = widget.isDetecting
-              ? (5.0 * _controller.value)
-              : 0.0;
-
-          return Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppTheme.blackTransparent60,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: widget.isDetecting ? activeColor : inactiveColor,
-                width: 3,
-              ),
-              boxShadow: [
-                // 外發光效果
-                BoxShadow(
-                  color: (widget.isDetecting ? activeColor : inactiveColor)
-                      .withValues(alpha: 0.6),
-                  blurRadius: widget.isDetecting ? 20 : 10,
-                  spreadRadius: glowRadius,
-                ),
-                // 內部光暈
-                BoxShadow(
-                  color: (widget.isDetecting ? activeColor : inactiveColor)
-                      .withValues(alpha: 0.2),
-                  blurRadius: 10,
-                  spreadRadius: -5,
-                  offset: const Offset(0, 0),
-                ),
-              ],
-            ),
-            child: Center(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
-                child: widget.isDetecting
-                    ? Icon(
-                        Icons.stop_rounded,
-                        key: const ValueKey('stop'),
-                        color: activeColor,
-                        size: 40,
-                      )
-                    : Icon(
-                        Icons.play_arrow_rounded,
-                        key: const ValueKey('start'),
-                        color: inactiveColor,
-                        size: 45,
-                      ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-//developer.apple.com

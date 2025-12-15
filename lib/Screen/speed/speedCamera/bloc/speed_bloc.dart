@@ -58,12 +58,16 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     if (unit == SpeedUnit.mph) {
       newSpeed = newSpeed.mile;
     }
-    
+
     emit(currentState.copyWith(
       speed: newSpeed,
       unit: unit,
       animationDuration: event.speedCameraModel.calculateDuration(),
-      isOverSpeed: event.speedCameraModel.isOverSpeed
+      isOverSpeed: event.speedCameraModel.isOverSpeed,
+      currentLocation: LocationData(
+        latitude: event.speedCameraModel.latitude,
+        longitude: event.speedCameraModel.longitude,
+      ),
     ));
   }
 

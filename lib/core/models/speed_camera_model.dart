@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 class SpeedCameraModel {
   int speedLimit;
   double currentSpeed;
-  double distance; 
+  double distance;
   bool isOverSpeed;
+  double latitude;
+  double longitude;
 
   static const double maxSpeed = 300;
 
@@ -13,6 +15,8 @@ class SpeedCameraModel {
     required this.currentSpeed,
     required this.distance,
     required this.isOverSpeed,
+    required this.latitude,
+    required this.longitude,
   });
 
   // 根據速度計算動畫時長（速度越快，時長越短，動畫跑得越快）

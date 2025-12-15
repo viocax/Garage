@@ -4,6 +4,17 @@ sealed class SpeedState {
   const SpeedState();
 }
 
+// 位置數據
+class LocationData {
+  final double latitude;
+  final double longitude;
+
+  const LocationData({
+    required this.latitude,
+    required this.longitude,
+  });
+}
+
 // 速度數據狀態
 final class SpeedData extends SpeedState {
   final double speed; // 當前速度
@@ -13,6 +24,7 @@ final class SpeedData extends SpeedState {
   final String? upperSpeed; // 最高速限
   final bool isOverSpeed; // 是否超速
   final bool isDetecting; // 是否正在偵測
+  final LocationData? currentLocation; // 當前位置
 
   const SpeedData({
     required this.speed,
@@ -22,6 +34,7 @@ final class SpeedData extends SpeedState {
     this.upperSpeed,
     this.isOverSpeed = false,
     this.isDetecting = false,
+    this.currentLocation,
   });
 
   SpeedData copyWith({
@@ -32,6 +45,7 @@ final class SpeedData extends SpeedState {
     String? upperSpeed,
     bool? isOverSpeed,
     bool? isDetecting,
+    LocationData? currentLocation,
   }) {
     return SpeedData(
       speed: speed ?? this.speed,
@@ -41,6 +55,7 @@ final class SpeedData extends SpeedState {
       upperSpeed: upperSpeed ?? this.upperSpeed,
       isOverSpeed: isOverSpeed ?? this.isOverSpeed,
       isDetecting: isDetecting ?? this.isDetecting,
+      currentLocation: currentLocation ?? this.currentLocation,
     );
   }
 }

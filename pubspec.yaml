@@ -72,6 +72,10 @@ dependencies:
   flutter_tts: ^4.2.0
   bloc: ^8.1.4
 
+  # Map (Free OpenStreetMap)
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -102,6 +106,7 @@ flutter:
   assets:
     - assets/models/
     - assets/cameras.json
+    - assets/speedCameras.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

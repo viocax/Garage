@@ -15,7 +15,7 @@ import 'user_settings_repository.dart';
 
 /// 本地測速照相資料倉儲實作
 ///
-/// 從 assets/cameras.json 讀取資料，並使用記憶體快取避免重複解析
+/// 從 assets/speedCameras.json 讀取資料，並使用記憶體快取避免重複解析
 class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   // Service
   final LocationService _locationService = getIt.service.location;
@@ -42,9 +42,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 上次的行駛方向（度數，0-360）
   double? _lastHeading;
 
-  /// 上次的位置
-  Position? _lastPosition;
-
   @override
   bool get isTracking => _speedSubscription != null;
 
@@ -65,17 +62,28 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     try {
       // 讀取 JSON 檔案
       final String jsonString = await rootBundle.loadString(
-        'assets/cameras.json',
+        'assets/speedCameras.json',
       );
 
       // 解析 JSON
       final Map<String, dynamic> jsonData = json.decode(jsonString);
-      final List<dynamic> resultList = jsonData['result'] ?? [];
 
-      // 轉換為 SpeedCamera 物件列表
-      _cachedCameras = resultList
-          .map((item) => Camera.fromJson(item as Map<String, dynamic>))
-          .toList();
+      // 遍歷所有城市，將每個城市的 speedCamera 陣列合併
+      _cachedCameras = jsonData.values.fold<List<Camera>>([], (
+        allCameras,
+        cityData,
+      ) {
+        if (cityData is Map<String, dynamic>) {
+          final speedCameraList = cityData['speedCamera'] as List<dynamic>?;
+          if (speedCameraList != null) {
+            final cameras = speedCameraList
+                .map((item) => Camera.fromJson(item as Map<String, dynamic>))
+                .toList();
+            return [...allCameras, ...cameras];
+          }
+        }
+        return allCameras;
+      });
 
       _loadedAt = DateTime.now();
 
@@ -212,6 +220,8 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       currentSpeed: currentSpeed,
       distance: minDistance,
       isOverSpeed: isOverSpeed,
+      latitude: position.latitude,
+      longitude: position.longitude,
     );
   }
 
@@ -247,7 +257,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       _alertCount = 0;
       _lastAlertTime = null;
       _lastHeading = position.heading;
-      _lastPosition = position;
     }
 
     // 3. 檢查是否超速
@@ -288,7 +297,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     _alertCount++;
     _lastAlertTime = now;
     _lastHeading = position.heading;
-    _lastPosition = position;
   }
 
   /// 獲取最大提醒次數
@@ -314,7 +322,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     _alertCount = 0;
     _lastAlertTime = null;
     _lastHeading = null;
-    _lastPosition = null;
   }
 
   /// 計算從使用者位置到測速相機的方位角（bearing）
@@ -344,10 +351,8 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 2. 比較使用者行駛方向，檢測迴轉（方向改變>90度）
   /// 3. 比較使用者行駛方向與朝向相機的方位，確認是否接近相機
   bool _isSameRoadSegment(Camera camera, Position position) {
-    // 1. 檢查是否是同一個相機
-    if (_currentCamera == null ||
-        _currentCamera!.latitude != camera.latitude ||
-        _currentCamera!.longitude != camera.longitude) {
+    // 1. 檢查是否是同一個相機（使用 id 比較）
+    if (_currentCamera == null || _currentCamera!.id != camera.id) {
       return false;
     }
 
