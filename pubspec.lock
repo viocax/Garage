@@ -808,6 +808,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
+  quadtree:
+    dependency: "direct main"
+    description:
+      name: quadtree
+      sha256: "3283ef64c63924e4b33db2f987429ad1dec15f7c8cd1cfd4a5103f74ce997c65"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   shared_preferences:
     dependency: "direct main"
     description:
