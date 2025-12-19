@@ -7,6 +7,7 @@ class SpeedCameraModel {
   bool isOverSpeed;
   double latitude;
   double longitude;
+  double heading; // 使用者行駛方向（0-360度）
 
   static const double maxSpeed = 300;
 
@@ -17,7 +18,28 @@ class SpeedCameraModel {
     required this.isOverSpeed,
     required this.latitude,
     required this.longitude,
+    this.heading = 0.0,
   });
+
+  SpeedCameraModel copyWith({
+    int? speedLimit,
+    double? currentSpeed,
+    double? distance,
+    bool? isOverSpeed,
+    double? latitude,
+    double? longitude,
+    double? heading,
+  }) {
+    return SpeedCameraModel(
+      speedLimit: speedLimit ?? this.speedLimit,
+      currentSpeed: currentSpeed ?? this.currentSpeed,
+      distance: distance ?? this.distance,
+      isOverSpeed: isOverSpeed ?? this.isOverSpeed,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      heading: heading ?? this.heading,
+    );
+  }
 
   // 根據速度計算動畫時長（速度越快，時長越短，動畫跑得越快）
   // 速度區間：0-10, 11-30, 31-60, 61-100, 101-150, 150+

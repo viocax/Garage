@@ -78,13 +78,6 @@ class TtsService {
   /// [token] TTS播報令牌，包含速度、限速、距離等資訊
   /// 使用隊列機制確保播報按順序執行，不會重疊
   void speakOverSpeed(TTSSpeakingToken token) {
-    // 創建帶有執行邏輯的 token 並放入隊列
-    if (_speakQueue.lastItem is TTSSpeakingToken) {
-      final lastToken = _speakQueue.lastItem as TTSSpeakingToken;
-      if (lastToken.shouldSpeak(token) == false) {
-        return;
-      }
-    }
     final executableToken = token.copyWith(
       onExecute: (t) async {
         if (!_isInitialized) {
@@ -92,12 +85,8 @@ class TtsService {
         }
 
         try {
-          final text = '超速警告，前方 ${t.distance.toStringAsFixed(0)} 公尺，'
-              '限速 ${t.speedLimit.toStringAsFixed(0)} 公里，'
-              '目前速度 ${t.currentSpeed.toStringAsFixed(0)} 公里';
-
-          debugPrint('TtsService: 播報超速警告 - $text');
-          await tts.speak(text);
+          debugPrint('TtsService: 播報超速警告 - ${t.toString()}');
+          await tts.speak(t.toString());
         } catch (e) {
           debugPrint('TtsService: 播報超速警告失敗 - $e');
         }

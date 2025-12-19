@@ -19,7 +19,7 @@ final class UpdateSpeed extends SpeedEvent {
 
   const UpdateSpeed(this.speedCameraModel);
 
-  // m/s
+  // km/s
   double get currentSpeed => speedCameraModel.currentSpeed;
 
   @override

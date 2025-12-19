@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:garage/core/service/location/geolocator_interface.dart';
 
@@ -23,23 +24,78 @@ class LatLng {
   int get hashCode => latitude.hashCode ^ longitude.hashCode;
 }
 
-enum LocationPolicy {
-  best,
-  background,
-  hightSpeed
-}
+enum LocationPolicy { best, background, hightSpeed }
 
 class LocationService {
-  final GeolocatorInterface geolocator;
+  GeolocatorInterface? _geolocator;
+  int _currentDistanceFilter = 0;
+  StreamSubscription<Position>? _geolocatorSubscription;
+  StreamController<Position>? _positionController;
 
-  LocationService({
-    this.geolocator = const GeolocatorWrapper(
+  LocationService({GeolocatorInterface? geolocator}) {
+    _geolocator = geolocator;
+    _currentDistanceFilter = 0; // 初始設為0以在靜止時也能收到更新
+  }
+
+  /// 取得或創建 GeolocatorInterface
+  GeolocatorInterface get geolocator {
+    _geolocator ??= GeolocatorWrapper(
       locationSettings: LocationSettings(
         accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 1, // 更新距離閾值（公尺）
+        distanceFilter: _currentDistanceFilter,
       ),
-    ),
-  });
+    );
+    return _geolocator!;
+  }
+
+  /// 根據當前速度更新 distanceFilter（內部自動調用）
+  ///
+  /// 速度範圍與對應的 distanceFilter：
+  /// - 0-10 km/h: 0m (頻繁更新，確保低速時響應快)
+  /// - 10-30 km/h: 5m (中低速)
+  /// - 30-60 km/h: 10m (中速)
+  /// - >60 km/h: 20m (高速，節省電池)
+  void _updateDistanceFilterBySpeed(double speedKmh) {
+    final int newFilter;
+    if (speedKmh < 10) {
+      newFilter = 0;
+    } else if (speedKmh < 30) {
+      newFilter = 5;
+    } else if (speedKmh < 60) {
+      newFilter = 10;
+    } else {
+      newFilter = 20;
+    }
+
+    // 如果 distanceFilter 需要改變，重新創建 stream
+    if (newFilter != _currentDistanceFilter) {
+      final oldFilter = _currentDistanceFilter;
+      _currentDistanceFilter = newFilter;
+      print(
+        'LocationService: 速度 ${speedKmh.toStringAsFixed(1)} km/h，'
+        'distanceFilter 從 ${oldFilter}m 調整為 ${newFilter}m',
+      );
+      _recreateGeolocatorStream();
+    }
+  }
+
+  /// 重新創建 geolocator stream（使用新的 distanceFilter）
+  void _recreateGeolocatorStream() {
+    if (_positionController == null || _positionController!.isClosed) {
+      return; // 沒有活動的 stream，不需要重建
+    }
+
+    // 創建新的 geolocator（使用新的 distanceFilter）
+    _geolocator = GeolocatorWrapper(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: _currentDistanceFilter,
+      ),
+    );
+
+    // 重新訂閱
+    _subscribeToGeolocator();
+  }
 
   Future<bool> checkPermission() async {
     final permission = await geolocator.checkPermission();
@@ -93,9 +149,60 @@ class LocationService {
     return await geolocator.getCurrentPosition();
   }
 
-  /// 監聽位置變化
+  /// 監聯位置變化
+  ///
+  /// 返回一個可以動態調整 distanceFilter 的位置 stream
   Stream<Position> getPositionStream() {
-    return geolocator.getPositionStream();
+    // 如果 controller 存在但 subscription 不存在，需要重新訂閱
+    if (_positionController != null && !_positionController!.isClosed) {
+      if (_geolocatorSubscription == null) {
+        _subscribeToGeolocator();
+      }
+      return _positionController!.stream;
+    }
+
+    // 創建新的 StreamController
+    _positionController = StreamController<Position>.broadcast(
+      onCancel: () {
+        // 當所有訂閱者都取消時，停止底層的 geolocator 訂閱
+        _geolocatorSubscription?.cancel();
+        _geolocatorSubscription = null;
+      },
+    );
+
+    // 訂閱 geolocator stream
+    _subscribeToGeolocator();
+
+    return _positionController!.stream;
+  }
+
+  /// 訂閱 geolocator stream 並轉發到 positionController
+  void _subscribeToGeolocator() {
+    _geolocatorSubscription?.cancel();
+    _geolocatorSubscription = geolocator.getPositionStream().listen(
+      (position) {
+        if (_positionController != null && !_positionController!.isClosed) {
+
+          _positionController!.add(position);
+          // 根據當前速度自動調整 distanceFilter
+          final speedKmh = position.speed * 3.6;
+          _updateDistanceFilterBySpeed(speedKmh);
+        }
+      },
+      onError: (error) {
+        if (_positionController != null && !_positionController!.isClosed) {
+          _positionController!.addError(error);
+        }
+      },
+    );
+  }
+
+  /// 停止位置監聽並釋放資源
+  void dispose() {
+    _geolocatorSubscription?.cancel();
+    _positionController?.close();
+    _geolocatorSubscription = null;
+    _positionController = null;
   }
 
   /// 取得目前 GPS 速度（單位：公尺/秒）

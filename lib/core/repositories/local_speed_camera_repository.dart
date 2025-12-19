@@ -9,6 +9,7 @@ import 'package:garage/core/service/location/location_service.dart';
 import 'package:garage/core/service/tts/tts_service.dart';
 import 'package:garage/core/models/camera.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:quadtree/quadtree.dart';
 import 'speed_camera_repository.dart';
 import 'package:garage/core/models/speed_camera_model.dart';
 import 'user_settings_repository.dart';
@@ -30,17 +31,17 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 資料載入時間
   DateTime? _loadedAt;
 
-  /// 當前追蹤的測速相機（用於判斷是否還在同一路段）
+  /// 當前追蹤的測速相機
   Camera? _currentCamera;
 
-  /// 當前路段的提醒次數
-  int _alertCount = 0;
-
-  /// 上次提醒時間
-  DateTime? _lastAlertTime;
+  /// 已播報的距離閾值集合（用於追蹤哪些閾值已經播報過）
+  Set<int> _alertedThresholds = {};
 
   /// 上次的行駛方向（度數，0-360）
   double? _lastHeading;
+
+  /// QuadTree 用於快速查找附近相機
+  Quadtree? _cameraQuadTree;
 
   @override
   bool get isTracking => _speedSubscription != null;
@@ -62,30 +63,18 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     try {
       // 讀取 JSON 檔案
       final String jsonString = await rootBundle.loadString(
-        'assets/speedCameras.json',
+        'assets/models/speedCameras.json',
       );
 
       // 解析 JSON
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
+      final List<dynamic> jsonData = json.decode(jsonString);
 
-      // 遍歷所有城市，將每個城市的 speedCamera 陣列合併
-      _cachedCameras = jsonData.values.fold<List<Camera>>([], (
-        allCameras,
-        cityData,
-      ) {
-        if (cityData is Map<String, dynamic>) {
-          final speedCameraList = cityData['speedCamera'] as List<dynamic>?;
-          if (speedCameraList != null) {
-            final cameras = speedCameraList
-                .map((item) => Camera.fromJson(item as Map<String, dynamic>))
-                .toList();
-            return [...allCameras, ...cameras];
-          }
-        }
-        return allCameras;
-      });
+      _cachedCameras = jsonData
+          .map((item) => Camera.fromJson(item as Map<String, dynamic>))
+          .toList();
 
       _loadedAt = DateTime.now();
+      _buildQuadTree();
 
       debugPrint(
         'LocalSpeedCameraRepository: 載入完成，共 ${_cachedCameras.length} 筆資料',
@@ -114,8 +103,8 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   }
 
   @override
-  Future<List<Camera>> getAll() async {
-    return await _loadCamerasFromAssets();
+  List<Camera> getAll() {
+    return _cachedCameras;
   }
 
   @override
@@ -157,11 +146,8 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
         throw Exception('Location permission denied'); // TODO: 跳轉到權限設定頁面
       }
       _speedSubscription = _locationService.getPositionStream().listen(
-        (position) {
-          final speedCameraModel = _positionToSpeedCameraModel(
-            position,
-            _cachedCameras,
-          );
+        (position) async {
+          final speedCameraModel = await _positionToSpeedCameraModel(position);
           callback(speedCameraModel);
         },
         onError: (error) {
@@ -180,148 +166,263 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     // 如果未來有需要顯式停止定位服務的需求，可以在這裡實作
     _speedSubscription?.cancel();
     _speedSubscription = null;
+    _resetAlertState();
     return;
   }
 
-  SpeedCameraModel _positionToSpeedCameraModel(
+  /// 將位置資訊轉換為 SpeedCameraModel 並處理警告邏輯
+  ///
+  /// 處理流程：
+  /// 1. 載入使用者設定並檢查是否開啟語音提醒
+  /// 2. 相機選擇：找在使用者 heading ±10度內最近的相機，heading 無效時退回找最近的
+  /// 3. Reset 條件：0m 已播報 或 超過 alertDistance
+  /// 4. 播報閾值：根據 alertDistance 決定
+  ///    - alertDistance = 500 → [500, 100, 0]
+  ///    - alertDistance = 800 → [800, 400, 100, 0]
+  Future<SpeedCameraModel> _positionToSpeedCameraModel(
     Position position,
-    List<Camera> cameras,
-  ) {
-    final currentSpeed = position.speed;
-    Camera? nearestCamera;
-    double minDistance = double.infinity;
-    int speedLimit = 0;
-    for (final camera in cameras) {
-      final distance = camera.distanceTo(position.latitude, position.longitude);
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestCamera = camera;
+  ) async {
+    // 將速度從 m/s 轉換為 km/h
+    final currentSpeed = position.speed * 3.6;
+    final lat = position.latitude;
+    final lon = position.longitude;
+    final heading = position.heading;
+    final isHeadingValid = heading > 0 && heading < 360;
+
+    // 1. 載入使用者設定
+    final settings = await _userSettingsRepo.loadSettings();
+    final alertDistance = settings.alertDistance.toDouble();
+    final defaultSpeedCameraModel = SpeedCameraModel(
+      speedLimit: 0,
+      currentSpeed: currentSpeed,
+      distance: 0,
+      isOverSpeed: false,
+      latitude: lat,
+      longitude: lon,
+      heading: heading,
+    );
+
+    if (!settings.isVoiceAlertEnabled) {
+      _resetAlertState();
+      return defaultSpeedCameraModel;
+    }
+
+    // 2. 如果沒有追蹤的相機，找一台新的
+    if (_currentCamera == null) {
+      if (isHeadingValid) {
+        // heading 有效：找在 heading ±10度內最近的相機
+        _currentCamera = _findCameraInHeading(lat, lon, heading, alertDistance);
+      } else {
+        // heading 無效：退回找最近的相機
+        _currentCamera = _findNearestCamera(lat, lon, alertDistance);
+      }
+      if (_currentCamera != null) {
+        _alertedThresholds = {}; // 新相機，重置已播報閾值
+        _lastHeading = heading;
+        debugPrint(
+          'SpeedCamera: 開始追蹤相機 ${_currentCamera!.id}, 限速 ${_currentCamera!.speedLimit}',
+        );
       }
     }
-    bool isOverSpeed = false;
-    if (nearestCamera != null) {
-      speedLimit = nearestCamera.speedLimit;
-      isOverSpeed = currentSpeed > speedLimit;
 
-      // 實現 TODO 邏輯
-      _handleSpeedAlert(
-        nearestCamera,
-        position,
-        currentSpeed,
-        speedLimit,
-        minDistance,
+    // 如果還是沒有相機，返回預設值
+    if (_currentCamera == null) {
+      return defaultSpeedCameraModel;
+    }
+
+    // 3. 計算與追蹤相機的距離
+    final distance = _currentCamera!.distanceTo(lat, lon);
+    final speedLimit = _currentCamera!.speedLimit;
+    final isOverSpeed = currentSpeed > speedLimit + settings.speedTolerance;
+
+    // 4. 檢查播報閾值（從遠到近）
+    final thresholds = _getAlertThresholds(settings.alertDistance);
+    final now = DateTime.now();
+
+    for (final threshold in thresholds) {
+      if (distance <= threshold && !_alertedThresholds.contains(threshold)) {
+        // 執行播報
+        _ttsService.speakOverSpeed(
+          TTSSpeakingToken(
+            speedLimit: speedLimit.toDouble(),
+            currentSpeed: currentSpeed,
+            distance: distance,
+            lastReportTime: now,
+          ),
+        );
+        _alertedThresholds.add(threshold);
+        _lastHeading = heading;
+        debugPrint(
+          'SpeedCamera: 播報閾值 ${threshold}m, 實際距離 ${distance.toStringAsFixed(0)}m',
+        );
+        break; // 每次只播報一個閾值
+      }
+    }
+
+    // 5. Reset 條件：0m 已播報 或 超過 alertDistance
+    final hasAlerted0m = _alertedThresholds.contains(0);
+    if (hasAlerted0m || distance > alertDistance) {
+      debugPrint(
+        'SpeedCamera: Reset (0m已播報: $hasAlerted0m, 距離超出: ${distance > alertDistance})',
       );
-    } else {
-      // 沒有最近的測速相機，重置狀態
       _resetAlertState();
     }
+
     return SpeedCameraModel(
       speedLimit: speedLimit,
       currentSpeed: currentSpeed,
-      distance: minDistance,
+      distance: distance,
       isOverSpeed: isOverSpeed,
-      latitude: position.latitude,
-      longitude: position.longitude,
+      latitude: lat,
+      longitude: lon,
+      heading: heading,
     );
-  }
-
-  /// 處理速度警告邏輯
-  ///
-  /// 實現以下需求：
-  /// 1. 檢查使用者是否關閉提醒 ✓
-  /// 2. 判斷是否還在同一個路段 ✓
-  /// 3. 根據使用者設定的距離，決定提醒次數（2-3次）✓
-  /// 4. 控制播報間隔至少5秒 ✓
-  Future<void> _handleSpeedAlert(
-    Camera camera,
-    Position position,
-    double currentSpeed,
-    int speedLimit,
-    double distance,
-  ) async {
-    // 1. 檢查使用者是否關閉提醒
-    final settings = await _userSettingsRepo.loadSettings();
-    if (!settings.isVoiceAlertEnabled) {
-      // 使用者已關閉語音提醒，直接返回
-      return;
-    }
-
-    final now = DateTime.now();
-
-    // 2. 判斷是否還在同一個路段（使用進階檢測）
-    final isSameSegment = _isSameRoadSegment(camera, position);
-
-    if (!isSameSegment) {
-      // 進入新的路段，重置狀態
-      _currentCamera = camera;
-      _alertCount = 0;
-      _lastAlertTime = null;
-      _lastHeading = position.heading;
-    }
-
-    // 3. 檢查是否超速
-    if (currentSpeed <= speedLimit) {
-      // 未超速，不需要提醒
-      return;
-    }
-
-    // 4. 檢查播報間隔（至少5秒）
-    if (_lastAlertTime != null) {
-      final timeSinceLastAlert = now.difference(_lastAlertTime!);
-      if (timeSinceLastAlert.inSeconds < 5) {
-        // 距離上次播報不足5秒，跳過
-        return;
-      }
-    }
-
-    // 5. 根據距離決定最大提醒次數
-    final maxAlerts = await _getMaxAlerts();
-
-    // 6. 檢查提醒次數是否已達上限
-    if (_alertCount >= maxAlerts) {
-      // 已達最大提醒次數，不再提醒
-      return;
-    }
-
-    // 7. 執行提醒
-    _ttsService.speakOverSpeed(
-      TTSSpeakingToken(
-        speedLimit: speedLimit.toDouble(),
-        currentSpeed: currentSpeed,
-        distance: distance,
-        lastReportTime: now,
-      ),
-    );
-
-    // 8. 更新狀態
-    _alertCount++;
-    _lastAlertTime = now;
-    _lastHeading = position.heading;
-  }
-
-  /// 獲取最大提醒次數
-  ///
-  /// 根據使用者設定的 alertDistance 決定：
-  /// - 如果 500 < alertDistance <= 1000，則提醒3次
-  /// - 如果 alertDistance <= 500，則提醒2次
-  Future<int> _getMaxAlerts() async {
-    // 從使用者設定中獲取 alertDistance
-    final settings = await _userSettingsRepo.loadSettings();
-    final alertDistance = settings.alertDistance;
-
-    if (alertDistance > 500 && alertDistance <= 1000) {
-      return 3;
-    } else {
-      return 2;
-    }
   }
 
   /// 重置提醒狀態
   void _resetAlertState() {
     _currentCamera = null;
-    _alertCount = 0;
-    _lastAlertTime = null;
+    _alertedThresholds = {};
     _lastHeading = null;
+  }
+
+  /// 建立 QuadTree 索引
+  ///
+  /// 將所有相機位置建立成 QuadTree 結構，用於快速查找附近相機
+  void _buildQuadTree() {
+    // 台灣經緯度範圍約：lat 21.9-25.3, lon 120.0-122.0
+    // 使用較大範圍以確保涵蓋所有相機
+    _cameraQuadTree = Quadtree(Rectangle(119.0, 21.0, 4.0, 5.0));
+
+    for (final camera in _cachedCameras) {
+      _cameraQuadTree!.insert(
+        Point(
+          camera.longitude,
+          camera.latitude,
+          camera, // 儲存 Camera 物件作為 data
+        ),
+      );
+    }
+
+    debugPrint(
+      'LocalSpeedCameraRepository: QuadTree 建立完成，共 ${_cachedCameras.length} 個點',
+    );
+  }
+
+  /// 使用 QuadTree 查找 alertDistance 範圍內最近的相機
+  ///
+  /// [lat] 使用者緯度
+  /// [lon] 使用者經度
+  /// [alertDistanceMeters] 提醒距離（公尺）
+  Camera? _findNearestCamera(
+    double lat,
+    double lon,
+    double alertDistanceMeters,
+  ) {
+    if (_cameraQuadTree == null) return null;
+
+    // 將公尺轉換為經緯度偏移量（粗略估計）
+    // 1度緯度 ≈ 111km, 1度經度在台灣約 ≈ 100km
+    final latOffset = alertDistanceMeters / 111000;
+    final lonOffset = alertDistanceMeters / 100000;
+
+    final points = _cameraQuadTree!.query(
+      Rectangle(lon - lonOffset, lat - latOffset, lonOffset * 2, latOffset * 2),
+    );
+
+    if (points.isEmpty) return null;
+
+    Camera? nearest;
+    double minDistance = double.infinity;
+
+    for (final point in points) {
+      final camera = point.data as Camera;
+      final distance = camera.distanceTo(lat, lon);
+      if (distance < minDistance && distance <= alertDistanceMeters) {
+        minDistance = distance;
+        nearest = camera;
+      }
+    }
+
+    return nearest;
+  }
+
+  /// 根據 alertDistance 計算播報距離閾值列表
+  ///
+  /// 規則：
+  /// - 固定閾值：100m, 0m
+  /// - alertDistance 本身
+  /// - 如果 alertDistance > 500，加入 alertDistance / 2
+  ///
+  /// 範例：
+  /// - alertDistance = 300 → [300, 100, 0]
+  /// - alertDistance = 500 → [500, 100, 0]
+  /// - alertDistance = 800 → [800, 400, 100, 0]
+  /// - alertDistance = 1000 → [1000, 500, 100, 0]
+  List<int> _getAlertThresholds(int alertDistance) {
+    final thresholds = <int>{0, 100, alertDistance};
+    if (alertDistance > 500) {
+      thresholds.add(alertDistance ~/ 2);
+    }
+    return thresholds.toList()..sort((a, b) => b.compareTo(a)); // 降序排列
+  }
+
+  /// 查找在使用者 heading 方向 ±10度內最近的相機
+  ///
+  /// [lat] 使用者緯度
+  /// [lon] 使用者經度
+  /// [heading] 使用者行駛方向（0-360度）
+  /// [alertDistanceMeters] 提醒距離（公尺）
+  Camera? _findCameraInHeading(
+    double lat,
+    double lon,
+    double heading,
+    double alertDistanceMeters,
+  ) {
+    if (_cameraQuadTree == null) return null;
+
+    // 將公尺轉換為經緯度偏移量（粗略估計）
+    final latOffset = alertDistanceMeters / 111000;
+    final lonOffset = alertDistanceMeters / 100000;
+
+    final points = _cameraQuadTree!.query(
+      Rectangle(lon - lonOffset, lat - latOffset, lonOffset * 2, latOffset * 2),
+    );
+
+    if (points.isEmpty) return null;
+
+    Camera? nearest;
+    double minDistance = double.infinity;
+
+    for (final point in points) {
+      final camera = point.data as Camera;
+      final distance = camera.distanceTo(lat, lon);
+
+      // 檢查是否在 alertDistance 範圍內
+      if (distance > alertDistanceMeters) continue;
+
+      // 計算相機相對於使用者的方位角
+      final bearing = _calculateBearing(
+        lat,
+        lon,
+        camera.latitude,
+        camera.longitude,
+      );
+
+      // 計算 heading 與 bearing 的角度差
+      var angleDiff = (heading - bearing).abs();
+      if (angleDiff > 180) {
+        angleDiff = 360 - angleDiff;
+      }
+
+      // 只選擇在 heading ±10度內的相機
+      if (angleDiff <= 10 && distance < minDistance) {
+        minDistance = distance;
+        nearest = camera;
+      }
+    }
+
+    return nearest;
   }
 
   /// 計算從使用者位置到測速相機的方位角（bearing）
@@ -344,63 +445,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     return (bearing + 360) % 360; // 轉換為0-360度
   }
 
-  /// 判斷是否在同一條路段上
-  ///
-  /// 結合方案一（行駛方向）和方案二（相機方位）：
-  /// 1. 檢查是否是同一個測速相機位置
-  /// 2. 比較使用者行駛方向，檢測迴轉（方向改變>90度）
-  /// 3. 比較使用者行駛方向與朝向相機的方位，確認是否接近相機
-  bool _isSameRoadSegment(Camera camera, Position position) {
-    // 1. 檢查是否是同一個相機（使用 id 比較）
-    if (_currentCamera == null || _currentCamera!.id != camera.id) {
-      return false;
-    }
-
-    //2. 檢查行駛方向變化（方案一：檢測迴轉）
-    if (_lastHeading != null && position.heading != 0) {
-      final headingDiff = (position.heading - _lastHeading!).abs();
-
-      // 方向差異在90-270度之間，表示可能迴轉了或換了相反方向的車道
-      if (headingDiff > 90 && headingDiff < 270) {
-        debugPrint(
-          'SpeedCamera: 行駛方向改變 ${headingDiff.toStringAsFixed(1)}度，判定為不同路段',
-        );
-        return false;
-      }
-    }
-
-    // 3. 檢查是否朝向相機行駛（方案二：方位角比對）
-    if (position.heading != 0) {
-      final bearing = _calculateBearing(
-        position.latitude,
-        position.longitude,
-        camera.latitude,
-        camera.longitude,
-      );
-
-      // 計算使用者行駛方向與朝向相機的方位差異
-      var bearingDiff = (position.heading - bearing).abs();
-      if (bearingDiff > 180) {
-        bearingDiff = 360 - bearingDiff;
-      }
-
-      // 如果方位差異超過90度，表示正在遠離相機或平行經過
-      // 這種情況下應該視為離開該路段
-      if (bearingDiff > 90) {
-        debugPrint(
-          'SpeedCamera: 行駛方位與相機方位差異 ${bearingDiff.toStringAsFixed(1)}度，判定為不同路段',
-        );
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  @override
-  Future<void> updateLocationAccuracyPolicy(double currentSpeed) {
-    throw UnimplementedError();
-  }
 
   @override
   Future<void> updateVolume(double percentage) async {

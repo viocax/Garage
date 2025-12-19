@@ -42,7 +42,7 @@ class SettingsPage extends StatelessWidget {
             );
             break;
           case SettingsError(:final message):
-          // TODO: show toast
+            // TODO: show toast
             break;
           case ExportData():
             break;
@@ -86,9 +86,7 @@ class SettingsPage extends StatelessWidget {
                         title: '匯出資料',
                         icon: Icons.upload_file_outlined,
                         onTap: () {
-                          context.read<SettingsBloc>().add(
-                            const ExportData(),
-                          );
+                          context.read<SettingsBloc>().add(const ExportData());
                         },
                       ),
                       SettingsItem(

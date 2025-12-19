@@ -58,7 +58,7 @@ class UserSettings {
     this.voiceVolume = 0.8,
     this.voiceSpeechRate = 0.5,
     this.alertDistance = 500,
-    this.speedTolerance = 5,
+    this.speedTolerance = 0,
 
     // 通知設定
     this.isPushNotificationEnabled = true,
@@ -93,7 +93,7 @@ class UserSettings {
       voiceVolume: (json['voiceVolume'] as num?)?.toDouble() ?? 0.8,
       voiceSpeechRate: (json['voiceSpeechRate'] as num?)?.toDouble() ?? 0.5,
       alertDistance: json['alertDistance'] ?? 500,
-      speedTolerance: json['speedTolerance'] ?? 5,
+      speedTolerance: json['speedTolerance'] ?? 0,
 
       // 通知設定
       isPushNotificationEnabled: json['isPushNotificationEnabled'] ?? true,
