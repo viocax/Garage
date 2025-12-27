@@ -16,6 +16,15 @@ final class VehicleNameChanged extends AddVehicleEvent {
   List<Object> get props => [name];
 }
 
+final class LicensePlateChanged extends AddVehicleEvent {
+  final String licensePlate;
+
+  const LicensePlateChanged(this.licensePlate);
+
+  @override
+  List<Object> get props => [licensePlate];
+}
+
 final class VehicleKmChanged extends AddVehicleEvent {
   final int km;
 

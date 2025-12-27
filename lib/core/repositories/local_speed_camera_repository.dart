@@ -37,9 +37,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 已播報的距離閾值集合（用於追蹤哪些閾值已經播報過）
   Set<int> _alertedThresholds = {};
 
-  /// 上次的行駛方向（度數，0-360）
-  double? _lastHeading;
-
   /// QuadTree 用於快速查找附近相機
   Quadtree? _cameraQuadTree;
 
@@ -218,7 +215,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       }
       if (_currentCamera != null) {
         _alertedThresholds = {}; // 新相機，重置已播報閾值
-        _lastHeading = heading;
         debugPrint(
           'SpeedCamera: 開始追蹤相機 ${_currentCamera!.id}, 限速 ${_currentCamera!.speedLimit}',
         );
@@ -251,7 +247,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
           ),
         );
         _alertedThresholds.add(threshold);
-        _lastHeading = heading;
         debugPrint(
           'SpeedCamera: 播報閾值 ${threshold}m, 實際距離 ${distance.toStringAsFixed(0)}m',
         );
@@ -283,7 +278,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   void _resetAlertState() {
     _currentCamera = null;
     _alertedThresholds = {};
-    _lastHeading = null;
   }
 
   /// 建立 QuadTree 索引
@@ -444,7 +438,6 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     final bearing = atan2(y, x) * 180 / pi;
     return (bearing + 360) % 360; // 轉換為0-360度
   }
-
 
   @override
   Future<void> updateVolume(double percentage) async {

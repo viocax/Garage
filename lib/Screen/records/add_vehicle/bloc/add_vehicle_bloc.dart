@@ -17,6 +17,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
   AddVehicleBloc() : super(const AddVehicleState(speedUnit: SpeedUnit.kmh)) {
     on<LoadUserSettings>(_onLoadUserSettings);
     on<VehicleNameChanged>(_onVehicleNameChanged);
+    on<LicensePlateChanged>(_onLicensePlateChanged);
     on<VehicleKmChanged>(_onVehicleKmChanged);
     on<MaintenanceIntervalChanged>(_onMaintenanceIntervalChanged);
     on<SubmitVehicle>(_onSubmitVehicle);
@@ -40,6 +41,13 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     Emitter<AddVehicleState> emit,
   ) {
     emit(state.copyWith(vehicleName: event.name));
+  }
+
+  void _onLicensePlateChanged(
+    LicensePlateChanged event,
+    Emitter<AddVehicleState> emit,
+  ) {
+    emit(state.copyWith(licensePlate: event.licensePlate));
   }
 
   void _onVehicleKmChanged(
@@ -75,6 +83,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     try {
       final vehicle = Vehicle.create(
         carName: state.vehicleName,
+        licensePlate: state.licensePlate,
         currentKm: state.currentKm,
         maintenanceIntervalKm: state.maintenanceIntervalKm,
       );

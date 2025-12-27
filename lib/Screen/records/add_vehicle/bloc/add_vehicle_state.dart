@@ -4,6 +4,7 @@ enum AddVehicleStatus { initial, submitting, success, failure }
 
 class AddVehicleState extends Equatable {
   final String vehicleName;
+  final String licensePlate;
   final int currentKm;
   final SpeedUnit speedUnit;
   final int maintenanceIntervalKm;
@@ -13,6 +14,7 @@ class AddVehicleState extends Equatable {
 
   const AddVehicleState({
     this.vehicleName = '',
+    this.licensePlate = '',
     this.currentKm = 0,
     required this.speedUnit,
     this.maintenanceIntervalKm = 0,
@@ -23,11 +25,13 @@ class AddVehicleState extends Equatable {
 
   bool get isValid =>
       vehicleName.trim().isNotEmpty &&
+      licensePlate.trim().isNotEmpty &&
       currentKm >= 0;
 
   @override
   List<Object?> get props => [
     vehicleName,
+    licensePlate,
     currentKm,
     speedUnit,
     maintenanceIntervalKm,
@@ -38,6 +42,7 @@ class AddVehicleState extends Equatable {
 
   AddVehicleState copyWith({
     String? vehicleName,
+    String? licensePlate,
     int? currentKm,
     SpeedUnit? speedUnit,
     int? maintenanceIntervalKm,
@@ -47,6 +52,7 @@ class AddVehicleState extends Equatable {
   }) {
     return AddVehicleState(
       vehicleName: vehicleName ?? this.vehicleName,
+      licensePlate: licensePlate ?? this.licensePlate,
       currentKm: currentKm ?? this.currentKm,
       speedUnit: speedUnit ?? this.speedUnit,
       maintenanceIntervalKm: maintenanceIntervalKm ?? this.maintenanceIntervalKm,

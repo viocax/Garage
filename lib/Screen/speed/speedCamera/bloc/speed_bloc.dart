@@ -129,4 +129,9 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
       debugPrint('SpeedBloc: 停止定位失敗 - $e');
     }
   }
+  @override
+  Future<void> close() async {
+    await repository.stopLocationTracking();
+    super.close();
+  }
 }

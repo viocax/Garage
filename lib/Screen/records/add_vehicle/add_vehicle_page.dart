@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
+import 'package:garage/widgets/primary_action_button.dart';
 
 import 'bloc/add_vehicle_bloc.dart';
 
@@ -186,6 +187,10 @@ class _FormCard extends StatelessWidget {
           SizedBox(height: 4),
           Divider(color: AppTheme.dashboardTextSecondary, height: 1),
           SizedBox(height: 20),
+          _LicensePlateInput(),
+          SizedBox(height: 4),
+          Divider(color: AppTheme.dashboardTextSecondary, height: 1),
+          SizedBox(height: 20),
           _MileageInput(),
           SizedBox(height: 4),
           Divider(color: AppTheme.dashboardTextSecondary, height: 1),
@@ -247,6 +252,67 @@ class _VehicleNameInput extends StatelessWidget {
           padding: EdgeInsets.only(left: 4),
           child: Text(
             '幫你的愛車取個名字吧',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppTheme.dashboardTextSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LicensePlateInput extends StatelessWidget {
+  const _LicensePlateInput();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '車牌號碼',
+          style: TextStyle(
+            fontSize: 13,
+            color: AppTheme.dashboardTextSecondary,
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          cursorColor: AppTheme.accentColor,
+          style: const TextStyle(
+            fontSize: 18,
+            color: AppTheme.dashboardTextPrimary,
+          ),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppTheme.inputBg,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppTheme.dashboardAccentRed),
+            ),
+            contentPadding: const EdgeInsets.all(16),
+            hintText: 'ABC-1234',
+            hintStyle: const TextStyle(color: AppTheme.placeholderGray),
+          ),
+          onChanged: (value) {
+            context.read<AddVehicleBloc>().add(LicensePlateChanged(value));
+          },
+        ),
+        const SizedBox(height: 8),
+        const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text(
+            '輸入車輛的車牌號碼',
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.dashboardTextSecondary,
@@ -435,55 +501,13 @@ class _SubmitButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AddVehicleBloc, AddVehicleState>(
       builder: (context, state) {
-        return Container(
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.dashboardAccentRed.withValues(alpha: 0.25),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: state.status == AddVehicleStatus.submitting
-                ? null
-                : () {
-                    context.read<AddVehicleBloc>().add(const SubmitVehicle());
-                  },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.dashboardAccentRed,
-              foregroundColor: AppTheme.accentColor,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-            ),
-            child: state.status == AddVehicleStatus.submitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: AppTheme.accentColor,
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.check, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        '新增車輛',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
+        return PrimaryActionButton(
+          onPressed: () {
+            context.read<AddVehicleBloc>().add(const SubmitVehicle());
+          },
+          text: '新增車輛',
+          icon: Icons.check,
+          isLoading: state.status == AddVehicleStatus.submitting,
         );
       },
     );

@@ -15,7 +15,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
   final VehicleRepository vehicleRepository = getIt.repo.vehicle;
   final UserSettingsRepository userSettingsRepository = getIt.repo.userSettings;
 
-  RecordsBloc() : super(const RecordsState()) {
+  RecordsBloc() : super(const RecordsState(isLoading: true)) {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
     on<SwitchVehicle>(_onSwitchVehicle);
     on<ClickAddVehicleButton>(_onClickAddVehicleButton);
@@ -25,10 +25,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     add(const LoadVehicleRecord());
   }
 
-  Future<void> _onAddRecord(
-    AddRecord event,
-    Emitter<RecordsState> emit,
-  ) async {
+  Future<void> _onAddRecord(AddRecord event, Emitter<RecordsState> emit) async {
     if (state.isEmpty) {
       return;
     }
@@ -48,10 +45,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
 
       add(LoadVehicleRecord(vehicleId: carId));
     } catch (e) {
-      emit(state.copyWith(
-        errorMessage: e.toString(),
-        clearSideEffect: true,
-      ));
+      emit(state.copyWith(errorMessage: e.toString(), clearSideEffect: true));
       // Clear error after showing
       emit(state.copyWith(clearError: true));
     }
@@ -65,6 +59,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     // Clear side effect immediately after emitting
     emit(state.copyWith(clearSideEffect: true));
   }
+
   void _onClickAddRecordButton(
     ClickAddRecordButton event,
     Emitter<RecordsState> emit,
@@ -87,41 +82,44 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
     LoadVehicleRecord event,
     Emitter<RecordsState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, clearSideEffect: true, clearError: true));
+    emit(
+      state.copyWith(isLoading: true, clearSideEffect: true, clearError: true),
+    );
 
     try {
       final vehicles = await vehicleRepository.loadVehicles();
       final userSettings = await userSettingsRepository.loadSettings();
 
       final unitString = userSettings.speedUnit.displayName;
-      final currentVehicleId = event.vehicleId ??
-          (vehicles.isEmpty ? '' : vehicles.first.vehicleId);
+      final currentVehicleId =
+          event.vehicleId ?? (vehicles.isEmpty ? '' : vehicles.first.vehicleId);
 
       final km = vehicles.isEmpty
           ? 0
-          : vehicles.firstWhere(
-              (v) => v.vehicleId == currentVehicleId,
-              orElse: () => vehicles.first,
-            ).currentKm;
+          : vehicles
+                .firstWhere(
+                  (v) => v.vehicleId == currentVehicleId,
+                  orElse: () => vehicles.first,
+                )
+                .currentKm;
 
       final odometerString = switch (userSettings.speedUnit) {
         SpeedUnit.kmh => '$km',
         SpeedUnit.mph => '${km.toDouble().mile}',
       };
 
-      emit(RecordsState(
-        vehicles: vehicles,
-        currentVehicleId: currentVehicleId,
-        userSettings: userSettings,
-        odometerString: odometerString,
-        unitString: unitString,
-        isLoading: false,
-      ));
+      emit(
+        RecordsState(
+          vehicles: vehicles,
+          currentVehicleId: currentVehicleId,
+          userSettings: userSettings,
+          odometerString: odometerString,
+          unitString: unitString,
+          isLoading: false,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      ));
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
       // Clear error after showing
       emit(state.copyWith(clearError: true));
     }
@@ -151,9 +149,11 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
       SpeedUnit.mph => '${km.toDouble().mile}',
     };
 
-    emit(state.copyWith(
-      currentVehicleId: event.vehicleId,
-      odometerString: odometerString,
-    ));
+    emit(
+      state.copyWith(
+        currentVehicleId: event.vehicleId,
+        odometerString: odometerString,
+      ),
+    );
   }
 }

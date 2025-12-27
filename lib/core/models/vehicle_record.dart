@@ -71,7 +71,6 @@ class FuelData {
         return '無鉛${fuelType.label}  $amount';
     }
   }
-    
 }
 
 /// 保養項目資料（embedded object）
@@ -110,19 +109,10 @@ class OtherData {
   double amount; // 金額
   String note; // 備註
 
-  OtherData({
-    this.amount = 0,
-    this.note = '',
-  });
+  OtherData({this.amount = 0, this.note = ''});
 
-  OtherData copyWith({
-    double? amount,
-    String? note,
-  }) {
-    return OtherData(
-      amount: amount ?? this.amount,
-      note: note ?? this.note,
-    );
+  OtherData copyWith({double? amount, String? note}) {
+    return OtherData(amount: amount ?? this.amount, note: note ?? this.note);
   }
 }
 
@@ -131,10 +121,7 @@ sealed class RecordType {
   final DateTime recordDate;
   final int odometer;
 
-  const RecordType({
-    required this.recordDate,
-    required this.odometer,
-  });
+  const RecordType({required this.recordDate, required this.odometer});
 
   String get label;
   IconData get icon;
@@ -275,21 +262,21 @@ class VehicleRecord {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
-  late String recordId;
+  String recordId = '';
 
   /// 記錄類型名稱（fuel, maintenance, other）
   @Index()
-  late String typeName;
+  String typeName = '';
 
-  late String title;
-
-  @Index()
-  late DateTime date;
-
-  late double cost;
+  String title = '';
 
   @Index()
-  late int km;
+  DateTime date = DateTime.now();
+
+  double cost = 0;
+
+  @Index()
+  int km = 0;
 
   String? notes;
 
@@ -307,13 +294,13 @@ class VehicleRecord {
   /// 取得 RecordType sealed class
   @ignore
   RecordType get type => RecordType.fromTypeName(
-        typeName,
-        recordDate: date,
-        odometer: km,
-        fuelData: fuelData,
-        maintenanceData: maintenanceData,
-        otherData: otherData,
-      );
+    typeName,
+    recordDate: date,
+    odometer: km,
+    fuelData: fuelData,
+    maintenanceData: maintenanceData,
+    otherData: otherData,
+  );
 
   /// Factory constructor 用於創建 VehicleRecord
   /// 如果不提供 recordId，會自動生成 UUID

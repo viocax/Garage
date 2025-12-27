@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_map/flutter_map.dart';
-import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/theme/grid_background_painter.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:garage/theme/themed_status_bar.dart';

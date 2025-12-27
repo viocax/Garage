@@ -45,6 +45,7 @@ class LocalVehicleRepository implements VehicleRepository {
             ..id = v.id
             ..vehicleId = v.vehicleId
             ..carName = v.carName
+            ..licensePlate = v.licensePlate
             ..currentKm = v.currentKm
             ..maintenanceIntervalKm = v.maintenanceIntervalKm
             ..kmToNextMaintenance = v.kmToNextMaintenance
@@ -169,7 +170,10 @@ class LocalVehicleRepository implements VehicleRepository {
   }
 
   @override
-  Future<bool> updateRecords(String vehicleId, List<VehicleRecord> records) async {
+  Future<bool> updateRecords(
+    String vehicleId,
+    List<VehicleRecord> records,
+  ) async {
     try {
       final db = await isarService.isar;
 

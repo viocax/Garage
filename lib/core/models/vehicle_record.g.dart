@@ -2577,11 +2577,13 @@ const _FuelDatafuelTypeEnumValueMap = {
   r'octane92': r'octane92',
   r'octane95': r'octane95',
   r'octane98': r'octane98',
+  r'diesel': r'diesel',
 };
 const _FuelDatafuelTypeValueEnumMap = {
   r'octane92': FuelType.octane92,
   r'octane95': FuelType.octane95,
   r'octane98': FuelType.octane98,
+  r'diesel': FuelType.diesel,
 };
 
 extension FuelDataQueryFilter

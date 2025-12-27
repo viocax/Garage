@@ -8,10 +8,10 @@ import 'package:garage/theme/app_theme.dart';
 import 'package:garage/screen/records/bloc/records_bloc.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
-import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
 import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
 import 'package:garage/screen/app/home/bloc/garage_home_state.dart';
 import 'package:garage/core/models/tabbar_type.dart';
+import 'package:garage/widgets/primary_action_button.dart';
 
 class RecordsPage extends StatelessWidget {
   const RecordsPage({super.key});
@@ -69,41 +69,15 @@ class RecordsPage extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            scrolledUnderElevation: 0,
-            actions: [
-              // 編輯車輛 - 只在有車輛時顯示
-              if (state.vehicles.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () {
-                    context.read<RecordsBloc>().add(
-                      const ClickEditVehicleButton(),
-                    );
-                  },
-                  tooltip: '編輯車輛',
-                ),
-              // 新增車輛 - 總是顯示
-              IconButton(
-                icon: const Icon(Icons.directions_car),
-                onPressed: () {
-                  context.read<RecordsBloc>().add(
-                    const ClickAddVehicleButton(),
-                  );
-                },
-                tooltip: '新增車輛',
+            centerTitle: true,
+            title: const Text(
+              '車輛花費',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              // 新增紀錄 - 只在有車輛時顯示
-              if (state.vehicles.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline),
-                  onPressed: () {
-                    context.read<RecordsBloc>().add(
-                      const ClickAddRecordButton(),
-                    );
-                  },
-                  tooltip: '新增紀錄',
-                ),
-            ],
+            ),
           ),
           body: Stack(
             children: [
@@ -111,17 +85,29 @@ class RecordsPage extends StatelessWidget {
               Positioned.fill(
                 child: CustomPaint(painter: GridBackgroundPainter()),
               ),
-              SafeArea(
-                top: false,
-                child: _RecordsContent(
-                  vehicle: state.currentVehicle,
-                  vehicles: state.vehicles,
-                  currentVehicleId: state.currentVehicleId,
-                  odometerString: state.odometerString,
-                  unitString: state.unitString,
+              // Loading or Content
+              if (state.isLoading)
+                const SafeArea(child: _LoadingView())
+              else
+                SafeArea(
+                  child: _RecordsContent(
+                    vehicle: state.currentVehicle,
+                    vehicles: state.vehicles,
+                    currentVehicleId: state.currentVehicleId,
+                    odometerString: state.odometerString,
+                    unitString: state.unitString,
+                  ),
                 ),
-              ),
             ],
+          ),
+          bottomNavigationBar: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: PrimaryActionButton(
+                onPressed: () => _navigateToAddVehicle(context),
+                text: '新增車輛',
+              ),
+            ),
           ),
         ),
       ),
@@ -155,7 +141,7 @@ class RecordsPage extends StatelessWidget {
   }
 }
 
-class _RecordsContent extends StatelessWidget {
+class _RecordsContent extends StatefulWidget {
   final Vehicle vehicle;
   final List<Vehicle> vehicles;
   final String currentVehicleId;
@@ -171,51 +157,136 @@ class _RecordsContent extends StatelessWidget {
   });
 
   @override
+  State<_RecordsContent> createState() => _RecordsContentState();
+}
+
+class _RecordsContentState extends State<_RecordsContent> {
+  late PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.vehicles.indexWhere(
+      (v) => v.vehicleId == widget.currentVehicleId,
+    );
+    if (_currentPage == -1) _currentPage = 0;
+    _pageController = PageController(initialPage: _currentPage);
+  }
+
+  @override
+  void didUpdateWidget(_RecordsContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update page when vehicle changes externally
+    if (widget.currentVehicleId != oldWidget.currentVehicleId) {
+      final newIndex = widget.vehicles.indexWhere(
+        (v) => v.vehicleId == widget.currentVehicleId,
+      );
+      if (newIndex != -1 && newIndex != _currentPage) {
+        _currentPage = newIndex;
+        _pageController.animateToPage(
+          newIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (widget.vehicles.isEmpty) {
+      return const Center(child: _EmptyRecordsView());
+    }
+
     return Column(
       children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 24),
-                // 1. Hero Section
-                _HeroSection(
-                  textSecondary: AppTheme.dashboardTextSecondary,
-                  textPrimary: AppTheme.dashboardTextPrimary,
-                  vehicle: vehicle,
-                  vehicles: vehicles,
-                  currentVehicleId: currentVehicleId,
-                  odometerString: odometerString,
-                  unitString: unitString,
-                ),
-
-                const SizedBox(height: 24),
-
-                // 2. Stats Grid
-                _StatsGrid(
-                  cardBg: AppTheme.dashboardCardBg,
-                  textSecondary: AppTheme.dashboardTextSecondary,
-                  textPrimary: AppTheme.dashboardTextPrimary,
-                  accentRed: AppTheme.dashboardAccentRed,
-                  vehicle: vehicle,
-                ),
-
-                const SizedBox(height: 24),
-
-                // 3. Recent Activity Stack
-                _RecentActivitySection(
-                  textPrimary: AppTheme.dashboardTextPrimary,
-                  textSecondary: AppTheme.dashboardTextSecondary,
-                  cardBg: AppTheme.dashboardCardBg,
-                  accentRed: AppTheme.dashboardAccentRed,
-                  records: vehicle.records.toList(),
-                ),
-                const SizedBox(height: 100),
-              ],
+        // Page Indicator - Fixed at top
+        if (widget.vehicles.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 4),
+            child: Center(
+              child: _PageIndicator(
+                count: widget.vehicles.length,
+                currentIndex: _currentPage,
+              ),
             ),
+          ),
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.vehicles.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+              // Switch vehicle when page changes
+              final vehicle = widget.vehicles[index];
+              context.read<RecordsBloc>().add(SwitchVehicle(vehicle.vehicleId));
+            },
+            itemBuilder: (context, index) {
+              final vehicle = widget.vehicles[index];
+              final odometerString = vehicle.currentKm.toString();
+              final unitString = 'km'; // 這邊要根據使用者那邊資料
+
+              return Padding(
+                padding: const EdgeInsets.all(20),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppTheme.blackTransparent60,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppTheme.whiteTransparent20,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // 1. Hero Section
+                      _HeroSection(
+                        textSecondary: AppTheme.dashboardTextSecondary,
+                        textPrimary: AppTheme.dashboardTextPrimary,
+                        vehicle: vehicle,
+                        odometerString: odometerString,
+                        unitString: unitString,
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // 2. Stats Grid
+                      _StatsGrid(
+                        cardBg: AppTheme.dashboardCardBg,
+                        textSecondary: AppTheme.dashboardTextSecondary,
+                        textPrimary: AppTheme.dashboardTextPrimary,
+                        accentRed: AppTheme.dashboardAccentRed,
+                        vehicle: vehicle,
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // 3. Recent Activity Stack
+                      Expanded(
+                        child: _RecentActivitySection(
+                          textPrimary: AppTheme.dashboardTextPrimary,
+                          textSecondary: AppTheme.dashboardTextSecondary,
+                          cardBg: AppTheme.dashboardCardBg,
+                          accentRed: AppTheme.dashboardAccentRed,
+                          records: vehicle.records.toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -227,8 +298,6 @@ class _HeroSection extends StatelessWidget {
   final Color textSecondary;
   final Color textPrimary;
   final Vehicle vehicle;
-  final List<Vehicle> vehicles;
-  final String currentVehicleId;
   final String odometerString;
   final String unitString;
 
@@ -236,8 +305,6 @@ class _HeroSection extends StatelessWidget {
     required this.textSecondary,
     required this.textPrimary,
     required this.vehicle,
-    required this.vehicles,
-    required this.currentVehicleId,
     required this.odometerString,
     required this.unitString,
   });
@@ -246,97 +313,95 @@ class _HeroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 20),
-        // Car Image with Gradient Mask
-        SizedBox(
-          height: 160,
-          width: double.infinity,
-          child: ShaderMask(
-            shaderCallback: (rect) {
-              return const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black,
-                  Colors.black,
-                  Colors.transparent,
+        // Vehicle Badge
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF22C55E),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.6),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    vehicle.licensePlate,
+                    style: TextStyle(fontSize: 14, color: textSecondary),
+                  ),
                 ],
-                stops: [0.0, 0.15, 0.75, 1.0],
-              ).createShader(rect);
-            },
-            blendMode: BlendMode.dstIn,
-            child: Center(
-              child: Icon(
-                Icons.directions_car_filled,
-                size: 100,
-                color: Colors.white.withValues(alpha: 0.5),
               ),
             ),
-          ),
-        ),
-        const SizedBox(height: 15),
-        GestureDetector(
-          onLongPress: () => _showVehiclePicker(context),
-          child: Column(
-            children: [
-              Text(
-                vehicle.carName.toUpperCase(),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                vehicle.carName,
                 style: TextStyle(
-                  fontSize: 18, // ~1.1rem
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: textSecondary,
-                  letterSpacing: 1,
+                  color: textPrimary,
                 ),
               ),
-              const SizedBox(height: 8),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppTheme.dashboardGradientStart,
-                    AppTheme.dashboardGradientEnd,
-                  ],
-                ).createShader(bounds),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      odometerString,
-                      style: const TextStyle(
-                        fontSize: 45, // ~2.8rem
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -1,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      unitString,
-                      style: TextStyle(fontSize: 16, color: textSecondary),
-                    ),
-                  ],
-                ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 40),
+        // Mileage Display
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '目前里程',
+              style: TextStyle(
+                fontSize: 13,
+                color: textSecondary,
+                letterSpacing: 0.5,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  odometerString,
+                  style: TextStyle(
+                    fontSize: 64,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                    letterSpacing: -2,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  unitString,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
-    );
-  }
-
-  void _showVehiclePicker(BuildContext context) {
-    showPickerDialog(
-      context: context,
-      options: vehicles,
-      currentSelectedIdentifier: currentVehicleId,
-      onSelected: (option) {
-        final vehicle = option as Vehicle;
-        context.read<RecordsBloc>().add(SwitchVehicle(vehicle.vehicleId));
-      },
     );
   }
 }
@@ -362,146 +427,97 @@ class _StatsGrid extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Total Spent Card
           Expanded(
-            flex: 6, // 1.2fr
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 24,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '總花費 Total Spent',
-                    style: TextStyle(
-                      fontSize: 13.6, // ~0.85rem
-                      color: textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    vehicle.totalSpent,
-                    style: TextStyle(
-                      fontSize: 24, // 1.5rem
-                      fontWeight: FontWeight.w700,
-                      color: accentRed,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Text(
-                        '↑',
-                        style: TextStyle(color: accentRed, fontSize: 11.2),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        vehicle.spentThisMonth,
-                        style: TextStyle(
-                          fontSize: 12.5, // ~0.78rem
-                          color: textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            child: _StatCard(
+              label: '本月花費',
+              value: vehicle.spentThisMonth,
+              textSecondary: textSecondary,
+              textPrimary: textPrimary,
             ),
           ),
           const SizedBox(width: 12),
-          // Health Card
           Expanded(
-            flex: 4, // 0.8fr
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 24,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    '保養狀態',
-                    style: TextStyle(
-                      fontSize: 13.6,
-                      color: textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: 72,
-                    height: 72,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Background Ring
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.08),
-                              width: 4,
-                            ),
-                          ),
-                        ),
-                        // Progress Ring
-                        Transform.rotate(
-                          angle: -math.pi / 2,
-                          child: SizedBox(
-                            width: 72,
-                            height: 72,
-                            child: CircularProgressIndicator(
-                              value: vehicle.maintenanceHealth,
-                              strokeWidth: 4,
-                              color: accentRed,
-                              backgroundColor: Colors.transparent,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          '${(vehicle.maintenanceHealth * 100).toInt()}%',
-                          style: TextStyle(
-                            fontSize: 17.6, // 1.1rem
-                            fontWeight: FontWeight.w700,
-                            color: textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '距離保養\n還剩 ${vehicle.remindKm} km',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11.5, // 0.72rem
-                      color: textSecondary,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
+            child: _StatCard(
+              label: '本年花費',
+              value: vehicle.totalSpent,
+              textSecondary: textSecondary,
+              textPrimary: textPrimary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _StatCard(
+              label: '平均油耗',
+              value: '9.2 L',
+              textSecondary: textSecondary,
+              textPrimary: textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color textSecondary;
+  final Color textPrimary;
+
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.textSecondary,
+    required this.textPrimary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.12),
+            Colors.white.withValues(alpha: 0.06),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: textSecondary,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+              // textTransform: TextTransform.uppercase,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
             ),
           ),
         ],
@@ -534,62 +550,70 @@ class _RecentActivitySection extends StatelessWidget {
     // Take top 3
     final displayRecords = sortedRecords.take(3).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '近期動態',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: textPrimary,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.04),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.15),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
-        const SizedBox(height: 15),
-        // Stack Container
-        SizedBox(
-          height: 140, // Enough space for stack
-          child: displayRecords.isEmpty
-              ? _buildEmptyState()
-              : Stack(
-                  children: [
-                    for (int i = 0; i < displayRecords.length; i++)
-                      _buildStackedCard(i, displayRecords[i]),
-                  ].reversed.toList(), // Reverse to paint bottom cards first
-                ),
-        ),
-        if (displayRecords.isNotEmpty)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Text(
-                '輕觸卡片查看完整歷史',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: textSecondary.withValues(alpha: 0.6),
-                ),
-              ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Transaction List
+          if (displayRecords.isEmpty)
+            _buildEmptyState()
+          else
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (int i = 0; i < displayRecords.length; i++) ...[
+                  _TransactionItem(
+                    icon: displayRecords[i].type.icon,
+                    iconColor: displayRecords[i].type.color,
+                    title: displayRecords[i].title,
+                    date:
+                        '${displayRecords[i].date.month}月${displayRecords[i].date.day}日',
+                    cost: displayRecords[i].formattedCost,
+                    accentRed: accentRed,
+                    textSecondary: textSecondary,
+                  ),
+                  if (i < displayRecords.length - 1) const SizedBox(height: 12),
+                ],
+              ],
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildEmptyState() {
     return Container(
-      height: 95,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: cardBg.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.inbox_outlined,
-            size: 32,
+            size: 24,
             color: textSecondary.withValues(alpha: 0.4),
           ),
           const SizedBox(width: 12),
@@ -604,100 +628,53 @@ class _RecentActivitySection extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildStackedCard(int index, VehicleRecord record) {
-    // index 0 is top card
-    double topOffset = 0;
-    double scale = 1.0;
-    double opacity = 1.0;
-    Color bgColor = AppTheme.dashboardCardBg;
-
-    if (index == 1) {
-      topOffset = 11;
-      scale = 0.96;
-      opacity = 0.65;
-      bgColor = AppTheme.dashboardCardBgStacked1;
-    } else if (index == 2) {
-      topOffset = 22;
-      scale = 0.92;
-      opacity = 0.4;
-      bgColor = AppTheme.dashboardCardBgStacked2;
-    }
-
-    return Positioned(
-      top: topOffset,
-      left: 0,
-      right: 0,
-      child: Transform.scale(
-        scale: scale,
-        child: Opacity(
-          opacity: opacity,
-          child: _ActivityCard(
-            icon: record.type.icon,
-            iconColor: record.type.color,
-            title: record.title,
-            date: '${record.date.year}/${record.date.month}/${record.date.day}',
-            cost: record.formattedCost,
-            cardBg: bgColor,
-            accentRed: AppTheme.dashboardAccentRed,
-            textSecondary: AppTheme.dashboardTextSecondary,
-            isTop: index == 0,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
-class _ActivityCard extends StatelessWidget {
+class _TransactionItem extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
   final String date;
   final String cost;
-  final Color cardBg;
   final Color accentRed;
   final Color textSecondary;
-  final bool isTop;
 
-  const _ActivityCard({
+  const _TransactionItem({
     required this.icon,
     required this.iconColor,
     required this.title,
     required this.date,
     required this.cost,
-    required this.cardBg,
     required this.accentRed,
     required this.textSecondary,
-    this.isTop = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 95,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-        boxShadow: isTop
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.04),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
+              color: iconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
@@ -707,40 +684,232 @@ class _ActivityCard extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14.4, // 0.9rem
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
                     color: Colors.white,
                   ),
                 ),
-                if (date.isNotEmpty) ...[
-                  const SizedBox(height: 3),
-                  Text(
-                    date,
-                    style: TextStyle(
-                      fontSize: 12, // 0.75rem
-                      color: textSecondary,
-                    ),
-                  ),
-                ],
+                const SizedBox(height: 2),
+                Text(
+                  date,
+                  style: TextStyle(fontSize: 12, color: textSecondary),
+                ),
               ],
             ),
           ),
-          if (cost.isNotEmpty)
-            Text(
-              cost,
+          Text(
+            cost,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: accentRed,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PageIndicator extends StatelessWidget {
+  final int count;
+  final int currentIndex;
+
+  const _PageIndicator({required this.count, required this.currentIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(count, (index) {
+          final isActive = index == currentIndex;
+          return Container(
+            margin: EdgeInsets.only(left: index == 0 ? 0 : 6),
+            width: isActive ? 20 : 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: isActive
+                  ? AppTheme.dashboardAccentRed
+                  : Colors.white.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(3),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _LoadingView extends StatelessWidget {
+  const _LoadingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+          decoration: BoxDecoration(
+            color: AppTheme.blackTransparent60,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.whiteTransparent10, width: 1),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Animated Loading Indicator
+              SizedBox(
+                width: 80,
+                height: 80,
+                child: CircularProgressIndicator(
+                  color: AppTheme.dashboardAccentRed,
+                  strokeWidth: 4,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                '載入中...',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '正在讀取您的車輛資料',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.systemGray.withValues(alpha: 0.8),
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyRecordsView extends StatelessWidget {
+  const _EmptyRecordsView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
+        decoration: BoxDecoration(
+          color: AppTheme.blackTransparent60,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.whiteTransparent10, width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const _EmptyIllustration(),
+            const SizedBox(height: 48),
+            const Text(
+              '目前沒有車輛花費紀錄',
               style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14.4,
-                color: accentRed,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                '開始記錄您的車輛相關費用，以更好地管理您的開支。',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppTheme.systemGray,
+                  height: 1.5,
+                ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyIllustration extends StatelessWidget {
+  const _EmptyIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 200,
+      height: 160,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          // Wallet Outline
+          Icon(
+            Icons.account_balance_wallet_outlined,
+            size: 150,
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
+          // Car icon inside wallet
+          Positioned(
+            left: 55,
+            top: 72,
+            child: Icon(
+              Icons.directions_car,
+              size: 55,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
+          ),
+          // Plus button at bottom right
+          Positioned(
+            right: 15,
+            bottom: 5,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.9),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.add, size: 36, color: Colors.black),
+            ),
+          ),
         ],
       ),
     );
