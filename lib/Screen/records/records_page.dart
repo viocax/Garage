@@ -30,8 +30,13 @@ class RecordsPage extends StatelessWidget {
           listener: (context, state) {
             // Handle error message
             if (state.errorMessage != null) {
-              // TODO: Show toast or snackbar
-              debugPrint('Error: ${state.errorMessage}');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage!),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: AppTheme.dashboardAccentRed,
+                ),
+              );
             }
 
             // Handle side effects
@@ -41,7 +46,7 @@ class RecordsPage extends StatelessWidget {
                   _navigateToAddVehicle(context);
                   break;
                 case RecordsSideEffect.navigateToAddRecord:
-                  _navigateToAddRecord(context);
+                  _navigateToAddRecord(context, state.currentVehicle);
                   break;
                 case RecordsSideEffect.navigateToEditVehicle:
                   _navigateToEditVehicle(context);
@@ -70,13 +75,37 @@ class RecordsPage extends StatelessWidget {
             elevation: 0,
             centerTitle: true,
             title: const Text(
-              '車輛花費',
+              '我的車庫',
               style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.accentColor,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
               ),
             ),
+            actions: state.vehicles.isNotEmpty
+                ? [
+                    Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.whiteTransparent08,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppTheme.whiteTransparent10,
+                          width: 1,
+                        ),
+                      ),
+                      child: IconButton(
+                        onPressed: () => _navigateToAddVehicle(context),
+                        icon: const Icon(
+                          Icons.add,
+                          color: AppTheme.accentColor,
+                          size: 20,
+                        ),
+                        tooltip: '新增車輛',
+                      ),
+                    ),
+                  ]
+                : null,
           ),
           body: Stack(
             children: [
@@ -102,10 +131,17 @@ class RecordsPage extends StatelessWidget {
           bottomNavigationBar: SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: PrimaryActionButton(
-                onPressed: () => _navigateToAddVehicle(context),
-                text: '新增車輛',
-              ),
+              child: state.vehicles.isNotEmpty
+                  ? PrimaryActionButton(
+                      onPressed: () =>
+                          _navigateToAddRecord(context, state.currentVehicle),
+                      text: '新增紀錄',
+                      icon: Icons.add,
+                    )
+                  : PrimaryActionButton(
+                      onPressed: () => _navigateToAddVehicle(context),
+                      text: '新增車輛',
+                    ),
             ),
           ),
         ),
@@ -122,9 +158,13 @@ class RecordsPage extends StatelessWidget {
     }
   }
 
-  Future<void> _navigateToAddRecord(BuildContext context) async {
+  Future<void> _navigateToAddRecord(
+    BuildContext context,
+    Vehicle vehicle,
+  ) async {
     final record = await context.goPathWithResult<VehicleRecord>(
       AppPath.addRecord,
+      extra: vehicle,
     );
     if (record != null && context.mounted) {
       context.read<RecordsBloc>().add(AddRecord(record));
@@ -206,17 +246,16 @@ class _RecordsContentState extends State<_RecordsContent> {
 
     return Column(
       children: [
-        // Page Indicator - Fixed at top
+        // Page Indicator
         if (widget.vehicles.length > 1)
           Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 4),
-            child: Center(
-              child: _PageIndicator(
-                count: widget.vehicles.length,
-                currentIndex: _currentPage,
-              ),
+            child: _PageIndicator(
+              count: widget.vehicles.length,
+              currentPage: _currentPage,
             ),
           ),
+        // PageView
         Expanded(
           child: PageView.builder(
             controller: _pageController,
@@ -235,11 +274,24 @@ class _RecordsContentState extends State<_RecordsContent> {
               final unitString = 'km'; // 這邊要根據使用者那邊資料
 
               return Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppTheme.blackTransparent60,
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomRight,
+                      end: Alignment.topLeft,
+                      colors: [
+                        AppTheme.blackTransparent60,
+                        AppTheme.blackTransparent90,
+                        AppTheme.recordCardWineRed,
+                        AppTheme.recordCardCaramelOrange60,
+                      ],
+                      stops: const [0.0, 0.65, 0.85, 1.0], // 保持深色區塊比例
+                    ),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: AppTheme.whiteTransparent20,
@@ -258,18 +310,16 @@ class _RecordsContentState extends State<_RecordsContent> {
                         unitString: unitString,
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
 
                       // 2. Stats Grid
                       _StatsGrid(
-                        cardBg: AppTheme.dashboardCardBg,
                         textSecondary: AppTheme.dashboardTextSecondary,
                         textPrimary: AppTheme.dashboardTextPrimary,
-                        accentRed: AppTheme.dashboardAccentRed,
                         vehicle: vehicle,
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
                       // 3. Recent Activity Stack
                       Expanded(
@@ -311,87 +361,98 @@ class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Vehicle Badge
+        // Vehicle Name (Leading) and License Plate (Trailing) in same row
         Row(
           children: [
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  vehicle.carName,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: AppTheme.whiteTransparent08,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppTheme.whiteTransparent10),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: 6,
+                    height: 6,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppTheme.statusGreen,
                       boxShadow: [
                         BoxShadow(
                           color: AppTheme.statusGreenTransparent60,
-                          blurRadius: 8,
+                          blurRadius: 6,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Text(
                     vehicle.licensePlate,
-                    style: TextStyle(fontSize: 14, color: textSecondary),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: textSecondary,
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                vehicle.carName,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: textPrimary,
-                ),
-              ),
-            ),
           ],
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 24),
         // Mileage Display
         Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               '目前里程',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 color: textSecondary,
                 letterSpacing: 0.5,
               ),
+              textAlign: TextAlign.left,
             ),
             const SizedBox(height: 8),
             Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
                   odometerString,
                   style: TextStyle(
-                    fontSize: 64,
+                    fontSize: 48,
                     fontWeight: FontWeight.w700,
                     color: textPrimary,
                     letterSpacing: -2,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Text(
                   unitString,
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w500,
                     color: textSecondary,
                   ),
@@ -406,54 +467,43 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _StatsGrid extends StatelessWidget {
-  final Color cardBg;
   final Color textSecondary;
   final Color textPrimary;
-  final Color accentRed;
   final Vehicle vehicle;
 
   const _StatsGrid({
-    required this.cardBg,
     required this.textSecondary,
     required this.textPrimary,
-    required this.accentRed,
     required this.vehicle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: _StatCard(
-              label: '本月花費',
-              value: vehicle.spentThisMonth,
-              textSecondary: textSecondary,
-              textPrimary: textPrimary,
-            ),
+    return Row(
+      children: [
+        Expanded(
+          child: _StatCard(
+            label: '本月花費',
+            value: vehicle.spentThisMonth,
+            textSecondary: textSecondary,
+            textPrimary: textPrimary,
+            isPrimary: false,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _StatCard(
-              label: '本年花費',
-              value: vehicle.totalSpent,
-              textSecondary: textSecondary,
-              textPrimary: textPrimary,
-            ),
+        ),
+        const SizedBox(width: 12),
+        SizedBox(
+          width: 100,
+          height: 100,
+          child: _StatCard(
+            label: '平均油耗',
+            value: '9.2 L',
+            textSecondary: textSecondary,
+            textPrimary: textPrimary,
+            isPrimary: false,
+            isSquare: true,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _StatCard(
-              label: '平均油耗',
-              value: '9.2 L',
-              textSecondary: textSecondary,
-              textPrimary: textPrimary,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -463,63 +513,102 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color textSecondary;
   final Color textPrimary;
+  final bool isPrimary;
+  final bool isSquare;
 
   const _StatCard({
     required this.label,
     required this.value,
     required this.textSecondary,
     required this.textPrimary,
+    this.isPrimary = false,
+    this.isSquare = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.whiteTransparent12,
-            AppTheme.whiteTransparent06,
-          ],
-        ),
+    final cardHeight = isPrimary ? 100.0 : 100.0;
+    final fontSize = isPrimary ? 28.0 : (isSquare ? 20.0 : 18.0);
+    final labelSize = isPrimary ? 11.0 : 10.0;
+    final padding = isPrimary ? 20.0 : 20.0;
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.whiteTransparent20,
-          width: 1.5,
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$label 詳情（待開發）'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        },
+        child: Ink(
+          height: isSquare ? null : cardHeight,
+          padding: EdgeInsets.all(padding),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isPrimary
+                  ? [AppTheme.whiteTransparent12, AppTheme.whiteTransparent06]
+                  : [AppTheme.whiteTransparent10, AppTheme.whiteTransparent05],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.whiteTransparent20, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.blackTransparent10,
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: isSquare
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
+            mainAxisAlignment: isSquare
+                ? MainAxisAlignment.center
+                : MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: labelSize,
+                  color: textSecondary,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              if (isSquare) const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: isSquare
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Flexible(
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.w700,
+                        color: textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: isSquare ? TextAlign.center : TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.blackTransparent10,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: textSecondary,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.5,
-              // textTransform: TextTransform.uppercase,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: textPrimary,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -546,25 +635,16 @@ class _RecentActivitySection extends StatelessWidget {
     final sortedRecords = List<VehicleRecord>.from(records)
       ..sort((a, b) => b.date.compareTo(a.date));
 
-    // Take top 3
-    final displayRecords = sortedRecords.take(3).toList();
-
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.whiteTransparent08,
-            AppTheme.whiteTransparent04,
-          ],
+          colors: [AppTheme.whiteTransparent08, AppTheme.whiteTransparent04],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppTheme.whiteTransparent15,
-          width: 1.5,
-        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.whiteTransparent15, width: 1.5),
         boxShadow: [
           BoxShadow(
             color: AppTheme.blackTransparent10,
@@ -575,29 +655,65 @@ class _RecentActivitySection extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // Transaction List
-          if (displayRecords.isEmpty)
+          // Header with title and view all button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '近期動態',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: textPrimary,
+                ),
+              ),
+              if (sortedRecords.isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    // TODO: Navigate to all records page
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '查看全部',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: accentRed,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_ios, size: 10, color: accentRed),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Scrollable Transaction List
+          if (sortedRecords.isEmpty)
             _buildEmptyState()
           else
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int i = 0; i < displayRecords.length; i++) ...[
-                  _TransactionItem(
-                    icon: displayRecords[i].type.icon,
-                    iconColor: displayRecords[i].type.color,
-                    title: displayRecords[i].title,
-                    date:
-                        '${displayRecords[i].date.month}月${displayRecords[i].date.day}日',
-                    cost: displayRecords[i].formattedCost,
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: sortedRecords.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final record = sortedRecords[index];
+                  return _TransactionItem(
+                    icon: record.type.icon,
+                    iconColor: record.type.color,
+                    title: record.title,
+                    date: '${record.date.month}月${record.date.day}日',
+                    cost: record.formattedCost,
                     accentRed: accentRed,
                     textSecondary: textSecondary,
-                  ),
-                  if (i < displayRecords.length - 1) const SizedBox(height: 12),
-                ],
-              ],
+                  );
+                },
+              ),
             ),
         ],
       ),
@@ -605,25 +721,26 @@ class _RecentActivitySection extends StatelessWidget {
   }
 
   Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.inbox_outlined,
-            size: 24,
-            color: textSecondary.withValues(alpha: 0.4),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            '目前沒有維修紀錄',
-            style: TextStyle(
-              fontSize: 14,
-              color: textSecondary.withValues(alpha: 0.6),
+    return Expanded(
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.inbox_outlined,
+              size: 48,
+              color: textSecondary.withValues(alpha: 0.3),
             ),
-          ),
-        ],
+            const SizedBox(width: 16),
+            Text(
+              '目前沒有維修紀錄',
+              style: TextStyle(
+                fontSize: 14,
+                color: textSecondary.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -650,103 +767,80 @@ class _TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.whiteTransparent08,
-            AppTheme.whiteTransparent04,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppTheme.whiteTransparent10,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 18, color: iconColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                    color: AppTheme.accentColor,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  date,
-                  style: TextStyle(fontSize: 12, color: textSecondary),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            cost,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: accentRed,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PageIndicator extends StatelessWidget {
-  final int count;
-  final int currentIndex;
-
-  const _PageIndicator({required this.count, required this.currentIndex});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.whiteTransparent05,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.whiteTransparent10),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(count, (index) {
-          final isActive = index == currentIndex;
-          return Container(
-            margin: EdgeInsets.only(left: index == 0 ? 0 : 6),
-            width: isActive ? 20 : 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: isActive
-                  ? AppTheme.dashboardAccentRed
-                  : AppTheme.whiteTransparent30,
-              borderRadius: BorderRadius.circular(3),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('記錄詳情: $title（待開發）'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 1),
             ),
           );
-        }),
+        },
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppTheme.whiteTransparent08,
+                AppTheme.whiteTransparent04,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.whiteTransparent10, width: 1),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 20, color: iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: AppTheme.accentColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      date,
+                      style: TextStyle(fontSize: 12, color: textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                cost,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: accentRed,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -906,11 +1000,45 @@ class _EmptyIllustration extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Icon(Icons.add, size: 36, color: AppTheme.primaryColor),
+              child: const Icon(
+                Icons.add,
+                size: 36,
+                color: AppTheme.primaryColor,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PageIndicator extends StatelessWidget {
+  final int count;
+  final int currentPage;
+
+  const _PageIndicator({required this.count, required this.currentPage});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        final isActive = index == currentPage;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isActive ? 24 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: isActive
+                ? AppTheme.accentColor
+                : AppTheme.whiteTransparent20,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        );
+      }),
     );
   }
 }

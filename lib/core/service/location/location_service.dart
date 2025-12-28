@@ -153,25 +153,23 @@ class LocationService {
   ///
   /// 返回一個可以動態調整 distanceFilter 的位置 stream
   Stream<Position> getPositionStream() {
-    // 如果 controller 存在但 subscription 不存在，需要重新訂閱
     if (_positionController != null && !_positionController!.isClosed) {
-      if (_geolocatorSubscription == null) {
-        _subscribeToGeolocator();
-      }
       return _positionController!.stream;
     }
 
     // 創建新的 StreamController
     _positionController = StreamController<Position>.broadcast(
+      onListen: () {
+        if (_geolocatorSubscription == null) {
+          _subscribeToGeolocator();
+        }
+      },
       onCancel: () {
         // 當所有訂閱者都取消時，停止底層的 geolocator 訂閱
         _geolocatorSubscription?.cancel();
         _geolocatorSubscription = null;
       },
     );
-
-    // 訂閱 geolocator stream
-    _subscribeToGeolocator();
 
     return _positionController!.stream;
   }

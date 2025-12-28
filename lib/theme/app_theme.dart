@@ -35,12 +35,17 @@ class AppTheme {
   static const Color darkSurface = Color(0xFF1C1C1E); // iOS system gray 6 dark
 
   // Status Colors
-  static const Color statusGreen = Color(0xFF22C55E); // Online/Success indicator green
+  static const Color statusGreen = Color(
+    0xFF22C55E,
+  ); // Online/Success indicator green
 
   // Record Type Colors
-  static const Color recordTypeFuelColor = Color(0xFFD9923B); // Fuel record orange
-  static const Color recordTypeMaintenanceColor =
-      Color(0xFF7A8A99); // Maintenance record grey-blue
+  static const Color recordTypeFuelColor = Color(
+    0xFFD9923B,
+  ); // Fuel record orange
+  static const Color recordTypeMaintenanceColor = Color(
+    0xFF7A8A99,
+  ); // Maintenance record grey-blue
 
   // Speed Indicator Colors
   static const Color speedSlow = Color(0xFF34C759); // Green for low speed
@@ -77,6 +82,12 @@ class AppTheme {
     0xFF8E8E93,
   ); // Secondary text
   static const Color dashboardAccentRed = Color(0xFFD64045); // Accent red color
+  static const Color recordCardWineRed = Color(
+    0xFF751532,
+  ); // Deep wine red for cards
+  static const Color recordCardCaramelOrange = Color(
+    0xFFD66D2B,
+  ); // Deep caramel orange for cards
   static const Color dashboardGradientStart = Color(
     0xFFF5F5F7,
   ); // Gradient start
@@ -148,6 +159,11 @@ class AppTheme {
   // Accent red transparent variants
   static Color accentRedTransparent15 = dashboardAccentRed.withValues(
     alpha: 0.15,
+  );
+
+  // Record card variants
+  static Color recordCardCaramelOrange60 = recordCardCaramelOrange.withValues(
+    alpha: 0.6,
   );
 
   // Dark surface transparent variants
