@@ -63,7 +63,7 @@ class _AddRecordViewContent extends StatelessWidget {
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppTheme.accentColor,
           ),
         ),
         actions: [
@@ -234,7 +234,7 @@ class _CategoryItem extends StatelessWidget {
                 ),
                 child: Icon(
                   type.icon,
-                  color: isSelected ? AppTheme.dashboardAccentRed : Colors.white,
+                  color: isSelected ? AppTheme.dashboardAccentRed : AppTheme.accentColor,
                   size: 24,
                 ),
               ),
@@ -400,7 +400,7 @@ class _DateInput extends StatelessWidget {
                       data: ThemeData.dark().copyWith(
                         colorScheme: const ColorScheme.dark(
                           primary: AppTheme.dashboardAccentRed,
-                          onPrimary: Colors.white,
+                          onPrimary: AppTheme.accentColor,
                           surface: AppTheme.darkSurface,
                         ),
                       ),
@@ -428,7 +428,7 @@ class _DateInput extends StatelessWidget {
                 ),
                 child: Text(
                   '${state.date.year}-${state.date.month.toString().padLeft(2, '0')}-${state.date.day.toString().padLeft(2, '0')}',
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  style: const TextStyle(fontSize: 16, color: AppTheme.accentColor),
                 ),
               ),
             ),
@@ -458,7 +458,7 @@ class _MileageInput extends StatelessWidget {
             TextFormField(
               initialValue: state.km > 0 ? state.km.toString() : null,
               keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 16, color: Colors.white),
+              style: const TextStyle(fontSize: 16, color: AppTheme.accentColor),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: AppTheme.inputBg,
@@ -563,7 +563,7 @@ class _FuelTypeSelector extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color: AppTheme.accentColor,
               ),
             ),
             const SizedBox(height: 12),
@@ -629,7 +629,7 @@ class _FuelAmountInput extends StatelessWidget {
         const SizedBox(height: 8),
         TextField(
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          style: const TextStyle(fontSize: 16, color: Colors.white),
+          style: const TextStyle(fontSize: 16, color: AppTheme.accentColor),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppTheme.inputBg,
@@ -683,7 +683,7 @@ class _PricePerLiterInput extends StatelessWidget {
         const SizedBox(height: 8),
         TextField(
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          style: const TextStyle(fontSize: 16, color: Colors.white),
+          style: const TextStyle(fontSize: 16, color: AppTheme.accentColor),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppTheme.inputBg,
@@ -834,7 +834,7 @@ class _MaintenanceFields extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white,
+                      color: AppTheme.accentColor,
                     ),
                   ),
                   Text(
@@ -1028,7 +1028,7 @@ class _MaintenanceEntryCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     TextField(
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(fontSize: 14, color: Colors.white),
+                      style: const TextStyle(fontSize: 14, color: AppTheme.accentColor),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppTheme.dashboardCardBg,
@@ -1079,7 +1079,7 @@ class _MaintenanceEntryCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     TextField(
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(fontSize: 14, color: Colors.white),
+                      style: const TextStyle(fontSize: 14, color: AppTheme.accentColor),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppTheme.dashboardCardBg,
@@ -1123,7 +1123,7 @@ class _MaintenanceEntryCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           TextField(
-            style: const TextStyle(fontSize: 14, color: Colors.white),
+            style: const TextStyle(fontSize: 14, color: AppTheme.accentColor),
             decoration: InputDecoration(
               filled: true,
               fillColor: AppTheme.dashboardCardBg,
@@ -1173,7 +1173,7 @@ class _NoteInput extends StatelessWidget {
         const SizedBox(height: 8),
         TextField(
           maxLines: 3,
-          style: const TextStyle(fontSize: 16, color: Colors.white),
+          style: const TextStyle(fontSize: 16, color: AppTheme.accentColor),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppTheme.inputBg,

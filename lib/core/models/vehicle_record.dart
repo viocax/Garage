@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garage/theme/app_theme.dart';
 import 'package:isar_community/isar.dart';
 import 'package:uuid/uuid.dart';
 
@@ -179,7 +180,7 @@ class RecordTypeFuel extends RecordType {
   IconData get icon => Icons.local_gas_station;
 
   @override
-  Color get color => const Color(0xFFD9923B); // Orange
+  Color get color => AppTheme.recordTypeFuelColor;
 
   @override
   String get typeName => 'fuel';
@@ -209,7 +210,7 @@ class RecordTypeMaintenance extends RecordType {
   IconData get icon => Icons.build;
 
   @override
-  Color get color => const Color(0xFF7A8A99); // Grey Blue
+  Color get color => AppTheme.recordTypeMaintenanceColor;
 
   @override
   String get typeName => 'maintenance';
@@ -246,7 +247,7 @@ class RecordTypeOther extends RecordType {
   IconData get icon => Icons.receipt;
 
   @override
-  Color get color => const Color(0xFF8E8E93); // Grey
+  Color get color => AppTheme.systemGray;
 
   @override
   String get typeName => 'other';

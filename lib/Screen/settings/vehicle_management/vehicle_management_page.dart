@@ -5,6 +5,7 @@ import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_bloc.dart';
 import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_event.dart';
 import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_state.dart';
+import 'package:garage/theme/app_theme.dart';
 
 class VehicleManagementPage extends StatelessWidget {
   const VehicleManagementPage({super.key});
@@ -107,7 +108,7 @@ class _VehicleManagementBody extends StatelessWidget {
                   color: theme.colorScheme.error,
                   child: const Icon(
                     Icons.delete_outline,
-                    color: Colors.white,
+                    color: AppTheme.accentColor,
                   ),
                 ),
                 child: _VehicleListTile(

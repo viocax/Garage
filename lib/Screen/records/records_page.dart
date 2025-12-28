@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/router/app_router.dart';
-import 'dart:math' as math;
 import 'package:garage/theme/grid_background_painter.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -73,7 +72,7 @@ class RecordsPage extends StatelessWidget {
             title: const Text(
               '車輛花費',
               style: TextStyle(
-                color: Colors.white,
+                color: AppTheme.accentColor,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -319,9 +318,9 @@ class _HeroSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: AppTheme.whiteTransparent08,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: AppTheme.whiteTransparent10),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -331,10 +330,10 @@ class _HeroSection extends StatelessWidget {
                     height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF22C55E),
+                      color: AppTheme.statusGreen,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF22C55E).withValues(alpha: 0.6),
+                          color: AppTheme.statusGreenTransparent60,
                           blurRadius: 8,
                         ),
                       ],
@@ -481,18 +480,18 @@ class _StatCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withValues(alpha: 0.12),
-            Colors.white.withValues(alpha: 0.06),
+            AppTheme.whiteTransparent12,
+            AppTheme.whiteTransparent06,
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: AppTheme.whiteTransparent20,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: AppTheme.blackTransparent10,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -557,18 +556,18 @@ class _RecentActivitySection extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withValues(alpha: 0.08),
-            Colors.white.withValues(alpha: 0.04),
+            AppTheme.whiteTransparent08,
+            AppTheme.whiteTransparent04,
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: AppTheme.whiteTransparent15,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: AppTheme.blackTransparent10,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -658,13 +657,13 @@ class _TransactionItem extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withValues(alpha: 0.08),
-            Colors.white.withValues(alpha: 0.04),
+            AppTheme.whiteTransparent08,
+            AppTheme.whiteTransparent04,
           ],
         ),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: AppTheme.whiteTransparent10,
           width: 1,
         ),
       ),
@@ -692,7 +691,7 @@ class _TransactionItem extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
-                    color: Colors.white,
+                    color: AppTheme.accentColor,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -728,9 +727,9 @@ class _PageIndicator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: AppTheme.whiteTransparent05,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: AppTheme.whiteTransparent10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -743,7 +742,7 @@ class _PageIndicator extends StatelessWidget {
             decoration: BoxDecoration(
               color: isActive
                   ? AppTheme.dashboardAccentRed
-                  : Colors.white.withValues(alpha: 0.3),
+                  : AppTheme.whiteTransparent30,
               borderRadius: BorderRadius.circular(3),
             ),
           );
@@ -779,7 +778,7 @@ class _LoadingView extends StatelessWidget {
                 child: CircularProgressIndicator(
                   color: AppTheme.dashboardAccentRed,
                   strokeWidth: 4,
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  backgroundColor: AppTheme.whiteTransparent10,
                 ),
               ),
               const SizedBox(height: 32),
@@ -788,7 +787,7 @@ class _LoadingView extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppTheme.accentColor,
                   letterSpacing: 0.5,
                 ),
                 textAlign: TextAlign.center,
@@ -836,7 +835,7 @@ class _EmptyRecordsView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppTheme.accentColor,
                 letterSpacing: 0.5,
               ),
               textAlign: TextAlign.center,
@@ -877,7 +876,7 @@ class _EmptyIllustration extends StatelessWidget {
           Icon(
             Icons.account_balance_wallet_outlined,
             size: 150,
-            color: Colors.white.withValues(alpha: 0.8),
+            color: AppTheme.whiteTransparent80,
           ),
           // Car icon inside wallet
           Positioned(
@@ -886,7 +885,7 @@ class _EmptyIllustration extends StatelessWidget {
             child: Icon(
               Icons.directions_car,
               size: 55,
-              color: Colors.white.withValues(alpha: 0.9),
+              color: AppTheme.whiteTransparent90,
             ),
           ),
           // Plus button at bottom right
@@ -896,18 +895,18 @@ class _EmptyIllustration extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: AppTheme.whiteTransparent90,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(color: AppTheme.accentColor, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: AppTheme.blackTransparent20,
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: const Icon(Icons.add, size: 36, color: Colors.black),
+              child: const Icon(Icons.add, size: 36, color: AppTheme.primaryColor),
             ),
           ),
         ],

@@ -230,7 +230,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: AppTheme.blackTransparent30,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppTheme.whiteTransparent20, width: 1),
           ),
@@ -240,7 +240,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               Text(
                 speedData.displaySpeed,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppTheme.accentColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -249,7 +249,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               Text(
                 speedData.unit.displayName,
                 style: TextStyle(
-                  color: Colors.white70,
+                  color: AppTheme.whiteTransparent70,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -259,7 +259,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   width: 1,
                   height: 24,
                   margin: const EdgeInsets.symmetric(horizontal: 12),
-                  color: Colors.white24,
+                  color: AppTheme.whiteTransparent24,
                 ),
 
               if (upperSpeed != null)
@@ -322,7 +322,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: AppTheme.blackTransparent30,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: AppTheme.whiteTransparent20,
@@ -409,7 +409,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   ),
                   child: const Icon(
                     Icons.stop_rounded,
-                    color: Colors.white,
+                    color: AppTheme.accentColor,
                     size: 24,
                   ),
                 ),
@@ -484,8 +484,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   radius: data.alertDistance.toDouble(),
                   useRadiusInMeter: true,
                   color: data.isOverSpeed
-                      ? Colors.red.withValues(alpha: 0.3)
-                      : Colors.green.withValues(alpha: 0.3),
+                      ? AppTheme.redTransparent30
+                      : AppTheme.greenTransparent30,
                 ),
               ],
             ),
@@ -544,7 +544,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                     AppTheme.darkSurface,
                     AppTheme.darkSurface.withValues(alpha: 0.9),
                     AppTheme.darkSurface.withValues(alpha: 0.7),
-                    Colors.transparent,
+                    AppTheme.darkSurface.withValues(alpha: 0),
                   ],
                   stops: const [0.0, 0.2, 0.45, 1.0],
                 ),
@@ -564,7 +564,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.transparent,
+                  AppTheme.darkSurface.withValues(alpha: 0),
                   AppTheme.darkSurface.withValues(alpha: 0.7),
                   AppTheme.darkSurface.withValues(alpha: 0.9),
                   AppTheme.darkSurface,
