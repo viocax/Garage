@@ -1,7 +1,7 @@
 name: garage
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
+# pub.dev using `flutter pub publish`. This is preferred for previous packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
@@ -10,7 +10,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# Read more about Android versioning at https://developer.android.com/studio/publish/linting
 # In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
@@ -132,3 +132,23 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Flutter Native Splash Configuration
+# Run: dart run flutter_native_splash:create
+# This ensures launch screen colors are consistent with AppTheme.dashboardBg
+#
+# Define color once, use everywhere (YAML anchor)
+_splash_color: &splash_color "#7CCC63"  # matches AppTheme.dashboardBg
+
+flutter_native_splash:
+  color: *splash_color
+
+  # Optional: Add a centered image (logo)
+  # image: assets/splash/logo.png
+
+  ios: true
+  android: true
+
+  # Android 12+ uses different API, requires separate config
+  android_12:
+    color: *splash_color
