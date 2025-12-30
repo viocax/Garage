@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:garage/core/service/location/geolocator_interface.dart';
 
@@ -71,7 +72,7 @@ class LocationService {
     if (newFilter != _currentDistanceFilter) {
       final oldFilter = _currentDistanceFilter;
       _currentDistanceFilter = newFilter;
-      print(
+      debugPrint(
         'LocationService: 速度 ${speedKmh.toStringAsFixed(1)} km/h，'
         'distanceFilter 從 ${oldFilter}m 調整為 ${newFilter}m',
       );

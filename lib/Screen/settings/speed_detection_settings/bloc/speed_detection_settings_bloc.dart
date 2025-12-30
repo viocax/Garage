@@ -214,7 +214,7 @@ class SpeedDetectionSettingsBloc
         await userSettingRepo.saveSettings(updatedSettings);
       } catch (e) {
         // 保存失败记录日志（不阻塞 close）
-        print('Failed to save settings: $e');
+        debugPrint('Failed to save settings: $e');
       }
     }
   }

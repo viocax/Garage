@@ -30,24 +30,22 @@ class TypeFilterChips extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          ..._types
-              .map((type) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: _FilterChip(
-                      typeName: type.$1,
-                      label: type.$2,
-                      icon: type.$3,
-                      color: type.$4,
-                      isSelected:
-                          selectedTypes.isEmpty || selectedTypes.contains(type.$1),
-                      onTap: () {
-                        context.read<AllRecordsBloc>().add(
-                              ToggleTypeFilter(type.$1),
-                            );
-                      },
-                    ),
-                  ))
-              .toList(),
+          ..._types.map((type) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _FilterChip(
+                  typeName: type.$1,
+                  label: type.$2,
+                  icon: type.$3,
+                  color: type.$4,
+                  isSelected:
+                      selectedTypes.isEmpty || selectedTypes.contains(type.$1),
+                  onTap: () {
+                    context.read<AllRecordsBloc>().add(
+                          ToggleTypeFilter(type.$1),
+                        );
+                  },
+                ),
+              )),
         ],
       ),
     );

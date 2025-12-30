@@ -1,4 +1,6 @@
 #!/usr/bin/env dart
+// ignore_for_file: avoid_print, dangling_library_doc_comments
+
 /// Syncs splash screen color from AppTheme.dashboardBg to native platforms.
 ///
 /// Usage: dart run tool/sync_splash_color.dart

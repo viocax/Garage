@@ -24,7 +24,7 @@ void main() {
         expect(testToken.lastReportTime, testTime);
       });
 
-      test('可選的 onExecute 回調應該可以設定', () {
+      test('可選的 onExecute 回調應該可以設定', () async {
         var executed = false;
 
         final token = TTSSpeakingToken(
@@ -38,6 +38,8 @@ void main() {
         );
 
         expect(token, isNotNull);
+        await token.execute();
+        expect(executed, true);
       });
     });
 

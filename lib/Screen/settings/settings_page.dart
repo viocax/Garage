@@ -41,12 +41,8 @@ class SettingsPage extends StatelessWidget {
               },
             );
             break;
-          case SettingsError(:final message):
+          case SettingsError():
             // TODO: show toast
-            break;
-          case ExportData():
-            break;
-          case ClearData():
             break;
         }
       },
