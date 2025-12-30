@@ -6,8 +6,6 @@ class PrimaryActionButton extends StatelessWidget {
   final String text;
   final IconData? icon;
   final bool isLoading;
-  final double verticalPadding;
-  final double borderRadius;
 
   const PrimaryActionButton({
     super.key,
@@ -15,58 +13,64 @@ class PrimaryActionButton extends StatelessWidget {
     required this.text,
     this.icon,
     this.isLoading = false,
-    this.verticalPadding = 16,
-    this.borderRadius = 16,
   });
 
   @override
   Widget build(BuildContext context) {
+    const double height = 52.0;
+
     return Container(
+      height: height,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(height / 2),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.dashboardAccentRed.withValues(alpha: 0.25),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            color: AppTheme.dashboardAccentRed.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.dashboardAccentRed,
-          foregroundColor: AppTheme.accentColor,
-          padding: EdgeInsets.symmetric(vertical: verticalPadding),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: AppTheme.accentColor,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+      child: Material(
+        color: AppTheme.dashboardAccentRed,
+        borderRadius: BorderRadius.circular(height / 2),
+        child: InkWell(
+          onTap: isLoading ? null : onPressed,
+          borderRadius: BorderRadius.circular(height / 2),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
                     ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(
+                          icon,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        text,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+          ),
+        ),
       ),
     );
   }

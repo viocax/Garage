@@ -37,6 +37,7 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
       final availableMonths = _extractAvailableMonths(records);
 
       // Calculate chart data
+      
       final monthlyData = _calculateMonthlyExpense(records);
       final categoryData = _calculateCategoryExpense(records);
       final totalExpense = records.fold(0.0, (sum, r) => sum + r.cost);

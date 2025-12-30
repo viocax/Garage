@@ -301,7 +301,7 @@ class _RecordsContentState extends State<_RecordsContent> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // 1. Hero Section
+                      // 1. Hero Section (包含统计数据)
                       _HeroSection(
                         textSecondary: AppTheme.dashboardTextSecondary,
                         textPrimary: AppTheme.dashboardTextPrimary,
@@ -310,18 +310,17 @@ class _RecordsContentState extends State<_RecordsContent> {
                         unitString: unitString,
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
-                      // 2. Stats Grid
-                      _StatsGrid(
-                        textSecondary: AppTheme.dashboardTextSecondary,
-                        textPrimary: AppTheme.dashboardTextPrimary,
-                        vehicle: vehicle,
+                      // 分隔线
+                      Container(
+                        height: 1,
+                        color: AppTheme.whiteTransparent15,
                       ),
 
                       const SizedBox(height: 16),
 
-                      // 3. Recent Activity Stack
+                      // 2. Recent Activity Section
                       Expanded(
                         child: _RecentActivitySection(
                           textPrimary: AppTheme.dashboardTextPrimary,
@@ -420,7 +419,7 @@ class _HeroSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         // Mileage Display
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -434,7 +433,7 @@ class _HeroSection extends StatelessWidget {
               ),
               textAlign: TextAlign.left,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -443,17 +442,17 @@ class _HeroSection extends StatelessWidget {
                 Text(
                   odometerString,
                   style: TextStyle(
-                    fontSize: 48,
+                    fontSize: 44,
                     fontWeight: FontWeight.w700,
                     color: textPrimary,
                     letterSpacing: -2,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Text(
                   unitString,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: textSecondary,
                   ),
@@ -462,46 +461,78 @@ class _HeroSection extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        // Stats Row (本月花費 | 平均油耗)
+        Row(
+          children: [
+            _StatChip(
+              icon: Icons.payments_outlined,
+              label: '本月',
+              value: vehicle.spentThisMonth,
+              textSecondary: textSecondary,
+              textPrimary: textPrimary,
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 1,
+              height: 24,
+              color: AppTheme.whiteTransparent20,
+            ),
+            const SizedBox(width: 12),
+            _StatChip(
+              icon: Icons.local_gas_station_outlined,
+              label: '油耗',
+              value: '9.2 L',
+              textSecondary: textSecondary,
+              textPrimary: textPrimary,
+            ),
+          ],
+        ),
       ],
     );
   }
 }
 
-class _StatsGrid extends StatelessWidget {
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
   final Color textSecondary;
   final Color textPrimary;
-  final Vehicle vehicle;
 
-  const _StatsGrid({
+  const _StatChip({
+    required this.icon,
+    required this.label,
+    required this.value,
     required this.textSecondary,
     required this.textPrimary,
-    required this.vehicle,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: _StatCard(
-            label: '本月花費',
-            value: vehicle.spentThisMonth,
-            textSecondary: textSecondary,
-            textPrimary: textPrimary,
-            isPrimary: false,
+        Icon(
+          icon,
+          size: 16,
+          color: textSecondary,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: textSecondary,
           ),
         ),
-        const SizedBox(width: 12),
-        SizedBox(
-          width: 100,
-          height: 100,
-          child: _StatCard(
-            label: '平均油耗',
-            value: '9.2 L',
-            textSecondary: textSecondary,
-            textPrimary: textPrimary,
-            isPrimary: false,
-            isSquare: true,
+        const SizedBox(width: 6),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: textPrimary,
           ),
         ),
       ],
@@ -509,113 +540,7 @@ class _StatsGrid extends StatelessWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color textSecondary;
-  final Color textPrimary;
-  final bool isPrimary;
-  final bool isSquare;
-
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.textSecondary,
-    required this.textPrimary,
-    this.isPrimary = false,
-    this.isSquare = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cardHeight = isPrimary ? 100.0 : 100.0;
-    final fontSize = isPrimary ? 28.0 : (isSquare ? 20.0 : 18.0);
-    final labelSize = isPrimary ? 11.0 : 10.0;
-    final padding = isPrimary ? 20.0 : 20.0;
-
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$label 詳情（待開發）'),
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 1),
-            ),
-          );
-        },
-        child: Ink(
-          height: isSquare ? null : cardHeight,
-          padding: EdgeInsets.all(padding),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isPrimary
-                  ? [AppTheme.whiteTransparent12, AppTheme.whiteTransparent06]
-                  : [AppTheme.whiteTransparent10, AppTheme.whiteTransparent05],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.whiteTransparent20, width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.blackTransparent10,
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: isSquare
-                ? CrossAxisAlignment.center
-                : CrossAxisAlignment.start,
-            mainAxisAlignment: isSquare
-                ? MainAxisAlignment.center
-                : MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: labelSize,
-                  color: textSecondary,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              if (isSquare) const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: isSquare
-                    ? MainAxisAlignment.center
-                    : MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Flexible(
-                    child: Text(
-                      value,
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w700,
-                        color: textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: isSquare ? TextAlign.center : TextAlign.start,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RecentActivitySection extends StatelessWidget {
+class _RecentActivitySection extends StatefulWidget {
   final Color textPrimary;
   final Color textSecondary;
   final Color cardBg;
@@ -633,92 +558,119 @@ class _RecentActivitySection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Sort records by date descending
-    final sortedRecords = List<VehicleRecord>.from(records)
-      ..sort((a, b) => b.date.compareTo(a.date));
+  State<_RecentActivitySection> createState() => _RecentActivitySectionState();
+}
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.whiteTransparent08, AppTheme.whiteTransparent04],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.whiteTransparent15, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.blackTransparent10,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with title and view all button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '近期動態',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: textPrimary,
-                ),
-              ),
-              if (sortedRecords.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    context.goPathWithResult(AppPath.allRecords, extra: vehicle);
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '查看全部',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: accentRed,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_ios, size: 10, color: accentRed),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Scrollable Transaction List
-          if (sortedRecords.isEmpty)
-            _buildEmptyState()
-          else
-            Expanded(
-              child: ListView.separated(
-                padding: EdgeInsets.zero,
-                itemCount: sortedRecords.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final record = sortedRecords[index];
-                  return _TransactionItem(
-                    icon: record.type.icon,
-                    iconColor: record.type.color,
-                    title: record.title,
-                    date: '${record.date.month}月${record.date.day}日',
-                    cost: record.formattedCost,
-                    accentRed: accentRed,
-                    textSecondary: textSecondary,
-                  );
-                },
+class _RecentActivitySectionState extends State<_RecentActivitySection> {
+  static const int _maxDisplayCount = 5;
+  static const double _cardHeight = 70.0;
+
+  late FixedExtentScrollController _wheelController;
+
+  List<VehicleRecord> get _sortedRecords {
+    final sorted = List<VehicleRecord>.from(widget.records)
+      ..sort((a, b) => b.date.compareTo(a.date));
+    return sorted.take(_maxDisplayCount).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _wheelController = FixedExtentScrollController();
+  }
+
+  @override
+  void dispose() {
+    _wheelController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with title and view all button
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '近期動態',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: widget.textPrimary,
               ),
             ),
-        ],
+            if (_sortedRecords.isNotEmpty)
+              GestureDetector(
+                onTap: () {
+                  context.goPathWithResult(
+                    AppPath.allRecords,
+                    extra: widget.vehicle,
+                  );
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '查看全部',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: widget.accentRed,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 10,
+                      color: widget.accentRed,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // Wheel Card Stack
+        if (_sortedRecords.isEmpty)
+          _buildEmptyState()
+        else
+          Expanded(child: _buildWheelCards()),
+      ],
+    );
+  }
+
+  Widget _buildWheelCards() {
+    final records = _sortedRecords;
+
+    return ListWheelScrollView.useDelegate(
+      controller: _wheelController,
+      itemExtent: _cardHeight + 8, // 卡片高度 + 間距
+      diameterRatio: 2.5, // 滾輪直徑比例，越小弧度越大
+      perspective: 0.003, // 透視效果
+      physics: const FixedExtentScrollPhysics(),
+      overAndUnderCenterOpacity: 0.5, // 非中心項的透明度
+      squeeze: 1.0, // 壓縮程度
+      childDelegate: ListWheelChildBuilderDelegate(
+        childCount: records.length,
+        builder: (context, index) {
+          final record = records[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: _WheelTransactionCard(
+              icon: record.type.icon,
+              iconColor: record.type.color,
+              title: record.title,
+              date: '${record.date.month}月${record.date.day}日',
+              cost: record.formattedCost,
+              accentRed: widget.accentRed,
+              textSecondary: widget.textSecondary,
+              cardHeight: _cardHeight,
+            ),
+          );
+        },
       ),
     );
   }
@@ -732,18 +684,208 @@ class _RecentActivitySection extends StatelessWidget {
             Icon(
               Icons.inbox_outlined,
               size: 48,
-              color: textSecondary.withValues(alpha: 0.3),
+              color: widget.textSecondary.withValues(alpha: 0.3),
             ),
             const SizedBox(width: 16),
             Text(
               '目前沒有維修紀錄',
               style: TextStyle(
                 fontSize: 14,
-                color: textSecondary.withValues(alpha: 0.6),
+                color: widget.textSecondary.withValues(alpha: 0.6),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _WheelTransactionCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String date;
+  final String cost;
+  final Color accentRed;
+  final Color textSecondary;
+  final double cardHeight;
+
+  const _WheelTransactionCard({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.date,
+    required this.cost,
+    required this.accentRed,
+    required this.textSecondary,
+    required this.cardHeight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: cardHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.blackTransparent60,
+            AppTheme.blackTransparent90,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.whiteTransparent20, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.blackTransparent20,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 20, color: iconColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: AppTheme.accentColor,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  date,
+                  style: TextStyle(fontSize: 12, color: textSecondary),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            cost,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: accentRed,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OverlappingTransactionCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String date;
+  final String cost;
+  final Color accentRed;
+  final Color textSecondary;
+  final double cardHeight;
+
+  const _OverlappingTransactionCard({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.date,
+    required this.cost,
+    required this.accentRed,
+    required this.textSecondary,
+    required this.cardHeight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: cardHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.blackTransparent60,
+            AppTheme.blackTransparent90,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.whiteTransparent20, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.blackTransparent20,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 20, color: iconColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: AppTheme.accentColor,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  date,
+                  style: TextStyle(fontSize: 12, color: textSecondary),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            cost,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: accentRed,
+            ),
+          ),
+        ],
       ),
     );
   }
