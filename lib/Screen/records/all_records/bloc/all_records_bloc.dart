@@ -1,0 +1,226 @@
+import 'package:bloc/bloc.dart';
+import 'package:garage/core/models/vehicle.dart';
+import 'package:garage/core/models/vehicle_record.dart';
+import 'package:garage/theme/app_theme.dart';
+
+import 'all_records_event.dart';
+import 'all_records_state.dart';
+
+class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
+  final Vehicle vehicle;
+
+  AllRecordsBloc({required this.vehicle}) : super(const AllRecordsState()) {
+    on<LoadAllRecords>(_onLoadAllRecords);
+    on<SelectMonth>(_onSelectMonth);
+    on<ToggleTypeFilter>(_onToggleTypeFilter);
+    on<ClearFilters>(_onClearFilters);
+
+    // Auto-load on creation
+    add(const LoadAllRecords());
+  }
+
+  Future<void> _onLoadAllRecords(
+    LoadAllRecords event,
+    Emitter<AllRecordsState> emit,
+  ) async {
+    emit(state.copyWith(status: AllRecordsStatus.loading));
+
+    try {
+      // Ensure records are loaded from database
+      await vehicle.records.load();
+      final records = vehicle.records.toList();
+
+      // Sort by date descending
+      records.sort((a, b) => b.date.compareTo(a.date));
+
+      // Generate available months from records
+      final availableMonths = _extractAvailableMonths(records);
+
+      // Calculate chart data
+      final monthlyData = _calculateMonthlyExpense(records);
+      final categoryData = _calculateCategoryExpense(records);
+      final totalExpense = records.fold(0.0, (sum, r) => sum + r.cost);
+
+      emit(
+        state.copyWith(
+          status: AllRecordsStatus.success,
+          allRecords: records,
+          filteredRecords: records,
+          availableMonths: availableMonths,
+          monthlyExpenseData: monthlyData,
+          categoryExpenseData: categoryData,
+          totalExpense: totalExpense,
+          recordCount: records.length,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: AllRecordsStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
+  void _onSelectMonth(SelectMonth event, Emitter<AllRecordsState> emit) {
+    if (event.month == null) {
+      emit(state.copyWith(clearSelectedMonth: true));
+    } else {
+      emit(state.copyWith(selectedMonth: event.month));
+    }
+    _applyFilters(emit);
+  }
+
+  void _onToggleTypeFilter(
+    ToggleTypeFilter event,
+    Emitter<AllRecordsState> emit,
+  ) {
+    final newTypes = Set<String>.from(state.selectedTypes);
+    if (newTypes.contains(event.typeName)) {
+      newTypes.remove(event.typeName);
+    } else {
+      newTypes.add(event.typeName);
+    }
+    emit(state.copyWith(selectedTypes: newTypes));
+    _applyFilters(emit);
+  }
+
+  void _onClearFilters(ClearFilters event, Emitter<AllRecordsState> emit) {
+    final monthlyData = _calculateMonthlyExpense(state.allRecords);
+    final categoryData = _calculateCategoryExpense(state.allRecords);
+
+    final totalExpense = state.allRecords.fold(0.0, (sum, r) => sum + r.cost);
+    emit(
+      state.copyWith(
+        clearSelectedMonth: true,
+        selectedTypes: {},
+        filteredRecords: state.allRecords,
+        totalExpense: totalExpense,
+        recordCount: state.allRecords.length,
+        monthlyExpenseData: monthlyData,
+        categoryExpenseData: categoryData,
+      ),
+    );
+  }
+
+  void _applyFilters(Emitter<AllRecordsState> emit) {
+    var filtered = state.allRecords.toList();
+
+    // Apply month filter
+    if (state.selectedMonth != null) {
+      final month = state.selectedMonth!;
+      filtered = filtered
+          .where(
+            (r) => r.date.year == month.year && r.date.month == month.month,
+          )
+          .toList();
+    }
+
+    // Apply type filter
+    if (state.selectedTypes.isNotEmpty) {
+      filtered = filtered
+          .where((r) => state.selectedTypes.contains(r.typeName))
+          .toList();
+    }
+
+    final monthlyData = _calculateMonthlyExpense(filtered);
+    final categoryData = _calculateCategoryExpense(filtered);
+
+    final totalExpense = filtered.fold(0.0, (sum, r) => sum + r.cost);
+    emit(
+      state.copyWith(
+        filteredRecords: filtered,
+        totalExpense: totalExpense,
+        recordCount: filtered.length,
+        monthlyExpenseData: monthlyData,
+        categoryExpenseData: categoryData,
+      ),
+    );
+  }
+
+  List<MonthFilter> _extractAvailableMonths(List<VehicleRecord> records) {
+    final months = <MonthFilter>{};
+    for (final record in records) {
+      months.add(MonthFilter(year: record.date.year, month: record.date.month));
+    }
+    // Sort descending
+    final list = months.toList();
+    list.sort((a, b) {
+      final yearCompare = b.year.compareTo(a.year);
+      if (yearCompare != 0) return yearCompare;
+      return b.month.compareTo(a.month);
+    });
+    return list;
+  }
+
+  List<MonthlyExpenseData> _calculateMonthlyExpense(
+    List<VehicleRecord> records,
+  ) {
+    if (records.isEmpty) return [];
+
+    // Group by month and calculate totals
+    final monthlyTotals = <String, double>{};
+
+    for (final record in records) {
+      final key =
+          '${record.date.year}-${record.date.month.toString().padLeft(2, '0')}';
+      monthlyTotals[key] = (monthlyTotals[key] ?? 0) + record.cost;
+    }
+
+    // Take last 6 months for chart
+    final sortedKeys = monthlyTotals.keys.toList()..sort();
+    final recentKeys = sortedKeys.length > 6
+        ? sortedKeys.sublist(sortedKeys.length - 6)
+        : sortedKeys;
+
+    return recentKeys.map((key) {
+      final parts = key.split('-');
+      final month = int.parse(parts[1]);
+      return MonthlyExpenseData(
+        monthLabel: '$month 月',
+        totalCost: monthlyTotals[key]!,
+      );
+    }).toList();
+  }
+
+  List<CategoryExpenseData> _calculateCategoryExpense(
+    List<VehicleRecord> records,
+  ) {
+    if (records.isEmpty) return [];
+
+    final categoryTotals = <String, double>{
+      'fuel': 0,
+      'maintenance': 0,
+      'other': 0,
+    };
+
+    for (final record in records) {
+      categoryTotals[record.typeName] =
+          (categoryTotals[record.typeName] ?? 0) + record.cost;
+    }
+
+    final total = categoryTotals.values.fold(0.0, (a, b) => a + b);
+
+    const colorMap = {
+      'fuel': AppTheme.recordTypeFuelColor,
+      'maintenance': AppTheme.recordTypeMaintenanceColor,
+      'other': AppTheme.systemGray,
+    };
+
+    const labelMap = {'fuel': '加油', 'maintenance': '保養', 'other': '其他'};
+
+    return categoryTotals.entries
+        .where((e) => e.value > 0)
+        .map(
+          (e) => CategoryExpenseData(
+            typeName: e.key,
+            label: labelMap[e.key]!,
+            totalCost: e.value,
+            percentage: total > 0 ? (e.value / total * 100) : 0,
+            color: colorMap[e.key]!,
+          ),
+        )
+        .toList();
+  }
+}

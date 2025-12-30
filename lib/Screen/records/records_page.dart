@@ -328,6 +328,7 @@ class _RecordsContentState extends State<_RecordsContent> {
                           textSecondary: AppTheme.dashboardTextSecondary,
                           cardBg: AppTheme.dashboardCardBg,
                           accentRed: AppTheme.dashboardAccentRed,
+                          vehicle: vehicle,
                           records: vehicle.records.toList(),
                         ),
                       ),
@@ -619,6 +620,7 @@ class _RecentActivitySection extends StatelessWidget {
   final Color textSecondary;
   final Color cardBg;
   final Color accentRed;
+  final Vehicle vehicle;
   final List<VehicleRecord> records;
 
   const _RecentActivitySection({
@@ -626,6 +628,7 @@ class _RecentActivitySection extends StatelessWidget {
     required this.textSecondary,
     required this.cardBg,
     required this.accentRed,
+    required this.vehicle,
     required this.records,
   });
 
@@ -671,7 +674,7 @@ class _RecentActivitySection extends StatelessWidget {
               if (sortedRecords.isNotEmpty)
                 GestureDetector(
                   onTap: () {
-                    // TODO: Navigate to all records page
+                    context.goPathWithResult(AppPath.allRecords, extra: vehicle);
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -700,7 +703,7 @@ class _RecentActivitySection extends StatelessWidget {
               child: ListView.separated(
                 padding: EdgeInsets.zero,
                 itemCount: sortedRecords.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final record = sortedRecords[index];
                   return _TransactionItem(

@@ -623,7 +623,6 @@ class _SubmitButton extends StatelessWidget {
           },
           text: '完成新增',
           icon: Icons.check_circle_outline,
-          isLoading: state.status == AddVehicleStatus.submitting,
         );
       },
     );

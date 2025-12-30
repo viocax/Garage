@@ -9,6 +9,7 @@ import 'package:garage/screen/app/home/garage_home_page.dart';
 import 'package:garage/screen/app/launch/launch_page.dart';
 import 'package:garage/screen/records/add_record/add_record_page.dart';
 import 'package:garage/screen/records/add_vehicle/add_vehicle_page.dart';
+import 'package:garage/screen/records/all_records/all_records_page.dart';
 import 'package:garage/core/models/vehicle.dart';
 
 
@@ -37,6 +38,9 @@ class AppPath {
 
   static final addVehicle =
       AppPath(name: 'addVehicle', previous: records);
+
+  static final allRecords =
+      AppPath(name: 'allRecords', previous: records);
 
   static final settings =
       AppPath(name: 'settings', previous: home);
@@ -106,8 +110,32 @@ class AppRouter {
                       path: AppPath.addVehicle.path,
                       name: AppPath.addVehicle.name,
                       parentNavigatorKey: _rootNavigatorKey,
+                      pageBuilder: (context, state) {
+                        return CustomTransitionPage(
+                          key: state.pageKey,
+                          child: const AddVehiclePage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 1),
+                                end: Offset.zero,
+                              ).animate(CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              )),
+                              child: child,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    GoRoute(
+                      path: AppPath.allRecords.path,
+                      name: AppPath.allRecords.name,
+                      parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) {
-                        return const AddVehiclePage();
+                        final vehicle = state.extra as Vehicle;
+                        return AllRecordsPage(vehicle: vehicle);
                       },
                     ),
                   ],

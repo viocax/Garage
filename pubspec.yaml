@@ -77,6 +77,9 @@ dependencies:
   latlong2: ^0.9.1
   quadtree: ^0.1.0
 
+  # Charts
+  fl_chart: ^0.69.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

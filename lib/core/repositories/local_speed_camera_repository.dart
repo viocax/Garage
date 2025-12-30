@@ -59,16 +59,22 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
     try {
       // 讀取 JSON 檔案
+      debugPrint('LocalSpeedCameraRepository: 開始讀取 JSON 檔案...');
       final String jsonString = await rootBundle.loadString(
         'assets/models/speedCameras.json',
       );
+      debugPrint('LocalSpeedCameraRepository: JSON 檔案讀取完成，長度: ${jsonString.length}');
 
       // 解析 JSON
+      debugPrint('LocalSpeedCameraRepository: 開始解析 JSON...');
       final List<dynamic> jsonData = json.decode(jsonString);
+      debugPrint('LocalSpeedCameraRepository: JSON 解析完成，共 ${jsonData.length} 筆');
 
+      debugPrint('LocalSpeedCameraRepository: 開始轉換為 Camera 物件...');
       _cachedCameras = jsonData
           .map((item) => Camera.fromJson(item as Map<String, dynamic>))
           .toList();
+      debugPrint('LocalSpeedCameraRepository: Camera 物件轉換完成');
 
       _loadedAt = DateTime.now();
       _buildQuadTree();
