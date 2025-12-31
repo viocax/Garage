@@ -115,7 +115,7 @@ lib/
 - [ ] 背景執行支援
 - [ ] 區間測速偵測
 - [ ] 導航整合
-- [ ] 雲端同步
+- [ ] 雲端同步 (iOS: iCloud / Android: Google Drive)
 - [ ] 資料匯出
 - [ ] 錯誤處理
 - [ ] localizeString

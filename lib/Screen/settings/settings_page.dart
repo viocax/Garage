@@ -79,10 +79,10 @@ class SettingsPage extends StatelessWidget {
                       // 資料管理
                       const SettingsSectionHeader(title: '資料'),
                       SettingsItem(
-                        title: '匯出資料',
-                        icon: Icons.upload_file_outlined,
+                        title: '同步雲端',
+                        icon: Icons.cloud_sync_outlined,
                         onTap: () {
-                          context.read<SettingsBloc>().add(const ExportData());
+                          context.goPath(AppPath.cloudSync);
                         },
                       ),
                       SettingsItem(

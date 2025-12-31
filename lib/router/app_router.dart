@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage/screen/settings/settings_page.dart';
 import 'package:garage/screen/settings/speed_detection_settings/speed_detection_settings_page.dart';
 import 'package:garage/screen/settings/vehicle_management/vehicle_management_page.dart';
+import 'package:garage/screen/settings/cloud_sync/cloud_sync_page.dart';
 import 'package:garage/screen/records/records_page.dart';
 import 'package:garage/screen/speed/speedCamera/speed_camera_page.dart';
 import 'package:go_router/go_router.dart';
@@ -50,6 +51,9 @@ class AppPath {
 
   static final speedDetectionSettings =
       AppPath(name: 'speedDetectionSettings', previous: settings);
+
+  static final cloudSync =
+      AppPath(name: 'cloudSync', previous: settings);
 
   /// compute full path
   String get path {
@@ -161,6 +165,12 @@ class AppRouter {
                       // 使用 root navigator，跳過 shell 直接全屏顯示
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) => const SpeedDetectionSettingsPage(),
+                    ),
+                    GoRoute(
+                      path: AppPath.cloudSync.path,
+                      name: AppPath.cloudSync.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const CloudSyncPage(),
                     ),
                   ],
                 ),

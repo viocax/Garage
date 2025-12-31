@@ -9,3 +9,4 @@ export 'tts/tts_service.dart';
 export 'tts/tts_interface.dart';
 export 'shared_preferences/shared_preferences_service.dart';
 export 'shared_preferences/shared_preferences_interface.dart';
+export 'cloud_sync/cloud_sync.dart';
