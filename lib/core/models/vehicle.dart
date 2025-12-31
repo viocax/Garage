@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:isar_community/isar.dart';
 import 'package:uuid/uuid.dart';
 import 'vehicle_record.dart';
-import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
+import 'picker_option.dart';
 
 part 'vehicle.g.dart';
 

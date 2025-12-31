@@ -58,7 +58,7 @@ class CategoryPieChart extends StatelessWidget {
                                 titleStyle: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: AppTheme.accentColor,
                                 ),
                                 radius: 35,
                               ))

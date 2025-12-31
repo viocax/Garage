@@ -1,7 +1,4 @@
 import 'package:garage/core/core.dart';
-import 'package:garage/core/models/vehicle.dart';
-import 'package:garage/core/models/vehicle_record.dart';
-import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:isar_community/isar.dart';
 
 class LocalVehicleRepository implements VehicleRepository {

@@ -1,17 +1,10 @@
-
-// Models
-export 'models/camera.dart';
-export 'models/tabbar_type.dart';
-
-// Repositories (只匯出介面，實作由 DI 處理)
-export 'repositories/speed_camera_repository.dart';
-export 'repositories/local_speed_camera_repository.dart';
-
-// Services (僅匯出常用的資料類別)
-export 'service/location/location_service.dart' show LatLng;
+// Sub-barrel exports
+export 'models/models.dart';
+export 'repositories/repositories.dart';
+export 'service/services.dart';
+export 'extensions/extensions.dart';
+export 'mixins/mixins.dart';
+export 'utils/utils.dart';
 
 // Dependency Injection
 export 'di/service_locator.dart';
-
-// Database
-export 'service/isar_service.dart';

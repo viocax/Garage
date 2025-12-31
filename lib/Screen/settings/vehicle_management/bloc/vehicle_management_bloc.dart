@@ -1,9 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:garage/core/core.dart';
-import 'package:garage/core/models/vehicle.dart';
-import 'package:garage/core/repositories/vehicle_repository.dart';
-import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_event.dart';
-import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_state.dart';
+import 'vehicle_management_event.dart';
+import 'vehicle_management_state.dart';
 
 class VehicleManagementBloc
     extends Bloc<VehicleManagementEvent, VehicleManagementState> {

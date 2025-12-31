@@ -2,9 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
-import 'package:garage/core/models/speed_camera_model.dart';
-import 'package:garage/core/models/speed_unit.dart';
-import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
 

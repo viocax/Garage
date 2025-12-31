@@ -232,7 +232,7 @@ class _InputFieldCard extends StatelessWidget {
         border: Border.all(color: AppTheme.whiteTransparent08),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: AppTheme.blackTransparent20,
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -280,7 +280,7 @@ class _InputFieldCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppTheme.accentColor,
                       ),
                     ),
                   ),

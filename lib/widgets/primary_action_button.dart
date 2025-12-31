@@ -44,7 +44,7 @@ class PrimaryActionButton extends StatelessWidget {
                     height: 22,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: Colors.white,
+                      color: AppTheme.accentColor,
                     ),
                   )
                 : Row(
@@ -54,7 +54,7 @@ class PrimaryActionButton extends StatelessWidget {
                         Icon(
                           icon,
                           size: 20,
-                          color: Colors.white,
+                          color: AppTheme.accentColor,
                         ),
                         const SizedBox(width: 8),
                       ],
@@ -63,7 +63,7 @@ class PrimaryActionButton extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppTheme.accentColor,
                           letterSpacing: -0.2,
                         ),
                       ),
