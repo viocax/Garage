@@ -63,6 +63,11 @@ const VehicleRecordSchema = CollectionSchema(
       name: r'typeName',
       type: IsarType.string,
     ),
+    r'vehicleId': PropertySchema(
+      id: 12,
+      name: r'vehicleId',
+      type: IsarType.string,
+    ),
   },
 
   estimateSize: _vehicleRecordEstimateSize,
@@ -79,6 +84,19 @@ const VehicleRecordSchema = CollectionSchema(
       properties: [
         IndexPropertySchema(
           name: r'recordId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
+    ),
+    r'vehicleId': IndexSchema(
+      id: 2011968157433523416,
+      name: r'vehicleId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'vehicleId',
           type: IndexType.hash,
           caseSensitive: true,
         ),
@@ -191,6 +209,7 @@ int _vehicleRecordEstimateSize(
   bytesCount += 3 + object.recordId.length * 3;
   bytesCount += 3 + object.title.length * 3;
   bytesCount += 3 + object.typeName.length * 3;
+  bytesCount += 3 + object.vehicleId.length * 3;
   return bytesCount;
 }
 
@@ -227,6 +246,7 @@ void _vehicleRecordSerialize(
   writer.writeString(offsets[9], object.recordId);
   writer.writeString(offsets[10], object.title);
   writer.writeString(offsets[11], object.typeName);
+  writer.writeString(offsets[12], object.vehicleId);
 }
 
 VehicleRecord _vehicleRecordDeserialize(
@@ -260,6 +280,7 @@ VehicleRecord _vehicleRecordDeserialize(
   object.recordId = reader.readString(offsets[9]);
   object.title = reader.readString(offsets[10]);
   object.typeName = reader.readString(offsets[11]);
+  object.vehicleId = reader.readString(offsets[12]);
   return object;
 }
 
@@ -309,6 +330,8 @@ P _vehicleRecordDeserializeProp<P>(
     case 10:
       return (reader.readString(offset)) as P;
     case 11:
+      return (reader.readString(offset)) as P;
+    case 12:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -531,6 +554,58 @@ extension VehicleRecordQueryWhere
                 indexName: r'recordId',
                 lower: [],
                 upper: [recordId],
+                includeUpper: false,
+              ),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause>
+  vehicleIdEqualTo(String vehicleId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'vehicleId', value: [vehicleId]),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterWhereClause>
+  vehicleIdNotEqualTo(String vehicleId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'vehicleId',
+                lower: [],
+                upper: [vehicleId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'vehicleId',
+                lower: [vehicleId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'vehicleId',
+                lower: [vehicleId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'vehicleId',
+                lower: [],
+                upper: [vehicleId],
                 includeUpper: false,
               ),
             );
@@ -2025,6 +2100,147 @@ extension VehicleRecordQueryFilter
       );
     });
   }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'vehicleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'vehicleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'vehicleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'vehicleId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'vehicleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'vehicleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'vehicleId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'vehicleId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'vehicleId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterFilterCondition>
+  vehicleIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'vehicleId', value: ''),
+      );
+    });
+  }
 }
 
 extension VehicleRecordQueryObject
@@ -2170,6 +2386,19 @@ extension VehicleRecordQuerySortBy
       return query.addSortBy(r'typeName', Sort.desc);
     });
   }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> sortByVehicleId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'vehicleId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
+  sortByVehicleIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'vehicleId', Sort.desc);
+    });
+  }
 }
 
 extension VehicleRecordQuerySortThenBy
@@ -2298,6 +2527,19 @@ extension VehicleRecordQuerySortThenBy
       return query.addSortBy(r'typeName', Sort.desc);
     });
   }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy> thenByVehicleId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'vehicleId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QAfterSortBy>
+  thenByVehicleIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'vehicleId', Sort.desc);
+    });
+  }
 }
 
 extension VehicleRecordQueryWhereDistinct
@@ -2367,6 +2609,14 @@ extension VehicleRecordQueryWhereDistinct
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'typeName', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<VehicleRecord, VehicleRecord, QDistinct> distinctByVehicleId({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'vehicleId', caseSensitive: caseSensitive);
     });
   }
 }
@@ -2451,6 +2701,12 @@ extension VehicleRecordQueryProperty
   QueryBuilder<VehicleRecord, String, QQueryOperations> typeNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'typeName');
+    });
+  }
+
+  QueryBuilder<VehicleRecord, String, QQueryOperations> vehicleIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'vehicleId');
     });
   }
 }

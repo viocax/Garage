@@ -265,6 +265,10 @@ class VehicleRecord {
   @Index(unique: true)
   String recordId = '';
 
+  /// 所屬車輛 ID（用於備份還原時重建關聯）
+  @Index()
+  String vehicleId = '';
+
   /// 記錄類型名稱（fuel, maintenance, other）
   @Index()
   String typeName = '';
@@ -307,6 +311,7 @@ class VehicleRecord {
   /// 如果不提供 recordId，會自動生成 UUID
   factory VehicleRecord.create({
     String? recordId,
+    required String vehicleId,
     required RecordType type,
     required String title,
     required DateTime date,
@@ -316,6 +321,7 @@ class VehicleRecord {
   }) {
     final record = VehicleRecord()
       ..recordId = recordId ?? _uuid.v4()
+      ..vehicleId = vehicleId
       ..typeName = type.typeName
       ..title = title
       ..date = date

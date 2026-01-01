@@ -3,12 +3,16 @@ import 'package:garage/core/repositories/user_settings_repository.dart'
     show UserSettingsRepository;
 import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:garage/core/repositories/local_vehicle_repository.dart';
+import 'package:garage/core/repositories/cloud_sync_repository.dart';
+import 'package:garage/core/repositories/local_cloud_sync_repository.dart';
 import 'package:get_it/get_it.dart';
 import '../service/isar_service.dart';
 import '../service/network/http_service.dart';
 import '../service/location/location_service.dart';
 import '../service/shared_preferences/shared_preferences_service.dart';
 import '../service/tts/tts_service.dart';
+import '../service/cloud_sync/icloud_sync_service.dart';
+import '../service/cloud_sync/google_drive_sync_service.dart';
 import '../repositories/speed_camera_repository.dart';
 import '../repositories/local_speed_camera_repository.dart';
 
@@ -27,6 +31,12 @@ Future<void> setupServiceLocator() async {
   );
   getIt.registerLazySingleton<TtsService>(() => TtsService());
 
+  // Cloud Sync Services (Singleton - 保持認證狀態)
+  getIt.registerLazySingleton<ICloudSyncService>(() => ICloudSyncService());
+  getIt.registerLazySingleton<GoogleDriveSyncService>(
+    () => GoogleDriveSyncService(),
+  );
+
   // Repository layer
   getIt.registerLazySingleton<ISpeedCameraRepository>(
     () => LocalSpeedCameraRepository(),
@@ -36,6 +46,9 @@ Future<void> setupServiceLocator() async {
   );
   getIt.registerLazySingleton<VehicleRepository>(
     () => LocalVehicleRepository(),
+  );
+  getIt.registerFactory<CloudSyncRepository>(
+    () => LocalCloudSyncRepository(),
   );
 }
 
@@ -62,6 +75,9 @@ class ServiceScopes {
   SharedPreferencesService get preferences =>
       _getIt<SharedPreferencesService>();
   TtsService get tts => _getIt<TtsService>();
+  ICloudSyncService get iCloudSync => _getIt<ICloudSyncService>();
+  GoogleDriveSyncService get googleDriveSync =>
+      _getIt<GoogleDriveSyncService>();
 }
 
 class RepositoryScopes {
@@ -71,4 +87,5 @@ class RepositoryScopes {
   ISpeedCameraRepository get speedCamera => _getIt<ISpeedCameraRepository>();
   UserSettingsRepository get userSettings => _getIt<UserSettingsRepository>();
   VehicleRepository get vehicle => _getIt<VehicleRepository>();
+  CloudSyncRepository get cloudSync => _getIt<CloudSyncRepository>();
 }

@@ -429,6 +429,7 @@ void main() {
         );
 
         final record = VehicleRecord.create(
+          vehicleId: 'test-vehicle-id',
           type: fuelType,
           title: '加油',
           date: testDate,
@@ -459,6 +460,7 @@ void main() {
         );
 
         final record = VehicleRecord.create(
+          vehicleId: 'test-vehicle-id',
           type: maintenanceType,
           title: '定期保養',
           date: testDate,
@@ -479,6 +481,7 @@ void main() {
         );
 
         final record = VehicleRecord.create(
+          vehicleId: 'test-vehicle-id',
           type: otherType,
           title: '停車費',
           date: testDate,
@@ -500,6 +503,7 @@ void main() {
 
         final record = VehicleRecord.create(
           recordId: 'CUSTOM_ID_123',
+          vehicleId: 'test-vehicle-id',
           type: otherType,
           title: '測試',
           date: testDate,
@@ -521,6 +525,7 @@ void main() {
         );
 
         final record = VehicleRecord.create(
+          vehicleId: 'test-vehicle-id',
           type: fuelType,
           title: '加油',
           date: testDate,

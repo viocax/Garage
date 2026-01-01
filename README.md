@@ -126,9 +126,12 @@ lib/
 - [ ] 區間測速偵測
 - [ ] 導航整合
 - [x] 雲端同步 (iOS: iCloud / Android: Google Drive)
-  - [x] CloudSyncService 抽象介面與 Factory 模式
+  - [x] CloudSyncRepository 抽象介面與 Repository 模式
+    - Service 為 Singleton（保持登入狀態）
+    - Repository 為 Factory（無狀態）
   - [x] CloudSyncPage UI（設定 → 同步雲端）
   - [x] CloudSyncBloc 狀態管理
+  - [x] VehicleRecord 加入 vehicleId 欄位（備份還原時重建關聯）
   - [x] iOS Google Drive 同步
     - Google Sign-In 設定完成
     - 資料存於 App Data folder（隱藏）

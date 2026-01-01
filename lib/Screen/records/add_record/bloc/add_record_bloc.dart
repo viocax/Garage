@@ -6,11 +6,16 @@ import 'add_record_state.dart';
 
 import 'package:garage/core/models/vehicle.dart';
 
+import 'package:garage/core/di/service_locator.dart';
+import 'package:garage/core/repositories/vehicle_repository.dart';
+
 class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
   final Vehicle vehicle;
+  final VehicleRepository _repository;
 
-  AddRecordBloc({required this.vehicle})
-    : super(
+  AddRecordBloc({required this.vehicle, VehicleRepository? repository})
+    : _repository = repository ?? getIt.repo.vehicle,
+      super(
         AddRecordState(
           // 預設為加油類型，帶入當前日期和車輛里程
           recordType: RecordTypeFuel(
@@ -85,12 +90,14 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     // 根據當前類型更新金額
     switch (state.recordType) {
       case RecordTypeFuel():
-        emit(
-          state.copyWithFuelData(
-            fuelAmount: event.amount,
-            isAmountManuallyEdited: true,
-          ),
-        );
+        if (state.pricePerLiter > 0) {
+          emit(
+            state.copyWithFuelData(
+              fuelAmount: event.amount / state.pricePerLiter,
+              isAmountManuallyEdited: true,
+            ),
+          );
+        }
         break;
       case RecordTypeOther():
         emit(state.copyWithOtherData(amount: event.amount));
@@ -230,6 +237,7 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
 
       final record = VehicleRecord.create(
         recordId: const Uuid().v4(),
+        vehicleId: vehicle.vehicleId,
         type: state.recordType,
         title: title,
         date: state.date,
@@ -237,6 +245,8 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
         km: state.km,
         notes: notes,
       );
+
+      await _repository.addRecord(vehicle.vehicleId, record);
 
       await Future.delayed(const Duration(milliseconds: 500));
 

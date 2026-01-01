@@ -1,10 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:garage/core/core.dart';
+import 'package:garage/core/di/service_locator.dart';
+import 'package:garage/core/repositories/cloud_sync_repository.dart';
+import 'package:garage/core/service/cloud_sync/cloud_sync_service.dart';
 import 'cloud_sync_event.dart';
 import 'cloud_sync_state.dart';
 
 class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
-  CloudSyncBloc() : super(const CloudSyncInitial()) {
+  final CloudSyncRepository _repository;
+
+  CloudSyncBloc({CloudSyncRepository? repository})
+      : _repository = repository ?? getIt.repo.cloudSync,
+        super(const CloudSyncInitial()) {
     on<CloudSyncEvent>(_onEvent);
     add(const LoadCloudSyncStatus());
   }
@@ -30,16 +36,15 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
   }
 
   Future<void> _onLoadStatus(Emitter<CloudSyncState> emit) async {
-    final availableProviders = CloudSyncServiceFactory.getAvailableProviders();
+    final availableProviders = _repository.getAvailableProviders();
     final providerStatuses = <ProviderStatus>[];
 
     for (final provider in availableProviders) {
-      final service = CloudSyncServiceFactory.getService(provider);
-      final isAvailable = await service.isAvailable();
+      final isAvailable = await _repository.isAvailable(provider);
       final isAuthenticated =
-          isAvailable ? await service.isAuthenticated() : false;
+          isAvailable ? await _repository.isAuthenticated(provider) : false;
       final lastSync =
-          isAuthenticated ? await service.getLastSyncTime() : null;
+          isAuthenticated ? await _repository.getLastSyncTime(provider) : null;
 
       providerStatuses.add(ProviderStatus(
         provider: provider,
@@ -68,8 +73,7 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
 
     emit(currentState.copyWith(isSyncing: true, syncMessage: '正在登入...'));
 
-    final service = CloudSyncServiceFactory.getService(provider);
-    final result = await service.authenticate();
+    final result = await _repository.authenticate(provider);
 
     if (result.success) {
       // Reload status to update auth state
@@ -86,8 +90,7 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     CloudProvider provider,
     Emitter<CloudSyncState> emit,
   ) async {
-    final service = CloudSyncServiceFactory.getService(provider);
-    await service.signOut();
+    await _repository.signOut(provider);
     add(const LoadCloudSyncStatus());
   }
 
@@ -101,9 +104,7 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
 
     emit(currentState.copyWith(isSyncing: true, syncMessage: '正在上傳資料...'));
 
-    final service =
-        CloudSyncServiceFactory.getService(currentState.selectedProvider!);
-    final result = await service.uploadData();
+    final result = await _repository.uploadData(currentState.selectedProvider!);
 
     if (result.success) {
       emit(currentState.copyWith(
@@ -130,9 +131,8 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
 
     emit(currentState.copyWith(isSyncing: true, syncMessage: '正在下載資料...'));
 
-    final service =
-        CloudSyncServiceFactory.getService(currentState.selectedProvider!);
-    final result = await service.downloadData();
+    final result =
+        await _repository.downloadData(currentState.selectedProvider!);
 
     if (result.success) {
       emit(currentState.copyWith(
