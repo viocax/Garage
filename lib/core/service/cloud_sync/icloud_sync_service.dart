@@ -1,31 +1,54 @@
+import 'dart:convert';
 import 'dart:io';
+
+import 'package:icloud_storage/icloud_storage.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cloud_sync_service.dart';
 
 class ICloudSyncService implements CloudSyncService {
+  static const _backupFileName = 'garage_backup.json';
+  static const _containerId = 'iCloud.com.drake.garage';
+  static const _lastSyncKey = 'icloud_last_sync';
+
   @override
   CloudProvider get provider => CloudProvider.iCloud;
 
   @override
   Future<bool> isAvailable() async {
     // iCloud is only available on iOS
-    return Platform.isIOS;
+    if (!Platform.isIOS) return false;
+
+    try {
+      // Check if iCloud is available by trying to gather files
+      await ICloudStorage.gather(containerId: _containerId);
+      return true;
+    } catch (e) {
+      // If gather fails, iCloud is not available or not configured
+      return false;
+    }
   }
 
   @override
   Future<bool> isAuthenticated() async {
-    // TODO: Check if iCloud is signed in via CloudKit
-    return false;
+    // iCloud uses system authentication
+    // If iCloud is available, user is authenticated
+    return await isAvailable();
   }
 
   @override
   Future<CloudSyncResult> authenticate() async {
-    if (!await isAvailable()) {
-      return CloudSyncResult.failure('iCloud 不支援此平台');
+    if (!Platform.isIOS) {
+      return CloudSyncResult.failure('iCloud 僅支援 iOS');
     }
-    // iCloud uses system authentication, no explicit login needed
-    // TODO: Implement iCloud availability check
-    return CloudSyncResult.failure('尚未實作');
+
+    final available = await isAvailable();
+    if (available) {
+      return CloudSyncResult.success();
+    } else {
+      return CloudSyncResult.failure('請在 iOS 設定中登入 iCloud');
+    }
   }
 
   @override
@@ -36,19 +59,154 @@ class ICloudSyncService implements CloudSyncService {
 
   @override
   Future<CloudSyncResult> uploadData() async {
-    // TODO: Implement data serialization and upload to iCloud
-    return CloudSyncResult.failure('尚未實作');
+    try {
+      if (!await isAvailable()) {
+        return CloudSyncResult.failure('iCloud 不可用，請確認已登入 iCloud');
+      }
+
+      // Get app data to export
+      final exportData = await _getExportData();
+      if (exportData == null) {
+        return CloudSyncResult.failure('無法取得匯出資料');
+      }
+
+      // Write to temporary file first
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/$_backupFileName');
+      await tempFile.writeAsString(exportData);
+
+      // Upload to iCloud
+      await ICloudStorage.upload(
+        containerId: _containerId,
+        filePath: tempFile.path,
+        destinationRelativePath: _backupFileName,
+        onProgress: (progress) {
+          // Progress callback - could be used for UI updates
+        },
+      );
+
+      // Clean up temp file
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+      }
+
+      // Save sync time
+      final syncTime = DateTime.now();
+      await _saveLastSyncTime(syncTime);
+
+      return CloudSyncResult.success(syncTime: syncTime);
+    } catch (e) {
+      return CloudSyncResult.failure('上傳失敗：${e.toString()}');
+    }
   }
 
   @override
   Future<CloudSyncResult> downloadData() async {
-    // TODO: Implement download and data restore
-    return CloudSyncResult.failure('尚未實作');
+    try {
+      if (!await isAvailable()) {
+        return CloudSyncResult.failure('iCloud 不可用，請確認已登入 iCloud');
+      }
+
+      // Check if backup file exists in iCloud
+      final files = await ICloudStorage.gather(containerId: _containerId);
+      final backupFile = files.where((f) => f.relativePath == _backupFileName);
+
+      if (backupFile.isEmpty) {
+        return CloudSyncResult.failure('iCloud 沒有備份資料');
+      }
+
+      // Download to temporary file
+      final tempDir = await getTemporaryDirectory();
+      final tempFilePath = '${tempDir.path}/$_backupFileName';
+
+      await ICloudStorage.download(
+        containerId: _containerId,
+        relativePath: _backupFileName,
+        destinationFilePath: tempFilePath,
+        onProgress: (progress) {
+          // Progress callback
+        },
+      );
+
+      // Read and restore data
+      final tempFile = File(tempFilePath);
+      if (!await tempFile.exists()) {
+        return CloudSyncResult.failure('下載失敗');
+      }
+
+      final jsonString = await tempFile.readAsString();
+      final success = await _restoreData(jsonString);
+
+      // Clean up temp file
+      await tempFile.delete();
+
+      if (!success) {
+        return CloudSyncResult.failure('還原資料失敗');
+      }
+
+      // Save sync time
+      final syncTime = DateTime.now();
+      await _saveLastSyncTime(syncTime);
+
+      return CloudSyncResult.success(syncTime: syncTime);
+    } catch (e) {
+      return CloudSyncResult.failure('下載失敗：${e.toString()}');
+    }
   }
 
   @override
   Future<DateTime?> getLastSyncTime() async {
-    // TODO: Store and retrieve from local preferences
-    return null;
+    final prefs = await SharedPreferences.getInstance();
+    final timestamp = prefs.getInt(_lastSyncKey);
+    if (timestamp == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(timestamp);
+  }
+
+  // Private helper methods
+
+  Future<void> _saveLastSyncTime(DateTime time) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_lastSyncKey, time.millisecondsSinceEpoch);
+  }
+
+  /// Export app data to JSON string
+  /// TODO: Implement actual data export from Isar database
+  Future<String?> _getExportData() async {
+    try {
+      // Placeholder: Export data from database
+      // This should be replaced with actual Isar database export
+      final exportData = {
+        'version': 1,
+        'exportedAt': DateTime.now().toIso8601String(),
+        'vehicles': [],
+        'records': [],
+        // Add more data collections as needed
+      };
+
+      return jsonEncode(exportData);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Restore app data from JSON string
+  /// TODO: Implement actual data import to Isar database
+  Future<bool> _restoreData(String jsonString) async {
+    try {
+      final data = jsonDecode(jsonString) as Map<String, dynamic>;
+
+      // Validate version
+      final version = data['version'] as int?;
+      if (version == null || version > 1) {
+        return false;
+      }
+
+      // Placeholder: Import data to database
+      // This should be replaced with actual Isar database import
+
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

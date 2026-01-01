@@ -80,6 +80,14 @@ dependencies:
   # Charts
   fl_chart: ^0.69.2
 
+  # Google Sign-In & Drive
+  google_sign_in: ^6.2.2
+  googleapis: ^14.0.0
+  extension_google_sign_in_as_googleapis_auth: ^2.0.12
+
+  # iCloud Storage
+  icloud_storage: ^2.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

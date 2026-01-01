@@ -6,6 +6,19 @@
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>GIDClientID</key>
+		<string>741765127602-j9s34tgn44jneapcvdrntb2a3d9gj0tn.apps.googleusercontent.com</string>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.741765127602-j9s34tgn44jneapcvdrntb2a3d9gj0tn</string>
+				</array>
+			</dict>
+		</array>
 		<key>CFBundleDisplayName</key>
 		<string>Garage</string>
 		<key>CFBundleExecutable</key>

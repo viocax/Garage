@@ -56,8 +56,6 @@ class _CloudSyncBody extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context, CloudSyncState state) {
-    final theme = Theme.of(context);
-
     if (state is CloudSyncInitial) {
       return const Center(child: CircularProgressIndicator());
     }

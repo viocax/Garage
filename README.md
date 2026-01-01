@@ -26,6 +26,12 @@
 - 提醒距離與超速容忍值設定
 - 地圖顯示模式（標準/衛星）
 
+### 雲端同步
+- 手動備份/還原資料到雲端
+- iOS 支援 iCloud 與 Google Drive
+- Android 支援 Google Drive
+- 資料以 JSON 格式儲存
+
 ## 技術架構
 
 | 項目 | 技術 |
@@ -51,6 +57,7 @@ lib/
 │   ├── models/             # 資料模型
 │   ├── repositories/       # 資料儲存庫
 │   ├── service/            # 服務層
+│   │   ├── cloud_sync/     # 雲端同步 (iCloud, Google Drive)
 │   │   ├── location/       # GPS 定位
 │   │   ├── network/        # 網路請求
 │   │   ├── tts/            # 語音播報
@@ -71,6 +78,7 @@ lib/
 │   │   ├── all_records/    # 全部紀錄
 │   │   └── bloc/           # 紀錄狀態管理
 │   └── settings/
+│       ├── cloud_sync/              # 雲端同步頁面
 │       ├── vehicle_management/      # 車輛管理
 │       ├── speed_detection_settings/ # 測速設定
 │       ├── widgets/
@@ -103,6 +111,8 @@ lib/
 | 圖表 | fl_chart |
 | 網路 | dio |
 | 字體 | google_fonts |
+| Google 登入 | google_sign_in, googleapis |
+| iCloud 儲存 | icloud_storage |
 
 ## 開發進度
 
@@ -115,7 +125,21 @@ lib/
 - [ ] 背景執行支援
 - [ ] 區間測速偵測
 - [ ] 導航整合
-- [ ] 雲端同步 (iOS: iCloud / Android: Google Drive)
+- [x] 雲端同步 (iOS: iCloud / Android: Google Drive)
+  - [x] CloudSyncService 抽象介面與 Factory 模式
+  - [x] CloudSyncPage UI（設定 → 同步雲端）
+  - [x] CloudSyncBloc 狀態管理
+  - [x] iOS Google Drive 同步
+    - Google Sign-In 設定完成
+    - 資料存於 App Data folder（隱藏）
+  - [x] iOS iCloud 同步
+    - Container ID: `iCloud.com.drake.garage`
+    - 需在 Apple Developer Portal 建立 iCloud Container
+  - [ ] Android Google Sign-In 設定（需根據環境產生 SHA-1）
+    - Debug: `./gradlew signingReport` 取得 SHA-1
+    - Release: 用正式 keystore 產生 SHA-1
+    - 至 Google Cloud Console 建立 Android OAuth 憑證
+  - [ ] Isar 資料庫匯出/匯入邏輯（目前為 placeholder）
 - [ ] 資料匯出
 - [ ] 錯誤處理
 - [ ] localizeString
