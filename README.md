@@ -88,6 +88,87 @@ lib/
 └── widgets/                # 共用元件
 ```
 
+## Barrel Export 結構
+
+專案使用 barrel export 模式統一管理 import，避免冗長的相對路徑。
+
+### 使用方式
+
+```dart
+// ✅ 推薦：使用 barrel export
+import 'package:garage/core/core.dart';
+
+// ❌ 避免：直接引入個別檔案
+import '../../models/vehicle.dart';
+import '../../di/service_locator.dart';
+```
+
+### Sub-barrel 檔案結構
+
+```
+lib/core/
+├── core.dart                      # 主 barrel（匯出所有 sub-barrel）
+│
+├── models/
+│   └── models.dart                # 匯出所有 model
+│       ├── camera.dart
+│       ├── picker_option.dart
+│       ├── speed_camera_model.dart
+│       ├── speed_unit.dart
+│       ├── tabbar_type.dart
+│       ├── tts_speaking_token.dart
+│       ├── user_settings.dart
+│       ├── vehicle.dart
+│       └── vehicle_record.dart
+│
+├── repositories/
+│   └── repositories.dart          # 匯出所有 repository
+│       ├── speed_camera_repository.dart
+│       ├── local_speed_camera_repository.dart
+│       ├── user_settings_repository.dart
+│       ├── local_user_settings_repository.dart
+│       ├── vehicle_repository.dart
+│       ├── local_vehicle_repository.dart
+│       ├── cloud_sync_repository.dart
+│       └── local_cloud_sync_repository.dart
+│
+├── service/
+│   └── services.dart              # 匯出所有 service
+│       ├── isar_service.dart
+│       ├── location/
+│       │   ├── location_service.dart
+│       │   └── geolocator_interface.dart
+│       ├── network/
+│       │   ├── http_service.dart
+│       │   ├── api_request.dart
+│       │   ├── http_exception.dart
+│       │   └── http_method.dart
+│       ├── tts/
+│       │   ├── tts_service.dart
+│       │   └── tts_interface.dart
+│       ├── shared_preferences/
+│       │   ├── shared_preferences_service.dart
+│       │   └── shared_preferences_interface.dart
+│       └── cloud_sync/
+│           └── cloud_sync.dart    # 匯出 cloud_sync_service.dart
+│
+├── extensions/
+│   └── extensions.dart            # 匯出所有 extension
+│       └── dialog_extension.dart
+│
+├── mixins/
+│   └── mixins.dart                # 匯出所有 mixin
+│       └── app_lifecycle_mixin.dart
+│
+├── utils/
+│   └── utils.dart                 # 匯出所有 utility
+│       ├── auto_release_queue.dart
+│       └── stream_extensions.dart
+│
+└── di/
+    └── service_locator.dart       # GetIt 依賴注入設定
+```
+
 ## 環境需求
 
 - Flutter SDK >= 3.10.1
@@ -142,7 +223,9 @@ lib/
     - Debug: `./gradlew signingReport` 取得 SHA-1
     - Release: 用正式 keystore 產生 SHA-1
     - 至 Google Cloud Console 建立 Android OAuth 憑證
-  - [ ] Isar 資料庫匯出/匯入邏輯（目前為 placeholder）
+  - [x] Isar 資料庫匯出/匯入邏輯
+    - 匯出所有 Vehicle 與 VehicleRecord 為 JSON
+    - 還原時重建 IsarLinks 關聯
 - [ ] 資料匯出
 - [ ] 錯誤處理
 - [ ] localizeString
