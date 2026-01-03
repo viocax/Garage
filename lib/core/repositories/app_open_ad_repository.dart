@@ -90,6 +90,9 @@ class AppOpenAdRepository {
       },
     );
 
-    _appOpenAd!.show();
+    final ad = _appOpenAd;
+    if (ad != null) {
+      ad.show();
+    }
   }
 }

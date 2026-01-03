@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:garage/core/core.dart';
-import 'package:garage/core/di/service_locator.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class BannerAdWidget extends StatefulWidget {
