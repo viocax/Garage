@@ -53,7 +53,12 @@ class LocationService {
         accuracy: LocationAccuracy.bestForNavigation,
         distanceFilter: distanceFilter,
         intervalDuration: const Duration(seconds: 1),
-        // 暫不設定 foregroundNotificationConfig，留在 Phase 2
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationText: "車庫正在背景執行並監控測速照相",
+          notificationTitle: "測速照相提醒中",
+          enableWakeLock: true,
+          setOngoing: true,
+        ),
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {

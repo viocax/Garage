@@ -7,8 +7,8 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: 基礎功能實作 (Implementation)
-- [ ] Task: 修改 `LocationService`，實作背景模式切換邏輯。
-- [ ] Task: 確保 `TtsService` 在背景下能透過 `AVAudioSession` (iOS) 播放聲音。
+- [x] Task: 修改 `LocationService`，實作背景模式切換邏輯。
+- [x] Task: 確保 `TtsService` 在背景下能透過 `AVAudioSession` (iOS) 播放聲音。
 - [ ] Task: 在背景觸發一次模擬告警，測試流程是否通暢。
 - [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
