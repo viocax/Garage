@@ -31,6 +31,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 資料載入時間
   DateTime? _loadedAt;
 
+  /// 正在進行的載入 Future
+  Future<List<Camera>>? _loadFuture;
+
   /// 當前追蹤的測速相機
   Camera? _currentCamera;
 
@@ -44,22 +47,22 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   bool get isTracking => _speedSubscription != null;
 
   /// 從本地 JSON 檔案載入所有測速照相資料（私有方法）
-  ///
-  /// 只在第一次呼叫時讀取並解析 JSON，之後使用快取資料
-  Future<List<Camera>> _loadCamerasFromAssets() async {
-    // 如果已有快取，直接返回
+  Future<List<Camera>> _loadCamerasFromAssets() {
     if (_cachedCameras.isNotEmpty) {
-      debugPrint(
-        'LocalSpeedCameraRepository: 使用快取資料 (${_cachedCameras.length} 筆)',
-      );
-      return _cachedCameras;
+      return Future.value(_cachedCameras);
     }
 
+    _loadFuture ??= _performLoad();
+    return _loadFuture!;
+  }
+
+  Future<List<Camera>> _performLoad() async {
     debugPrint('LocalSpeedCameraRepository: 從 assets 載入資料...');
 
     try {
       // 讀取 JSON 檔案
       debugPrint('LocalSpeedCameraRepository: 開始讀取 JSON 檔案...');
+      // 使用 rootBundle.loadString讀取
       final String jsonString = await rootBundle.loadString(
         'assets/models/speedCameras.json',
       );
@@ -67,17 +70,16 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
         'LocalSpeedCameraRepository: JSON 檔案讀取完成，長度: ${jsonString.length}',
       );
 
-      // 解析 JSON
+      // 解析 JSON - 使用 compute 避免阻塞主執行緒
       debugPrint('LocalSpeedCameraRepository: 開始解析 JSON...');
-      final List<dynamic> jsonData = json.decode(jsonString);
+      final List<dynamic> jsonData = await compute(_decodeJson, jsonString);
       debugPrint(
         'LocalSpeedCameraRepository: JSON 解析完成，共 ${jsonData.length} 筆',
       );
 
       debugPrint('LocalSpeedCameraRepository: 開始轉換為 Camera 物件...');
-      _cachedCameras = jsonData
-          .map((item) => Camera.fromJson(item as Map<String, dynamic>))
-          .toList();
+      // 轉換物件也使用 compute 處理以防萬一資料量大
+      _cachedCameras = await compute(_parseCameras, jsonData);
       debugPrint('LocalSpeedCameraRepository: Camera 物件轉換完成');
 
       _loadedAt = DateTime.now();
@@ -89,10 +91,24 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
       return _cachedCameras;
     } catch (e, stackTrace) {
+      _loadFuture = null; // 失敗時重設 Future 以便下次重試
       debugPrint('LocalSpeedCameraRepository: 載入失敗 - $e');
       debugPrint('StackTrace: $stackTrace');
       rethrow;
     }
+  }
+
+  /// 靜態解析函數，供 compute 使用
+  static List<dynamic> _decodeJson(String jsonString) {
+    return json.decode(jsonString) as List<dynamic>;
+  }
+
+  /// 靜態解析函數，供 compute 使用
+  static List<Camera> _parseCameras(dynamic jsonData) {
+    if (jsonData is! List) return [];
+    return jsonData
+        .map((item) => Camera.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   @override
@@ -105,6 +121,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       // 強制重新載入，清除快取
       _cachedCameras = [];
       _loadedAt = null;
+      _loadFuture = null;
     }
     await _loadCamerasFromAssets();
   }

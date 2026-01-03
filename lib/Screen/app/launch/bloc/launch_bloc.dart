@@ -27,6 +27,9 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
     try {
       debugPrint('LaunchBloc: 開始初始化...');
 
+      // 稍微延遲以避開系統啟動時的資源競爭（如 iOS 的 Indexing）
+      await Future.delayed(const Duration(milliseconds: 500));
+
       // 取得 SpeedCamera Repository
       final speedCameraRepo = getIt.repo.speedCamera;
 
