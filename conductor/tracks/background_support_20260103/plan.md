@@ -13,6 +13,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
 ## Phase 3: 穩定性與測試 (Stability & Testing)
-- [ ] Task: 測試 App 長時間在背景執行下的存活率。
-- [ ] Task: 驗證當關閉定位功能時，背景服務能正確停止以省電。
-- [ ] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
+- [x] Task: 實作 `LocationPolicy` 策略，根據 App 前背景狀態調整定位精度與耗電。
+- [x] Task: 強化權限請求邏輯，引導使用者開啟「始終允許」定位權限。
+- [x] Task: 驗證當關閉定位功能時，背景服務能正確停止以省電。
+- [x] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
