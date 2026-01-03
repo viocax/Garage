@@ -41,12 +41,35 @@ class LocationService {
   /// 取得或創建 GeolocatorInterface
   GeolocatorInterface get geolocator {
     _geolocator ??= GeolocatorWrapper(
-      locationSettings: LocationSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: _currentDistanceFilter,
-      ),
+      locationSettings: _getLocationSettings(_currentDistanceFilter),
     );
     return _geolocator!;
+  }
+
+  /// 根據當前平台獲取定位設定
+  LocationSettings _getLocationSettings(int distanceFilter) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: distanceFilter,
+        intervalDuration: const Duration(seconds: 1),
+        // 暫不設定 foregroundNotificationConfig，留在 Phase 2
+      );
+    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      return AppleSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: distanceFilter,
+        allowBackgroundLocationUpdates: true,
+        pauseLocationUpdatesAutomatically: false,
+        showBackgroundLocationIndicator: true,
+      );
+    } else {
+      return LocationSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: distanceFilter,
+      );
+    }
   }
 
   /// 根據當前速度更新 distanceFilter（內部自動調用）
@@ -88,10 +111,7 @@ class LocationService {
 
     // 創建新的 geolocator（使用新的 distanceFilter）
     _geolocator = GeolocatorWrapper(
-      locationSettings: LocationSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: _currentDistanceFilter,
-      ),
+      locationSettings: _getLocationSettings(_currentDistanceFilter),
     );
 
     // 重新訂閱
@@ -181,7 +201,6 @@ class LocationService {
     _geolocatorSubscription = geolocator.getPositionStream().listen(
       (position) {
         if (_positionController != null && !_positionController!.isClosed) {
-
           _positionController!.add(position);
           // 根據當前速度自動調整 distanceFilter
           final speedKmh = position.speed * 3.6;

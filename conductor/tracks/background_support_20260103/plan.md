@@ -1,9 +1,9 @@
 # Plan: 實作背景執行支援 (Background Execution Support)
 
 ## Phase 1: 環境配置與權限 (Environment & Permissions)
-- [ ] Task: 更新 iOS Info.plist，添加 `location` 到 `UIBackgroundModes` 並說明定位意圖。
-- [ ] Task: 更新 Android AndroidManifest.xml，添加 `ACCESS_BACKGROUND_LOCATION` 與 `FOREGROUND_SERVICE` 權限。
-- [ ] Task: 更新 `geolocator` 的 `LocationSettings` 配置，啟用背景更新模式。
+- [x] Task: 更新 iOS Info.plist，添加 `location` 到 `UIBackgroundModes` 並說明定位意圖。
+- [x] Task: 更新 Android AndroidManifest.xml，添加 `ACCESS_BACKGROUND_LOCATION` 與 `FOREGROUND_SERVICE` 權限。
+- [x] Task: 更新 `geolocator` 的 `LocationSettings` 配置，啟用背景更新模式。
 - [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: 基礎功能實作 (Implementation)

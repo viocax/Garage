@@ -44,6 +44,8 @@
 			<key>NSAllowsArbitraryLoads</key>
 			<true/>
 		</dict>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>我們需要您的位置來在背景執行時持續監測測速照相。</string>
 		<key>NSLocationAlwaysUsageDescription</key>
 		<string>我們需要您的位置來顯示附近的測速照相。</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
@@ -64,5 +66,10 @@
 		<false/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>location</string>
+			<string>audio</string>
+		</array>
 	</dict>
 </plist>
