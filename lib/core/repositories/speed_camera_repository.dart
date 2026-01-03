@@ -25,7 +25,7 @@ abstract class ISpeedCameraRepository {
 
   Future<bool> checkPermission();
 
-  Future<bool> requestPermission();
+  Future<bool> requestPermission({bool background = false});
 
   Future<void> startLocationTracking(Function(SpeedCameraModel?) callback);
 

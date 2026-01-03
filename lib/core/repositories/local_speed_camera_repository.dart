@@ -63,12 +63,16 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       final String jsonString = await rootBundle.loadString(
         'assets/models/speedCameras.json',
       );
-      debugPrint('LocalSpeedCameraRepository: JSON 檔案讀取完成，長度: ${jsonString.length}');
+      debugPrint(
+        'LocalSpeedCameraRepository: JSON 檔案讀取完成，長度: ${jsonString.length}',
+      );
 
       // 解析 JSON
       debugPrint('LocalSpeedCameraRepository: 開始解析 JSON...');
       final List<dynamic> jsonData = json.decode(jsonString);
-      debugPrint('LocalSpeedCameraRepository: JSON 解析完成，共 ${jsonData.length} 筆');
+      debugPrint(
+        'LocalSpeedCameraRepository: JSON 解析完成，共 ${jsonData.length} 筆',
+      );
 
       debugPrint('LocalSpeedCameraRepository: 開始轉換為 Camera 物件...');
       _cachedCameras = jsonData
@@ -134,8 +138,8 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   }
 
   @override
-  Future<bool> requestPermission() {
-    return _locationService.requestPermission();
+  Future<bool> requestPermission({bool background = false}) {
+    return _locationService.requestPermission(background: background);
   }
 
   @override
@@ -143,7 +147,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     void Function(SpeedCameraModel?) callback,
   ) async {
     try {
-      final hasPermission = await requestPermission();
+      final hasPermission = await requestPermission(background: true);
       if (!hasPermission) {
         debugPrint('LocalSpeedCameraRepository: No location permission');
         throw Exception('Location permission denied'); // TODO: 跳轉到權限設定頁面

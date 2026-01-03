@@ -5,7 +5,8 @@ import 'package:garage/core/core.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
 
-class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
+class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
+    with AppLifecycleMixin<SpeedEvent, SpeedState> {
   final ISpeedCameraRepository repository = getIt.repo.speedCamera;
   final UserSettingsRepository userSettingsRepository = getIt.repo.userSettings;
 
@@ -29,8 +30,24 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
     on<StartDetection>(_onStartDetection);
     on<StopDetection>(_onStopDetection);
     on<SpeedLoading>(_onSpeedLoading);
+
+    // 初始化生命週期監聽
+    initLifecycleObserver();
+
     // 初次載入設定
     add(const SpeedLoading());
+  }
+
+  @override
+  void onAppResumed() {
+    debugPrint('SpeedBloc: App 回到前景，使用高精度定位');
+    getIt.service.location.updatePolicy(LocationPolicy.best);
+  }
+
+  @override
+  void onAppPaused() {
+    debugPrint('SpeedBloc: App 進入背景，切換至平衡定位模式');
+    getIt.service.location.updatePolicy(LocationPolicy.background);
   }
 
   Future<void> _onSpeedLoading(
@@ -126,6 +143,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState> {
       debugPrint('SpeedBloc: 停止定位失敗 - $e');
     }
   }
+
   @override
   Future<void> close() async {
     await repository.stopLocationTracking();

@@ -29,6 +29,7 @@ class LatLng {
 enum LocationPolicy { best, background, hightSpeed }
 
 class LocationService {
+  LocationPolicy _currentPolicy = LocationPolicy.best;
   GeolocatorInterface? _geolocator;
   int _currentDistanceFilter = 0;
   StreamSubscription<Position>? _geolocatorSubscription;
@@ -39,6 +40,15 @@ class LocationService {
     _currentDistanceFilter = 0; // 初始設為0以在靜止時也能收到更新
   }
 
+  /// 更新定位策略
+  void updatePolicy(LocationPolicy policy) {
+    if (_currentPolicy != policy) {
+      _currentPolicy = policy;
+      debugPrint('LocationService: 切換策略至 $policy');
+      _recreateGeolocatorStream();
+    }
+  }
+
   /// 取得或創建 GeolocatorInterface
   GeolocatorInterface get geolocator {
     _geolocator ??= GeolocatorWrapper(
@@ -47,11 +57,15 @@ class LocationService {
     return _geolocator!;
   }
 
-  /// 根據當前平台獲取定位設定
+  /// 根據當前平台與策略獲取定位設定
   LocationSettings _getLocationSettings(int distanceFilter) {
+    final accuracy = _currentPolicy == LocationPolicy.best
+        ? LocationAccuracy.bestForNavigation
+        : LocationAccuracy.medium;
+
     if (defaultTargetPlatform == TargetPlatform.android) {
       return AndroidSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
+        accuracy: accuracy,
         distanceFilter: distanceFilter,
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: ForegroundNotificationConfig(
@@ -64,15 +78,16 @@ class LocationService {
     } else if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
       return AppleSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
+        accuracy: accuracy,
         distanceFilter: distanceFilter,
         allowBackgroundLocationUpdates: true,
-        pauseLocationUpdatesAutomatically: false,
+        pauseLocationUpdatesAutomatically:
+            _currentPolicy == LocationPolicy.background,
         showBackgroundLocationIndicator: true,
       );
     } else {
       return LocationSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
+        accuracy: accuracy,
         distanceFilter: distanceFilter,
       );
     }
@@ -136,14 +151,13 @@ class LocationService {
   }
 
   /// 檢查並請求定位權限
-  Future<bool> requestPermission() async {
+  Future<bool> requestPermission({bool background = false}) async {
     bool serviceEnabled;
     LocationPermission permission;
 
     // 檢查定位服務是否開啟
     serviceEnabled = await geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // 定位服務未開啟，無法使用
       return false;
     }
 
@@ -151,14 +165,19 @@ class LocationService {
     if (permission == LocationPermission.denied) {
       permission = await geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // 權限被拒絕
         return false;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // 權限被永久拒絕，無法請求
       return false;
+    }
+
+    // 如果需要背景權限（Always）
+    if (background && permission != LocationPermission.always) {
+      // 再次請求權限以提升至 Always
+      permission = await geolocator.requestPermission();
+      return permission == LocationPermission.always;
     }
 
     return true;
