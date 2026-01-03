@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/speed_unit.dart';
-import 'package:garage/core/extensions/dialog_extension.dart';
+import 'package:garage/core/core.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:geolocator/geolocator.dart';
 import 'bloc/speed_detection_settings_bloc.dart';
@@ -52,17 +52,22 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                     children: [
                       // 位置權限 - 只在沒有權限時顯示
                       if (!hasLocationPermission) ...[
-                        SettingsSectionHeader(title: 'speedDetection.locationService'.tr()),
+                        SettingsSectionHeader(
+                          title: 'speedDetection.locationService'.tr(),
+                        ),
                         SettingsItem(
                           title: 'speedDetection.locationPermission'.tr(),
                           icon: Icons.location_on_outlined,
-                          subtitle: 'speedDetection.locationPermissionDesc'.tr(),
+                          subtitle: 'speedDetection.locationPermissionDesc'
+                              .tr(),
                           onTap: () => _showPermissionAlert(context),
                         ),
                       ],
 
                       // 語音提示設定
-                      SettingsSectionHeader(title: 'speedDetection.voiceAlert'.tr()),
+                      SettingsSectionHeader(
+                        title: 'speedDetection.voiceAlert'.tr(),
+                      ),
                       SettingsToggleItem(
                         title: 'speedDetection.voiceAlert'.tr(),
                         icon: Icons.record_voice_over_outlined,
@@ -90,16 +95,22 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                       ],
 
                       // 提醒設定
-                      SettingsSectionHeader(title: 'speedDetection.alertSettings'.tr()),
+                      SettingsSectionHeader(
+                        title: 'speedDetection.alertSettings'.tr(),
+                      ),
                       if (isLoaded)
                         SettingsSliderItem(
                           title: 'speedDetection.alertDistance'.tr(),
                           icon: Icons.location_searching,
                           value: state.alertDistance.toDouble(),
-                          min: SpeedDetectionSettingsLoaded.minAlertDistance.toDouble(),
-                          max: SpeedDetectionSettingsLoaded.maxAlertDistance.toDouble(),
+                          min: SpeedDetectionSettingsLoaded.minAlertDistance
+                              .toDouble(),
+                          max: SpeedDetectionSettingsLoaded.maxAlertDistance
+                              .toDouble(),
                           divisions: state.alertDistanceDivisions,
-                          label: 'speedDetection.metersFormat'.tr(args: [state.alertDistance.toString()]),
+                          label: 'speedDetection.metersFormat'.tr(
+                            args: [state.alertDistance.toString()],
+                          ),
                           onChanged: (value) {
                             context.read<SpeedDetectionSettingsBloc>().add(
                               ChangeAlertDistance(value.round()),
@@ -108,7 +119,9 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                         ),
 
                       // 速度單位
-                      SettingsSectionHeader(title: 'speedDetection.unitSettings'.tr()),
+                      SettingsSectionHeader(
+                        title: 'speedDetection.unitSettings'.tr(),
+                      ),
                       if (isLoaded)
                         SettingsSegmentedItem<SpeedUnit>(
                           title: 'speedDetection.speedUnit'.tr(),
