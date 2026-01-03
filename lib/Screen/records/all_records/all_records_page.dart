@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/vehicle.dart';
@@ -48,9 +49,9 @@ class _AllRecordsContent extends StatelessWidget {
             color: AppTheme.dashboardAccentRed,
           ),
         ),
-        title: const Text(
-          '全部記錄',
-          style: TextStyle(
+        title: Text(
+          'records.allRecords'.tr(),
+          style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             color: AppTheme.accentColor,
@@ -110,7 +111,7 @@ class _AllRecordsContent extends StatelessWidget {
                 if (state.status == AllRecordsStatus.failure) {
                   return Center(
                     child: Text(
-                      state.errorMessage ?? '載入失敗',
+                      state.errorMessage ?? 'records.loadFailed'.tr(),
                       style: const TextStyle(color: AppTheme.systemGray),
                     ),
                   );
@@ -209,9 +210,9 @@ class _SummarySection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '總花費',
-                    style: TextStyle(
+                  Text(
+                    'records.totalSpent'.tr(),
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppTheme.systemGray,
                     ),
@@ -232,16 +233,16 @@ class _SummarySection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '記錄數',
-                    style: TextStyle(
+                  Text(
+                    'records.recordCount'.tr(),
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppTheme.systemGray,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${state.recordCount} 筆',
+                    'records.recordCountWithUnit'.tr(args: [state.recordCount.toString()]),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,

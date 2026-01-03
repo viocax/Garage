@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/vehicle_record.dart';
@@ -25,7 +26,7 @@ class AddRecordPage extends StatelessWidget {
             Navigator.pop(context, state.createdRecord);
           } else if (state.status == AddRecordStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: ${state.errorMessage}')),
+              SnackBar(content: Text('${'common.error'.tr()}: ${state.errorMessage}')),
             );
           }
         },
@@ -51,16 +52,16 @@ class _AddRecordViewContent extends StatelessWidget {
         leading: TextButton.icon(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back, size: 18),
-          label: const Text('返回'),
+          label: Text('common.back'.tr()),
           style: TextButton.styleFrom(
             foregroundColor: AppTheme.dashboardAccentRed,
             padding: EdgeInsets.zero,
           ),
         ),
         leadingWidth: 80, // Allow width for text
-        title: const Text(
-          '新增紀錄',
-          style: TextStyle(
+        title: Text(
+          'addRecord.title'.tr(),
+          style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             color: AppTheme.accentColor,
@@ -74,9 +75,9 @@ class _AddRecordViewContent extends StatelessWidget {
                 context.read<AddRecordBloc>().add(const SubmitRecord());
               },
               style: TextButton.styleFrom(foregroundColor: AppTheme.dashboardAccentRed),
-              child: const Text(
-                '儲存',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              child: Text(
+                'common.save'.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -175,11 +176,11 @@ class _CategorySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 12),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
-            '選擇類別',
-            style: TextStyle(color: AppTheme.systemGray, fontSize: 13),
+            'addRecord.selectCategory'.tr(),
+            style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
           ),
         ),
         SizedBox(
@@ -294,9 +295,9 @@ class _AmountInputState extends State<_AmountInput> {
           children: [
             Row(
               children: [
-                const Text(
-                  '金額',
-                  style: TextStyle(color: AppTheme.systemGray, fontSize: 13),
+                Text(
+                  'addRecord.amount'.tr(),
+                  style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
                 ),
                 if (isFuel &&
                     !state.isAmountManuallyEdited &&
@@ -383,9 +384,9 @@ class _DateInput extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '日期',
-              style: TextStyle(color: AppTheme.systemGray, fontSize: 13),
+            Text(
+              'addRecord.date'.tr(),
+              style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
             ),
             const SizedBox(height: 8),
             GestureDetector(
@@ -450,9 +451,9 @@ class _MileageInput extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '當下里程',
-              style: TextStyle(color: AppTheme.systemGray, fontSize: 13),
+            Text(
+              'addRecord.currentMileage'.tr(),
+              style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
             ),
             const SizedBox(height: 8),
             TextFormField(
@@ -558,9 +559,9 @@ class _FuelTypeSelector extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '燃油種類',
-              style: TextStyle(
+            Text(
+              'addRecord.fuelType'.tr(),
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: AppTheme.accentColor,
@@ -622,9 +623,9 @@ class _FuelAmountInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '加油量',
-          style: TextStyle(color: AppTheme.systemGray, fontSize: 13),
+        Text(
+          'addRecord.fuelAmount'.tr(),
+          style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -676,9 +677,9 @@ class _PricePerLiterInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '每公升油價',
-          style: TextStyle(color: AppTheme.systemGray, fontSize: 13),
+        Text(
+          'addRecord.pricePerLiter'.tr(),
+          style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -705,7 +706,7 @@ class _PricePerLiterInput extends StatelessWidget {
             ),
             hintText: '0.0',
             hintStyle: const TextStyle(color: AppTheme.placeholderGray),
-            suffixText: '元/L',
+            suffixText: 'common.unitPricePerLiter'.tr(),
             suffixStyle: const TextStyle(
               color: AppTheme.systemGray,
               fontSize: 14,
@@ -737,9 +738,9 @@ class _RemainingFuelSlider extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '剩餘油量',
-                  style: TextStyle(color: AppTheme.systemGray, fontSize: 13),
+                Text(
+                  'addRecord.remainingFuel'.tr(),
+                  style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
                 ),
                 Text(
                   '${state.remainingFuel}%',
@@ -829,16 +830,16 @@ class _MaintenanceFields extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '保養項目',
-                    style: TextStyle(
+                  Text(
+                    'addRecord.maintenanceItems'.tr(),
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: AppTheme.accentColor,
                     ),
                   ),
                   Text(
-                    '總計：\$${state.totalMaintenanceAmount.toStringAsFixed(0)}',
+                    'addRecord.total'.tr(args: [state.totalMaintenanceAmount.toStringAsFixed(0)]),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -878,18 +879,18 @@ class _MaintenanceFields extends StatelessWidget {
                       style: BorderStyle.solid,
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.add_circle_outline,
                         color: AppTheme.dashboardAccentRed,
                         size: 20,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
-                        '新增保養項目',
-                        style: TextStyle(
+                        'addRecord.addMaintenanceItem'.tr(),
+                        style: const TextStyle(
                           color: AppTheme.dashboardAccentRed,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -940,7 +941,7 @@ class _MaintenanceEntryCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '項目 ${index + 1}',
+                'addRecord.itemNumber'.tr(args: [(index + 1).toString()]),
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -965,9 +966,9 @@ class _MaintenanceEntryCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // 保養項目選擇
-          const Text(
-            '保養項目',
-            style: TextStyle(color: AppTheme.systemGray, fontSize: 12),
+          Text(
+            'addRecord.maintenanceItems'.tr(),
+            style: const TextStyle(color: AppTheme.systemGray, fontSize: 12),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -1021,9 +1022,9 @@ class _MaintenanceEntryCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '金額',
-                      style: TextStyle(color: AppTheme.systemGray, fontSize: 12),
+                    Text(
+                      'addRecord.amount'.tr(),
+                      style: const TextStyle(color: AppTheme.systemGray, fontSize: 12),
                     ),
                     const SizedBox(height: 6),
                     TextField(
@@ -1072,9 +1073,9 @@ class _MaintenanceEntryCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '下次保養里程',
-                      style: TextStyle(color: AppTheme.systemGray, fontSize: 12),
+                    Text(
+                      'addRecord.nextMaintenanceMileage'.tr(),
+                      style: const TextStyle(color: AppTheme.systemGray, fontSize: 12),
                     ),
                     const SizedBox(height: 6),
                     TextField(
@@ -1099,7 +1100,7 @@ class _MaintenanceEntryCard extends StatelessWidget {
                           horizontal: 12,
                           vertical: 10,
                         ),
-                        hintText: 'km',
+                        hintText: 'common.unitKm'.tr(),
                         hintStyle: const TextStyle(color: AppTheme.placeholderGray),
                       ),
                       onChanged: (value) {
@@ -1117,9 +1118,9 @@ class _MaintenanceEntryCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // 備註
-          const Text(
-            '備註',
-            style: TextStyle(color: AppTheme.systemGray, fontSize: 12),
+          Text(
+            'addRecord.notes'.tr(),
+            style: const TextStyle(color: AppTheme.systemGray, fontSize: 12),
           ),
           const SizedBox(height: 6),
           TextField(
@@ -1143,7 +1144,7 @@ class _MaintenanceEntryCard extends StatelessWidget {
                 horizontal: 12,
                 vertical: 10,
               ),
-              hintText: '輸入備註...',
+              hintText: 'addRecord.notesPlaceholder'.tr(),
               hintStyle: const TextStyle(color: AppTheme.placeholderGray),
             ),
             onChanged: (value) {
@@ -1166,9 +1167,9 @@ class _NoteInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '備註',
-          style: TextStyle(color: AppTheme.systemGray, fontSize: 13),
+        Text(
+          'addRecord.notes'.tr(),
+          style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -1194,7 +1195,7 @@ class _NoteInput extends StatelessWidget {
               borderSide: const BorderSide(color: AppTheme.dashboardAccentRed),
             ),
             contentPadding: const EdgeInsets.all(16),
-            hintText: '輸入備註內容...',
+            hintText: 'addRecord.notesPlaceholder'.tr(),
             hintStyle: const TextStyle(color: AppTheme.placeholderGray),
           ),
           onChanged: (value) {

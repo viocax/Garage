@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -13,6 +14,10 @@ class GarageApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       routerConfig: AppRouter.createRouter(),
+      // Localization
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
     );
   }
 }

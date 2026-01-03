@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/speed_unit.dart';
@@ -37,7 +38,7 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
         return ThemedStatusBar(
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('測速設置'),
+              title: Text('speedDetection.title'.tr()),
               backgroundColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
@@ -51,22 +52,22 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                     children: [
                       // 位置權限 - 只在沒有權限時顯示
                       if (!hasLocationPermission) ...[
-                        const SettingsSectionHeader(title: '位置服務'),
+                        SettingsSectionHeader(title: 'speedDetection.locationService'.tr()),
                         SettingsItem(
-                          title: '位置權限',
+                          title: 'speedDetection.locationPermission'.tr(),
                           icon: Icons.location_on_outlined,
-                          subtitle: '允許應用程式存取您的位置',
+                          subtitle: 'speedDetection.locationPermissionDesc'.tr(),
                           onTap: () => _showPermissionAlert(context),
                         ),
                       ],
 
                       // 語音提示設定
-                      const SettingsSectionHeader(title: '語音提示'),
+                      SettingsSectionHeader(title: 'speedDetection.voiceAlert'.tr()),
                       SettingsToggleItem(
-                        title: '語音提示',
+                        title: 'speedDetection.voiceAlert'.tr(),
                         icon: Icons.record_voice_over_outlined,
                         value: isLoaded ? state.isVoiceAlertEnabled : false,
-                        subtitle: '開啟測速提醒語音播報',
+                        subtitle: 'speedDetection.voiceAlertDesc'.tr(),
                         onTap: isLoaded
                             ? () {
                                 context.read<SpeedDetectionSettingsBloc>().add(
@@ -77,7 +78,7 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                       ),
                       if (isLoaded && state.isVoiceAlertEnabled) ...[
                         SettingsSliderItem(
-                          title: '語音音量',
+                          title: 'speedDetection.voiceVolume'.tr(),
                           icon: Icons.volume_up,
                           value: state.voiceVolumePercentage,
                           onChanged: (value) {
@@ -89,16 +90,16 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                       ],
 
                       // 提醒設定
-                      const SettingsSectionHeader(title: '提醒設定'),
+                      SettingsSectionHeader(title: 'speedDetection.alertSettings'.tr()),
                       if (isLoaded)
                         SettingsSliderItem(
-                          title: '提前提醒距離',
+                          title: 'speedDetection.alertDistance'.tr(),
                           icon: Icons.location_searching,
                           value: state.alertDistance.toDouble(),
                           min: SpeedDetectionSettingsLoaded.minAlertDistance.toDouble(),
                           max: SpeedDetectionSettingsLoaded.maxAlertDistance.toDouble(),
                           divisions: state.alertDistanceDivisions,
-                          label: '${state.alertDistance} 公尺',
+                          label: 'speedDetection.metersFormat'.tr(args: [state.alertDistance.toString()]),
                           onChanged: (value) {
                             context.read<SpeedDetectionSettingsBloc>().add(
                               ChangeAlertDistance(value.round()),
@@ -107,10 +108,10 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
                         ),
 
                       // 速度單位
-                      const SettingsSectionHeader(title: '單位設定'),
+                      SettingsSectionHeader(title: 'speedDetection.unitSettings'.tr()),
                       if (isLoaded)
                         SettingsSegmentedItem<SpeedUnit>(
-                          title: '速度單位',
+                          title: 'speedDetection.speedUnit'.tr(),
                           icon: Icons.speed,
                           currentValue: state.speedUnit,
                           options: {
@@ -143,10 +144,10 @@ class SpeedDetectionSettingsPage extends StatelessWidget {
 
   void _showPermissionAlert(BuildContext context) {
     context.showAdaptivePermissionAlert(
-      title: '需要位置權限',
-      message: '測速功能需要存取您的位置資訊才能正常運作。請前往設定開啟位置權限。',
-      cancelText: '稍後再說',
-      confirmText: '前往設定',
+      title: 'speedDetection.locationPermissionRequired'.tr(),
+      message: 'speedDetection.locationPermissionMessage'.tr(),
+      cancelText: 'common.later'.tr(),
+      confirmText: 'common.goToSettings'.tr(),
       onConfirm: () async {
         await Geolocator.openAppSettings();
         // 從設定回來後重新檢查權限

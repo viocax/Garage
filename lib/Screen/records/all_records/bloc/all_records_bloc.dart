@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -177,9 +178,9 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
 
     return recentKeys.map((key) {
       final parts = key.split('-');
-      final month = int.parse(parts[1]);
+      final date = DateTime(int.parse(parts[0]), int.parse(parts[1]));
       return MonthlyExpenseData(
-        monthLabel: '$month 月',
+        monthLabel: DateFormat.MMM().format(date),
         totalCost: monthlyTotals[key]!,
       );
     }).toList();
@@ -209,7 +210,11 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
       'other': AppTheme.systemGray,
     };
 
-    const labelMap = {'fuel': '加油', 'maintenance': '保養', 'other': '其他'};
+    final labelMap = {
+      'fuel': 'recordType.fuel'.tr(),
+      'maintenance': 'recordType.maintenance'.tr(),
+      'other': 'recordType.other'.tr()
+    };
 
     return categoryTotals.entries
         .where((e) => e.value > 0)

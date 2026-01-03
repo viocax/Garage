@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/router/app_router.dart';
@@ -74,9 +75,9 @@ class RecordsPage extends StatelessWidget {
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
-            title: const Text(
-              '我的車庫',
-              style: TextStyle(
+            title: Text(
+              'records.title'.tr(),
+              style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.accentColor,
@@ -101,7 +102,7 @@ class RecordsPage extends StatelessWidget {
                           color: AppTheme.accentColor,
                           size: 20,
                         ),
-                        tooltip: '新增車輛',
+                        tooltip: 'vehicle.addVehicleTooltip'.tr(),
                       ),
                     ),
                   ]
@@ -135,12 +136,12 @@ class RecordsPage extends StatelessWidget {
                   ? PrimaryActionButton(
                       onPressed: () =>
                           _navigateToAddRecord(context, state.currentVehicle),
-                      text: '新增紀錄',
+                      text: 'records.addRecord'.tr(),
                       icon: Icons.add,
                     )
                   : PrimaryActionButton(
                       onPressed: () => _navigateToAddVehicle(context),
-                      text: '新增車輛',
+                      text: 'records.addVehicle'.tr(),
                     ),
             ),
           ),
@@ -425,7 +426,7 @@ class _HeroSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '目前里程',
+              'records.currentMileage'.tr(),
               style: TextStyle(
                 fontSize: 12,
                 color: textSecondary,
@@ -467,7 +468,7 @@ class _HeroSection extends StatelessWidget {
           children: [
             _StatChip(
               icon: Icons.payments_outlined,
-              label: '本月',
+              label: 'records.thisMonth'.tr(),
               value: vehicle.spentThisMonth,
               textSecondary: textSecondary,
               textPrimary: textPrimary,
@@ -481,7 +482,7 @@ class _HeroSection extends StatelessWidget {
             const SizedBox(width: 12),
             _StatChip(
               icon: Icons.local_gas_station_outlined,
-              label: '油耗',
+              label: 'records.fuelEfficiency'.tr(),
               value: '9.2 L',
               textSecondary: textSecondary,
               textPrimary: textPrimary,
@@ -595,7 +596,7 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '近期動態',
+              'records.recentActivity'.tr(),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -614,7 +615,7 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '查看全部',
+                      'common.viewAll'.tr(),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -688,7 +689,7 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
             ),
             const SizedBox(width: 16),
             Text(
-              '目前沒有維修紀錄',
+              'records.noRecords'.tr(),
               style: TextStyle(
                 fontSize: 14,
                 color: widget.textSecondary.withValues(alpha: 0.6),
@@ -826,9 +827,9 @@ class _LoadingView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                '載入中...',
-                style: TextStyle(
+              Text(
+                'common.loading'.tr(),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.accentColor,
@@ -838,7 +839,7 @@ class _LoadingView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                '正在讀取您的車輛資料',
+                'records.loadingVehicles'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -874,9 +875,9 @@ class _EmptyRecordsView extends StatelessWidget {
           children: [
             const _EmptyIllustration(),
             const SizedBox(height: 48),
-            const Text(
-              '目前沒有車輛花費紀錄',
-              style: TextStyle(
+            Text(
+              'records.noExpenseRecords'.tr(),
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.accentColor,
@@ -885,12 +886,12 @@ class _EmptyRecordsView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                '開始記錄您的車輛相關費用，以更好地管理您的開支。',
+                'records.startTrackingDesc'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: AppTheme.systemGray,
                   height: 1.5,

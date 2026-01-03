@@ -1,9 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/screen/settings/widgets/settings_section_header.dart';
 import 'package:garage/theme/theme.dart';
+
 import 'bloc/cloud_sync_bloc.dart';
 import 'bloc/cloud_sync_event.dart';
 import 'bloc/cloud_sync_state.dart';
@@ -74,7 +76,7 @@ class _CloudSyncBody extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                const SettingsSectionHeader(title: '選擇雲端服務'),
+                SettingsSectionHeader(title: 'cloudSync.selectService'.tr()),
                 ...state.providers.map((status) => _buildProviderTile(
                       context,
                       status,
@@ -82,7 +84,7 @@ class _CloudSyncBody extends StatelessWidget {
                     )),
                 const SizedBox(height: 16),
                 if (state.selectedProvider != null) ...[
-                  const SettingsSectionHeader(title: '同步操作'),
+                  SettingsSectionHeader(title: 'cloudSync.syncOperations'.tr()),
                   _buildSyncActions(context, state),
                 ],
               ],
@@ -108,7 +110,7 @@ class _CloudSyncBody extends StatelessWidget {
             ),
           ),
           Text(
-            '同步雲端',
+            'cloudSync.title'.tr(),
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -165,7 +167,7 @@ class _CloudSyncBody extends StatelessWidget {
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ))
               : Text(
-                  '不支援',
+                  'cloudSync.notSupported'.tr(),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
@@ -197,7 +199,7 @@ class _CloudSyncBody extends StatelessWidget {
     }
     if (status.isAuthenticated && status.lastSyncTime != null) {
       return Text(
-        '上次同步：${_formatDateTime(status.lastSyncTime!)}',
+        'cloudSync.lastSync'.tr(args: [_formatDateTime(status.lastSyncTime!)]),
         style: theme.textTheme.bodySmall?.copyWith(
           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
@@ -205,7 +207,7 @@ class _CloudSyncBody extends StatelessWidget {
     }
     if (!status.isAuthenticated) {
       return Text(
-        '點擊登入',
+        'cloudSync.tapToLogin'.tr(),
         style: theme.textTheme.bodySmall?.copyWith(
           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
@@ -222,8 +224,8 @@ class _CloudSyncBody extends StatelessWidget {
           _buildActionTile(
             context,
             icon: Icons.cloud_upload_outlined,
-            title: '上傳到雲端',
-            subtitle: '將本機資料備份到雲端',
+            title: 'cloudSync.uploadToCloud'.tr(),
+            subtitle: 'cloudSync.uploadDesc'.tr(),
             onTap: () {
               context.read<CloudSyncBloc>().add(const UploadToCloud());
             },
@@ -232,8 +234,8 @@ class _CloudSyncBody extends StatelessWidget {
           _buildActionTile(
             context,
             icon: Icons.cloud_download_outlined,
-            title: '從雲端還原',
-            subtitle: '從雲端下載並覆蓋本機資料',
+            title: 'cloudSync.restoreFromCloud'.tr(),
+            subtitle: 'cloudSync.restoreDesc'.tr(),
             isDestructive: true,
             onTap: () {
               _showRestoreConfirmation(context);
@@ -293,12 +295,12 @@ class _CloudSyncBody extends StatelessWidget {
     showCupertinoDialog(
       context: context,
       builder: (dialogContext) => CupertinoAlertDialog(
-        title: const Text('確認還原'),
-        content: const Text('從雲端還原將會覆蓋所有本機資料，此操作無法復原。確定要繼續嗎？'),
+        title: Text('cloudSync.confirmRestore'.tr()),
+        content: Text('cloudSync.restoreWarning'.tr()),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消'),
+            child: Text('common.cancel'.tr()),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -306,7 +308,7 @@ class _CloudSyncBody extends StatelessWidget {
               Navigator.pop(dialogContext);
               context.read<CloudSyncBloc>().add(const DownloadFromCloud());
             },
-            child: const Text('還原'),
+            child: Text('cloudSync.restore'.tr()),
           ),
         ],
       ),

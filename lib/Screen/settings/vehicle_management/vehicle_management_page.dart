@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/extensions/dialog_extension.dart';
@@ -28,7 +29,7 @@ class _VehicleManagementBody extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('車輛管理'),
+        title: Text('settings.vehicleManagement'.tr()),
         elevation: 0,
       ),
       body: BlocConsumer<VehicleManagementBloc, VehicleManagementState>(
@@ -59,7 +60,7 @@ class _VehicleManagementBody extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '目前沒有車輛',
+                    'vehicle.noVehicles'.tr(),
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
@@ -87,10 +88,10 @@ class _VehicleManagementBody extends StatelessWidget {
                 direction: DismissDirection.endToStart,
                 confirmDismiss: (direction) async {
                   return await context.showAdaptiveConfirmDialog(
-                    title: '確認刪除',
-                    message: '確定要刪除「${vehicle.carName}」嗎？\n這將同時刪除所有相關記錄。',
-                    cancelText: '取消',
-                    confirmText: '刪除',
+                    title: 'vehicle.confirmDelete'.tr(),
+                    message: 'vehicle.deleteConfirmMessage'.tr(args: [vehicle.carName]),
+                    cancelText: 'common.cancel'.tr(),
+                    confirmText: 'common.delete'.tr(),
                     isDestructiveAction: true,
                   );
                 },
@@ -99,7 +100,7 @@ class _VehicleManagementBody extends StatelessWidget {
                         DeleteVehicle(vehicle.vehicleId),
                       );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('已刪除「${vehicle.carName}」')),
+                    SnackBar(content: Text('vehicle.deletedMessage'.tr(args: [vehicle.carName]))),
                   );
                 },
                 background: Container(
@@ -158,7 +159,7 @@ class _VehicleListTile extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        subtitle: Text('${vehicle.currentKm} km'),
+        subtitle: Text('${vehicle.currentKm} ${'common.unitKm'.tr()}'),
         trailing: ReorderableDragStartListener(
           index: index,
           child: Icon(

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,7 +23,7 @@ class AddVehiclePage extends StatelessWidget {
           } else if (state.status == AddVehicleStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.errorMessage ?? '發生錯誤'),
+                content: Text(state.errorMessage ?? 'addVehicle.errorOccurred'.tr()),
                 backgroundColor: AppTheme.errorColor,
               ),
             );
@@ -185,9 +186,9 @@ class _HeroSection extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            const Text(
-              '新增車輛',
-              style: TextStyle(
+            Text(
+              'addVehicle.title'.tr(),
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.dashboardTextPrimary,
@@ -196,7 +197,7 @@ class _HeroSection extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '填寫車輛資訊開始記錄',
+              'addVehicle.subtitle'.tr(),
               style: TextStyle(
                 fontSize: 15,
                 color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.8),
@@ -312,7 +313,7 @@ class _InputFieldCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '選填',
+                      'addVehicle.optional'.tr(),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -341,9 +342,9 @@ class _VehicleNameInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '車輛名稱',
-          style: TextStyle(
+        Text(
+          'addVehicle.vehicleName'.tr(),
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: AppTheme.dashboardTextPrimary,
@@ -351,7 +352,7 @@ class _VehicleNameInput extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '幫你的愛車取個獨特的名字',
+          'addVehicle.vehicleNameDesc'.tr(),
           style: TextStyle(
             fontSize: 13,
             color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.7),
@@ -359,7 +360,7 @@ class _VehicleNameInput extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _StyledTextField(
-          hintText: '例如：小紅、戰神 R35',
+          hintText: 'addVehicle.vehicleNamePlaceholder'.tr(),
           onChanged: (value) {
             context.read<AddVehicleBloc>().add(VehicleNameChanged(value));
           },
@@ -377,9 +378,9 @@ class _LicensePlateInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '車牌號碼',
-          style: TextStyle(
+        Text(
+          'addVehicle.licensePlate'.tr(),
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: AppTheme.dashboardTextPrimary,
@@ -387,7 +388,7 @@ class _LicensePlateInput extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '輸入車輛的車牌號碼',
+          'addVehicle.licensePlateDesc'.tr(),
           style: TextStyle(
             fontSize: 13,
             color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.7),
@@ -395,7 +396,7 @@ class _LicensePlateInput extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _StyledTextField(
-          hintText: 'ABC-1234',
+          hintText: 'addVehicle.licensePlatePlaceholder'.tr(),
           textCapitalization: TextCapitalization.characters,
           inputFormatters: [
             _UpperCaseTextFormatter(),
@@ -433,9 +434,9 @@ class _MileageInput extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '目前里程',
-              style: TextStyle(
+            Text(
+              'addVehicle.currentMileage'.tr(),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.dashboardTextPrimary,
@@ -443,7 +444,7 @@ class _MileageInput extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '可從儀表板上查看目前總里程',
+              'addVehicle.currentMileageDesc'.tr(),
               style: TextStyle(
                 fontSize: 13,
                 color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.7),
@@ -494,9 +495,9 @@ class _MaintenanceIntervalInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '保養週期',
-          style: TextStyle(
+        Text(
+          'addVehicle.maintenanceInterval'.tr(),
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: AppTheme.dashboardTextPrimary,
@@ -504,7 +505,7 @@ class _MaintenanceIntervalInput extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '例如：每 5000 或 10000 公里保養一次',
+          'addVehicle.maintenanceIntervalDesc'.tr(),
           style: TextStyle(
             fontSize: 13,
             color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.7),
@@ -512,7 +513,7 @@ class _MaintenanceIntervalInput extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _StyledTextField(
-          hintText: '5000',
+          hintText: 'addVehicle.maintenanceIntervalPlaceholder'.tr(),
           keyboardType: TextInputType.number,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
@@ -621,7 +622,7 @@ class _SubmitButton extends StatelessWidget {
           onPressed: () {
             context.read<AddVehicleBloc>().add(const SubmitVehicle());
           },
-          text: '完成新增',
+          text: 'addVehicle.submit'.tr(),
           icon: Icons.check_circle_outline,
         );
       },
@@ -644,7 +645,7 @@ class _SkipText extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(
-          '之後可以在設定中編輯車輛資訊',
+          'addVehicle.editLaterHint'.tr(),
           style: TextStyle(
             fontSize: 13,
             color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.6),

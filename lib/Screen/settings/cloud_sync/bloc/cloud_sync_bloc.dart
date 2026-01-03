@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/repositories/cloud_sync_repository.dart';
 import 'package:garage/core/service/cloud_sync/cloud_sync_service.dart';
+
 import 'cloud_sync_event.dart';
 import 'cloud_sync_state.dart';
 
@@ -71,7 +73,7 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     final currentState = state;
     if (currentState is! CloudSyncLoaded) return;
 
-    emit(currentState.copyWith(isSyncing: true, syncMessage: '正在登入...'));
+    emit(currentState.copyWith(isSyncing: true, syncMessage: 'cloudSync.loggingIn'.tr()));
 
     final result = await _repository.authenticate(provider);
 
@@ -81,7 +83,7 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     } else {
       emit(currentState.copyWith(
         isSyncing: false,
-        errorMessage: result.errorMessage ?? '登入失敗',
+        errorMessage: result.errorMessage ?? 'cloudSync.loginFailed'.tr(),
       ));
     }
   }
@@ -98,25 +100,25 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     final currentState = state;
     if (currentState is! CloudSyncLoaded) return;
     if (currentState.selectedProvider == null) {
-      emit(currentState.copyWith(errorMessage: '請先選擇雲端服務'));
+      emit(currentState.copyWith(errorMessage: 'cloudSync.selectServiceFirst'.tr()));
       return;
     }
 
-    emit(currentState.copyWith(isSyncing: true, syncMessage: '正在上傳資料...'));
+    emit(currentState.copyWith(isSyncing: true, syncMessage: 'cloudSync.uploading'.tr()));
 
     final result = await _repository.uploadData(currentState.selectedProvider!);
 
     if (result.success) {
       emit(currentState.copyWith(
         isSyncing: false,
-        syncMessage: '上傳完成！',
+        syncMessage: 'cloudSync.uploadComplete'.tr(),
       ));
       // Reload to update last sync time
       add(const LoadCloudSyncStatus());
     } else {
       emit(currentState.copyWith(
         isSyncing: false,
-        errorMessage: result.errorMessage ?? '上傳失敗',
+        errorMessage: result.errorMessage ?? 'cloudSync.uploadFailed'.tr(),
       ));
     }
   }
@@ -125,11 +127,11 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     final currentState = state;
     if (currentState is! CloudSyncLoaded) return;
     if (currentState.selectedProvider == null) {
-      emit(currentState.copyWith(errorMessage: '請先選擇雲端服務'));
+      emit(currentState.copyWith(errorMessage: 'cloudSync.selectServiceFirst'.tr()));
       return;
     }
 
-    emit(currentState.copyWith(isSyncing: true, syncMessage: '正在下載資料...'));
+    emit(currentState.copyWith(isSyncing: true, syncMessage: 'cloudSync.downloading'.tr()));
 
     final result =
         await _repository.downloadData(currentState.selectedProvider!);
@@ -137,13 +139,13 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     if (result.success) {
       emit(currentState.copyWith(
         isSyncing: false,
-        syncMessage: '下載完成！',
+        syncMessage: 'cloudSync.downloadComplete'.tr(),
       ));
       add(const LoadCloudSyncStatus());
     } else {
       emit(currentState.copyWith(
         isSyncing: false,
-        errorMessage: result.errorMessage ?? '下載失敗',
+        errorMessage: result.errorMessage ?? 'cloudSync.downloadFailed'.tr(),
       ));
     }
   }
