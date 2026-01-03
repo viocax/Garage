@@ -5,6 +5,9 @@ import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:garage/core/repositories/local_vehicle_repository.dart';
 import 'package:garage/core/repositories/cloud_sync_repository.dart';
 import 'package:garage/core/repositories/local_cloud_sync_repository.dart';
+import 'package:garage/core/repositories/app_open_ad_repository.dart';
+import 'package:garage/core/service/ad/ad_service.dart';
+import 'package:garage/core/service/ad/mobile_ad_service.dart';
 import 'package:get_it/get_it.dart';
 import '../service/isar_service.dart';
 import '../service/network/http_service.dart';
@@ -37,6 +40,9 @@ Future<void> setupServiceLocator() async {
     () => GoogleDriveSyncService(),
   );
 
+  // Ad Service
+  getIt.registerLazySingleton<AdService>(() => MobileAdService());
+
   // Repository layer
   getIt.registerLazySingleton<ISpeedCameraRepository>(
     () => LocalSpeedCameraRepository(),
@@ -47,8 +53,9 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<VehicleRepository>(
     () => LocalVehicleRepository(),
   );
-  getIt.registerFactory<CloudSyncRepository>(
-    () => LocalCloudSyncRepository(),
+  getIt.registerFactory<CloudSyncRepository>(() => LocalCloudSyncRepository());
+  getIt.registerLazySingleton<AppOpenAdRepository>(
+    () => AppOpenAdRepository(getIt<UserSettingsRepository>()),
   );
 }
 
@@ -78,6 +85,7 @@ class ServiceScopes {
   ICloudSyncService get iCloudSync => _getIt<ICloudSyncService>();
   GoogleDriveSyncService get googleDriveSync =>
       _getIt<GoogleDriveSyncService>();
+  AdService get ad => _getIt<AdService>();
 }
 
 class RepositoryScopes {
@@ -88,4 +96,5 @@ class RepositoryScopes {
   UserSettingsRepository get userSettings => _getIt<UserSettingsRepository>();
   VehicleRepository get vehicle => _getIt<VehicleRepository>();
   CloudSyncRepository get cloudSync => _getIt<CloudSyncRepository>();
+  AppOpenAdRepository get appOpenAd => _getIt<AppOpenAdRepository>();
 }

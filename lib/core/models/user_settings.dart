@@ -51,6 +51,10 @@ class UserSettings {
   /// 地圖顯示模式（標準/衛星）
   final MapDisplayMode mapDisplayMode;
 
+  // ===== 進階設定 =====
+  /// 是否免廣告
+  final bool isAdFree;
+
   const UserSettings({
     // 測速設定
     this.speedUnit = SpeedUnit.kmh,
@@ -74,6 +78,9 @@ class UserSettings {
     this.showSpeedLimit = true,
     this.showSpeedCamera = true,
     this.mapDisplayMode = MapDisplayMode.standard,
+
+    // 進階設定
+    this.isAdFree = false,
   });
 
   /// 預設設定
@@ -115,6 +122,9 @@ class UserSettings {
         (e) => e.name == json['mapDisplayMode'],
         orElse: () => MapDisplayMode.standard,
       ),
+
+      // 進階設定
+      isAdFree: json['isAdFree'] ?? false,
     );
   }
 
@@ -143,6 +153,9 @@ class UserSettings {
       'showSpeedLimit': showSpeedLimit,
       'showSpeedCamera': showSpeedCamera,
       'mapDisplayMode': mapDisplayMode.name,
+
+      // 進階設定
+      'isAdFree': isAdFree,
     };
   }
 
@@ -171,6 +184,9 @@ class UserSettings {
     bool? showSpeedLimit,
     bool? showSpeedCamera,
     MapDisplayMode? mapDisplayMode,
+
+    // 進階設定
+    bool? isAdFree,
   }) {
     return UserSettings(
       // 測速設定
@@ -198,6 +214,9 @@ class UserSettings {
       showSpeedLimit: showSpeedLimit ?? this.showSpeedLimit,
       showSpeedCamera: showSpeedCamera ?? this.showSpeedCamera,
       mapDisplayMode: mapDisplayMode ?? this.mapDisplayMode,
+
+      // 進階設定
+      isAdFree: isAdFree ?? this.isAdFree,
     );
   }
 
@@ -206,7 +225,8 @@ class UserSettings {
     return 'UserSettings('
         'speedUnit: $speedUnit, '
         'isVoiceAlertEnabled: $isVoiceAlertEnabled, '
-        'voiceVolume: $voiceVolume'
+        'voiceVolume: $voiceVolume, '
+        'isAdFree: $isAdFree'
         ')';
   }
 
@@ -229,7 +249,8 @@ class UserSettings {
         other.lastBackupTime == lastBackupTime &&
         other.showSpeedLimit == showSpeedLimit &&
         other.showSpeedCamera == showSpeedCamera &&
-        other.mapDisplayMode == mapDisplayMode;
+        other.mapDisplayMode == mapDisplayMode &&
+        other.isAdFree == isAdFree;
   }
 
   @override
@@ -250,6 +271,7 @@ class UserSettings {
       showSpeedLimit,
       showSpeedCamera,
       mapDisplayMode,
+      isAdFree,
     );
   }
 }

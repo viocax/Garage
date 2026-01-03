@@ -10,3 +10,5 @@ export 'tts/tts_interface.dart';
 export 'shared_preferences/shared_preferences_service.dart';
 export 'shared_preferences/shared_preferences_interface.dart';
 export 'cloud_sync/cloud_sync.dart';
+export 'ad/ad_service.dart';
+export 'ad/mobile_ad_service.dart';

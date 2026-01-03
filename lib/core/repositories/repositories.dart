@@ -6,3 +6,4 @@ export 'vehicle_repository.dart';
 export 'local_vehicle_repository.dart';
 export 'cloud_sync_repository.dart';
 export 'local_cloud_sync_repository.dart';
+export 'app_open_ad_repository.dart';

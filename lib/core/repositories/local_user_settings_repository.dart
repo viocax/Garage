@@ -13,6 +13,10 @@ class LocalUserSettingsRepository implements UserSettingsRepository {
 
   LocalUserSettingsRepository() : _prefs = getIt.service.preferences;
 
+  @override
+  UserSettings get currentSettings =>
+      _cachedSettings ?? UserSettings.defaults();
+
   /// 載入使用者設定
   @override
   Future<UserSettings> loadSettings() async {

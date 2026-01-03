@@ -8,6 +8,8 @@
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>GIDClientID</key>
 		<string>741765127602-j9s34tgn44jneapcvdrntb2a3d9gj0tn.apps.googleusercontent.com</string>
+		<key>GADApplicationIdentifier</key>
+		<string>ca-app-pub-3940256099942544~1458002511</string>
 		<key>CFBundleURLTypes</key>
 		<array>
 			<dict>

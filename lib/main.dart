@@ -16,12 +16,16 @@ void main() async {
   // 初始化依賴注入
   await setupServiceLocator();
 
+  // 載入使用者設定
+  await getIt.repo.userSettings.loadSettings();
+
+  // 初始化廣告服務
+  await getIt.service.ad.initialize();
+  getIt.repo.appOpenAd.loadAd();
+
   runApp(
     EasyLocalization(
-      supportedLocales: const [
-        Locale('zh', 'TW'),
-        Locale('en'),
-      ],
+      supportedLocales: const [Locale('zh', 'TW'), Locale('en')],
       path: 'assets/translations',
       fallbackLocale: const Locale('zh', 'TW'),
       child: const GarageApp(),

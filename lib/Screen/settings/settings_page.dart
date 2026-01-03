@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/extensions/dialog_extension.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/theme/themed_status_bar.dart';
+import 'package:garage/widgets/widgets.dart';
 
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_event.dart';
@@ -52,84 +53,89 @@ class SettingsPage extends StatelessWidget {
         return ThemedStatusBar(
           theme: StatusBarTheme.system,
           child: Scaffold(
-            body: Stack(
+            body: Column(
               children: [
                 // 主要內容 - 始終顯示
-                SafeArea(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    children: [
-                      // 一般設定
-                      SettingsSectionHeader(title: 'settings.general'.tr()),
-                      SettingsItem(
-                        title: 'settings.vehicleManagement'.tr(),
-                        icon: Icons.directions_car_outlined,
-                        onTap: () {
-                          context.goPath(AppPath.vehicleManagement);
-                        },
-                      ),
-                      SettingsItem(
-                        title: 'settings.speedDetection'.tr(),
-                        icon: Icons.radar_outlined,
-                        onTap: () {
-                          context.read<SettingsBloc>().add(
-                            const ClickSpeedSetting(),
-                          );
-                        },
-                      ),
+                Expanded(
+                  child: SafeArea(
+                    bottom: false,
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      children: [
+                        // 一般設定
+                        SettingsSectionHeader(title: 'settings.general'.tr()),
+                        SettingsItem(
+                          title: 'settings.vehicleManagement'.tr(),
+                          icon: Icons.directions_car_outlined,
+                          onTap: () {
+                            context.goPath(AppPath.vehicleManagement);
+                          },
+                        ),
+                        SettingsItem(
+                          title: 'settings.speedDetection'.tr(),
+                          icon: Icons.radar_outlined,
+                          onTap: () {
+                            context.read<SettingsBloc>().add(
+                              const ClickSpeedSetting(),
+                            );
+                          },
+                        ),
 
-                      // 資料管理
-                      SettingsSectionHeader(title: 'settings.data'.tr()),
-                      SettingsItem(
-                        title: 'settings.cloudSync'.tr(),
-                        icon: Icons.cloud_sync_outlined,
-                        onTap: () {
-                          context.goPath(AppPath.cloudSync);
-                        },
-                      ),
-                      SettingsItem(
-                        title: 'settings.clearData'.tr(),
-                        icon: Icons.delete_outline,
-                        isDestructive: true,
-                        onTap: () {
-                          context.read<SettingsBloc>().add(const ClearData());
-                        },
-                      ),
+                        // 資料管理
+                        SettingsSectionHeader(title: 'settings.data'.tr()),
+                        SettingsItem(
+                          title: 'settings.cloudSync'.tr(),
+                          icon: Icons.cloud_sync_outlined,
+                          onTap: () {
+                            context.goPath(AppPath.cloudSync);
+                          },
+                        ),
+                        SettingsItem(
+                          title: 'settings.clearData'.tr(),
+                          icon: Icons.delete_outline,
+                          isDestructive: true,
+                          onTap: () {
+                            context.read<SettingsBloc>().add(const ClearData());
+                          },
+                        ),
 
-                      // 關於
-                      SettingsSectionHeader(title: 'settings.about'.tr()),
-                      SettingsItem(
-                        title: 'settings.termsOfService'.tr(),
-                        icon: Icons.description_outlined,
-                      ),
-                      SettingsItem(
-                        title: 'settings.privacyPolicy'.tr(),
-                        icon: Icons.privacy_tip_outlined,
-                      ),
-                      SettingsItem(
-                        title: 'settings.feedback'.tr(),
-                        icon: Icons.feedback_outlined,
-                      ),
-                      SettingsItem(
-                        title: 'settings.rateApp'.tr(),
-                        icon: Icons.star_outline,
-                      ),
+                        // 關於
+                        SettingsSectionHeader(title: 'settings.about'.tr()),
+                        SettingsItem(
+                          title: 'settings.termsOfService'.tr(),
+                          icon: Icons.description_outlined,
+                        ),
+                        SettingsItem(
+                          title: 'settings.privacyPolicy'.tr(),
+                          icon: Icons.privacy_tip_outlined,
+                        ),
+                        SettingsItem(
+                          title: 'settings.feedback'.tr(),
+                          icon: Icons.feedback_outlined,
+                        ),
+                        SettingsItem(
+                          title: 'settings.rateApp'.tr(),
+                          icon: Icons.star_outline,
+                        ),
 
-                      const SizedBox(height: 40),
-                      Center(
-                        child: Text(
-                          'Garage v1.0.0',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.3,
+                        const SizedBox(height: 40),
+                        Center(
+                          child: Text(
+                            'Garage v1.0.0',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
+                // 固定在底部的廣告
+                const SafeArea(top: false, child: BannerAdWidget()),
               ],
             ),
           ),
