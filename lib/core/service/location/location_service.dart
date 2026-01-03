@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:garage/core/service/location/geolocator_interface.dart';
@@ -53,9 +54,9 @@ class LocationService {
         accuracy: LocationAccuracy.bestForNavigation,
         distanceFilter: distanceFilter,
         intervalDuration: const Duration(seconds: 1),
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: "車庫正在背景執行並監控測速照相",
-          notificationTitle: "測速照相提醒中",
+        foregroundNotificationConfig: ForegroundNotificationConfig(
+          notificationText: 'speedDetection.notificationText'.tr(),
+          notificationTitle: 'speedDetection.notificationTitle'.tr(),
           enableWakeLock: true,
           setOngoing: true,
         ),

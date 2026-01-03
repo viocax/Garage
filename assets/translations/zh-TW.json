@@ -59,7 +59,7 @@
     "notes": "備註",
     "notesPlaceholder": "輸入備註...",
     "itemNumber": "項目 {}",
-    "total": "總計：\${}"
+    "total": "總計：${}"
   },
   "recordType": {
     "fuel": "加油",
@@ -115,7 +115,9 @@
     "unitSettings": "單位設定",
     "speedUnit": "速度單位",
     "speedRunning": "目前正開啟測速中",
-    "speedRunningMsg": "調整設定需要關閉測速"
+    "speedRunningMsg": "調整設定需要關閉測速",
+    "notificationTitle": "測速照相提醒中",
+    "notificationText": "車庫正在背景執行並監控測速照相"
   },
   "cloudSync": {
     "title": "同步雲端",

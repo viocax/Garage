@@ -59,7 +59,7 @@
     "notes": "Notes",
     "notesPlaceholder": "Enter notes...",
     "itemNumber": "Item {}",
-    "total": "Total: \${}"
+    "total": "Total: ${}"
   },
   "recordType": {
     "fuel": "Fuel",
@@ -115,7 +115,9 @@
     "unitSettings": "Unit Settings",
     "speedUnit": "Speed Unit",
     "speedRunning": "Speed detection is running",
-    "speedRunningMsg": "Please stop speed detection to change settings"
+    "speedRunningMsg": "Please stop speed detection to change settings",
+    "notificationTitle": "Speed Detection Active",
+    "notificationText": "Garage is running in the background and monitoring speed cameras"
   },
   "cloudSync": {
     "title": "Cloud Sync",
