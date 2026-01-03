@@ -25,6 +25,7 @@
 - 語音提示開關與音量調整
 - 提醒距離與超速容忍值設定
 - 地圖顯示模式（標準/衛星）
+- 多國語系支援（繁體中文、英文）
 
 ### 雲端同步
 - 手動備份/還原資料到雲端
@@ -37,7 +38,7 @@
 | 項目 | 技術 |
 |------|------|
 | 框架 | Flutter 3.10+ |
-| 平台 | iOS |
+| 平台 | iOS, Android |
 | 狀態管理 | BLoC |
 | 路由 | GoRouter |
 | 依賴注入 | GetIt |
@@ -46,6 +47,7 @@
 | 地圖 | flutter_map (OpenStreetMap) |
 | 圖表 | fl_chart |
 | 語音 | flutter_tts |
+| 多語系 | easy_localization |
 
 ## 專案結構
 
@@ -192,6 +194,7 @@ lib/core/
 | 圖表 | fl_chart |
 | 網路 | dio |
 | 字體 | google_fonts |
+| 多語系 | easy_localization |
 | Google 登入 | google_sign_in, googleapis |
 | iCloud 儲存 | icloud_storage |
 
@@ -203,7 +206,7 @@ lib/core/
 - [x] 3D 車輛動畫
 - [x] TTS 語音播報
 - [x] 分類統計圖表
-- [ ] 背景執行支援
+- [x] 背景執行支援
 - [ ] 區間測速偵測
 - [ ] 導航整合
 - [x] 雲端同步 (iOS: iCloud / Android: Google Drive)
@@ -228,7 +231,7 @@ lib/core/
     - 還原時重建 IsarLinks 關聯
 - [ ] 資料匯出
 - [ ] 錯誤處理
-- [ ] localizeString
+- [x] localizeString
 - [ ] model 授權
 - [ ] OpenMap 授權
 - [ ] 訂閱制

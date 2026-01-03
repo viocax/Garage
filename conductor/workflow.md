@@ -8,6 +8,7 @@
 4. **High Code Coverage:** Aim for >80% code coverage for all modules
 5. **User Experience First:** Every decision should prioritize user experience
 6. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
+7. **Manual Commit Approval:** Every git commit MUST be presented to the user for manual approval. The AI agent must never auto-run a commit command.
 
 ## Task Workflow
 
@@ -46,8 +47,8 @@ All tasks follow a strict lifecycle:
 
 8. **Commit Code Changes:**
    - Stage all code changes related to the task.
-   - Propose a clear, concise commit message e.g, `feat(ui): Create basic HTML structure for calculator`.
-   - Perform the commit.
+   - **Propose a clear, concise commit message:** e.g, `feat(ui): Create basic HTML structure for calculator`.
+   - **Perform the commit (MANUAL APPROVAL REQUIRED):** Run the `git commit` command. Do NOT set `SafeToAutoRun` to true for this command.
 
 9. **Attach Task Summary with Git Notes:**
    - **Step 9.1: Get Commit Hash:** Obtain the hash of the *just-completed commit* (`git log -1 --format="%H"`).
