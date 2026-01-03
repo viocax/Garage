@@ -9,6 +9,7 @@ abstract class AdService {
   String get bannerAdUnitId;
   String get interstitialAdUnitId;
   String get rewardedAdUnitId;
+  String get nativeAdUnitId;
 
   /// 顯示插頁式廣告
   Future<void> showInterstitialAd({required VoidCallback onComplete});

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/theme/app_theme.dart';
+import 'package:garage/widgets/native_ad_card.dart';
 
 class AllRecordsList extends StatelessWidget {
   final List<VehicleRecord> records;
@@ -10,44 +11,52 @@ class AllRecordsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (records.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Center(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.inbox_outlined,
-                  size: 48,
-                  color: AppTheme.systemGray.withValues(alpha: 0.3),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '沒有符合條件的記錄',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.systemGray.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      // ... (keep existing empty state)
+      return _buildEmptyState();
     }
+
+    const int adInterval = 8;
+    final int adCount = records.length ~/ adInterval;
+    final int totalCount = records.length + adCount;
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final record = records[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _RecordItem(record: record),
-            );
-          },
-          childCount: records.length,
+        delegate: SliverChildBuilderDelegate((context, index) {
+          if ((index + 1) % (adInterval + 1) == 0) {
+            return const NativeAdCard();
+          }
+
+          final int recordIndex = index - (index ~/ (adInterval + 1));
+          final record = records[recordIndex];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _RecordItem(record: record),
+          );
+        }, childCount: totalCount),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(
+                Icons.inbox_outlined,
+                size: 48,
+                color: AppTheme.systemGray.withValues(alpha: 0.3),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '沒有符合條件的記錄',
+                style: TextStyle(fontSize: 14, color: AppTheme.systemGray),
+              ),
+            ],
+          ),
         ),
       ),
     );

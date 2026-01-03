@@ -19,8 +19,8 @@
 
 ## Phase 3: 插頁式廣告 (Interstitial Ads)
 - [x] Task: 在 `AdService` 中實作插頁式廣告的預載 (Pre-load) 與展示邏輯。
-- [ ] Task: 整合點 1：在「新增紀錄 (AddRecord)」成功並按下儲存後，顯示插頁廣告，關閉後才返回列表。
-- [ ] Task: 整合點 2：在「新增車輛 (AddVehicle)」成功後，顯示插頁廣告。
+- [x] Task: 整合點 1：在「新增紀錄 (AddRecord)」成功並按下儲存後，顯示插頁廣告，關閉後才返回列表。
+- [x] Task: 整合點 2：在「新增車輛 (AddVehicle)」成功後，顯示插頁廣告。
 - [x] Task: 加入冷卻機制（Cooldown），確保短時間內連續操作不會連續跳出廣告。
 
 ## Phase 4: 原生廣告 (Native Ads)

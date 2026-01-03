@@ -6,6 +6,8 @@ import 'package:garage/core/repositories/local_vehicle_repository.dart';
 import 'package:garage/core/repositories/cloud_sync_repository.dart';
 import 'package:garage/core/repositories/local_cloud_sync_repository.dart';
 import 'package:garage/core/repositories/app_open_ad_repository.dart';
+import 'package:garage/core/repositories/ad_repository.dart';
+import 'package:garage/core/repositories/local_ad_repository.dart';
 import 'package:garage/core/service/ad/ad_service.dart';
 import 'package:garage/core/service/ad/mobile_ad_service.dart';
 import 'package:get_it/get_it.dart';
@@ -57,6 +59,10 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<AppOpenAdRepository>(
     () => AppOpenAdRepository(getIt<UserSettingsRepository>()),
   );
+  getIt.registerLazySingleton<AdRepository>(
+    () =>
+        LocalAdRepository(getIt<AdService>(), getIt<UserSettingsRepository>()),
+  );
 }
 
 /// 重置所有依賴（測試用）
@@ -97,4 +103,5 @@ class RepositoryScopes {
   VehicleRepository get vehicle => _getIt<VehicleRepository>();
   CloudSyncRepository get cloudSync => _getIt<CloudSyncRepository>();
   AppOpenAdRepository get appOpenAd => _getIt<AppOpenAdRepository>();
+  AdRepository get ad => _getIt<AdRepository>();
 }

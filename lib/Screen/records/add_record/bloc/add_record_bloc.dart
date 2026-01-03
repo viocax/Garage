@@ -8,23 +8,29 @@ import 'package:garage/core/models/vehicle.dart';
 
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
+import 'package:garage/core/repositories/ad_repository.dart';
 
 class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
   final Vehicle vehicle;
   final VehicleRepository _repository;
+  final AdRepository _adRepository;
 
-  AddRecordBloc({required this.vehicle, VehicleRepository? repository})
-    : _repository = repository ?? getIt.repo.vehicle,
-      super(
-        AddRecordState(
-          // 預設為加油類型，帶入當前日期和車輛里程
-          recordType: RecordTypeFuel(
-            data: FuelData(),
-            recordDate: DateTime.now(),
-            odometer: vehicle.currentKm,
-          ),
-        ),
-      ) {
+  AddRecordBloc({
+    required this.vehicle,
+    VehicleRepository? repository,
+    AdRepository? adRepository,
+  }) : _repository = repository ?? getIt.repo.vehicle,
+       _adRepository = adRepository ?? getIt.repo.ad,
+       super(
+         AddRecordState(
+           // 預設為加油類型，帶入當前日期和車輛里程
+           recordType: RecordTypeFuel(
+             data: FuelData(),
+             recordDate: DateTime.now(),
+             odometer: vehicle.currentKm,
+           ),
+         ),
+       ) {
     on<RecordTypeChanged>(_onRecordTypeChanged);
     on<AmountChanged>(_onAmountChanged);
     on<DateChanged>(_onDateChanged);
@@ -261,5 +267,10 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
         ),
       );
     }
+  }
+
+  /// 顯示廣告邏輯（由 UI 呼叫，封裝規則）
+  void showAd({required void Function() onComplete}) {
+    _adRepository.showInterstitialAd(onComplete: onComplete);
   }
 }

@@ -19,11 +19,20 @@ class AddVehiclePage extends StatelessWidget {
         listener: (context, state) {
           if (state.status == AddVehicleStatus.success &&
               state.createdVehicle != null) {
-            Navigator.pop(context, state.createdVehicle);
+            // 透過 Bloc 顯示廣告（封裝了邏輯判斷）
+            context.read<AddVehicleBloc>().showAd(
+              onComplete: () {
+                if (context.mounted) {
+                  Navigator.pop(context, state.createdVehicle);
+                }
+              },
+            );
           } else if (state.status == AddVehicleStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.errorMessage ?? 'addVehicle.errorOccurred'.tr()),
+                content: Text(
+                  state.errorMessage ?? 'addVehicle.errorOccurred'.tr(),
+                ),
                 backgroundColor: AppTheme.errorColor,
               ),
             );
@@ -454,9 +463,7 @@ class _MileageInput extends StatelessWidget {
             _StyledTextField(
               hintText: '0',
               keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               suffix: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -515,9 +522,7 @@ class _MaintenanceIntervalInput extends StatelessWidget {
         _StyledTextField(
           hintText: 'addVehicle.maintenanceIntervalPlaceholder'.tr(),
           keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-          ],
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           suffix: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(

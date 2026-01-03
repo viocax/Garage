@@ -23,10 +23,19 @@ class AddRecordPage extends StatelessWidget {
         listener: (context, state) {
           if (state.status == AddRecordStatus.success &&
               state.createdRecord != null) {
-            Navigator.pop(context, state.createdRecord);
+            // 透過 Bloc 顯示廣告（封裝了邏輯判斷）
+            context.read<AddRecordBloc>().showAd(
+              onComplete: () {
+                if (context.mounted) {
+                  Navigator.pop(context, state.createdRecord);
+                }
+              },
+            );
           } else if (state.status == AddRecordStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${'common.error'.tr()}: ${state.errorMessage}')),
+              SnackBar(
+                content: Text('${'common.error'.tr()}: ${state.errorMessage}'),
+              ),
             );
           }
         },
@@ -46,101 +55,108 @@ class _AddRecordViewContent extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppTheme.dashboardBg,
         appBar: AppBar(
-        backgroundColor: AppTheme.dashboardBg,
-        surfaceTintColor: Colors.transparent, // Disable Material 3 surface tint
-        centerTitle: true,
-        leading: TextButton.icon(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, size: 18),
-          label: Text('common.back'.tr()),
-          style: TextButton.styleFrom(
-            foregroundColor: AppTheme.dashboardAccentRed,
-            padding: EdgeInsets.zero,
-          ),
-        ),
-        leadingWidth: 80, // Allow width for text
-        title: Text(
-          'addRecord.title'.tr(),
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.accentColor,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: TextButton(
-              onPressed: () {
-                context.read<AddRecordBloc>().add(const SubmitRecord());
-              },
-              style: TextButton.styleFrom(foregroundColor: AppTheme.dashboardAccentRed),
-              child: Text(
-                'common.save'.tr(),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
+          backgroundColor: AppTheme.dashboardBg,
+          surfaceTintColor:
+              Colors.transparent, // Disable Material 3 surface tint
+          centerTitle: true,
+          leading: TextButton.icon(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, size: 18),
+            label: Text('common.back'.tr()),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.dashboardAccentRed,
+              padding: EdgeInsets.zero,
             ),
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Category Slider
-              const _CategorySection(),
-              const SizedBox(height: 20),
-
-              // Form Card
-              BlocBuilder<AddRecordBloc, AddRecordState>(
-                buildWhen: (previous, current) =>
-                    previous.recordType.typeName != current.recordType.typeName,
-                builder: (context, state) {
-                  final isMaintenance =
-                      state.recordType is RecordTypeMaintenance;
-
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.dashboardCardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppTheme.whiteTransparent08),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 金額輸入 - 保養類型不顯示（在各項目中輸入）
-                        if (!isMaintenance) ...[
-                          const _AmountInput(),
-                          const SizedBox(height: 16),
-                        ],
-                        // 日期和里程
-                        Row(
-                          children: const [
-                            Expanded(child: _DateInput()),
-                            SizedBox(width: 12),
-                            Expanded(child: _MileageInput()),
-                          ],
-                        ),
-                        // 動態欄位（加油、保養等）
-                        const _DynamicFields(),
-                        // 備註 - 保養類型不顯示（在各項目中輸入）
-                        if (!isMaintenance) ...[
-                          const SizedBox(height: 16),
-                          const _NoteInput(),
-                        ],
-                      ],
-                    ),
-                  );
+          leadingWidth: 80, // Allow width for text
+          title: Text(
+            'addRecord.title'.tr(),
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.accentColor,
+            ),
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextButton(
+                onPressed: () {
+                  context.read<AddRecordBloc>().add(const SubmitRecord());
                 },
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.dashboardAccentRed,
+                ),
+                child: Text(
+                  'common.save'.tr(),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              const SizedBox(height: 40), // Bottom padding
-            ],
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Category Slider
+                const _CategorySection(),
+                const SizedBox(height: 20),
+
+                // Form Card
+                BlocBuilder<AddRecordBloc, AddRecordState>(
+                  buildWhen: (previous, current) =>
+                      previous.recordType.typeName !=
+                      current.recordType.typeName,
+                  builder: (context, state) {
+                    final isMaintenance =
+                        state.recordType is RecordTypeMaintenance;
+
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.dashboardCardBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppTheme.whiteTransparent08),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 金額輸入 - 保養類型不顯示（在各項目中輸入）
+                          if (!isMaintenance) ...[
+                            const _AmountInput(),
+                            const SizedBox(height: 16),
+                          ],
+                          // 日期和里程
+                          Row(
+                            children: const [
+                              Expanded(child: _DateInput()),
+                              SizedBox(width: 12),
+                              Expanded(child: _MileageInput()),
+                            ],
+                          ),
+                          // 動態欄位（加油、保養等）
+                          const _DynamicFields(),
+                          // 備註 - 保養類型不顯示（在各項目中輸入）
+                          if (!isMaintenance) ...[
+                            const SizedBox(height: 16),
+                            const _NoteInput(),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 40), // Bottom padding
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -229,13 +245,17 @@ class _CategoryItem extends StatelessWidget {
                       ? AppTheme.accentRedTransparent15
                       : AppTheme.inputBg,
                   border: Border.all(
-                    color: isSelected ? AppTheme.dashboardAccentRed : Colors.transparent,
+                    color: isSelected
+                        ? AppTheme.dashboardAccentRed
+                        : Colors.transparent,
                     width: 2,
                   ),
                 ),
                 child: Icon(
                   type.icon,
-                  color: isSelected ? AppTheme.dashboardAccentRed : AppTheme.accentColor,
+                  color: isSelected
+                      ? AppTheme.dashboardAccentRed
+                      : AppTheme.accentColor,
                   size: 24,
                 ),
               ),
@@ -244,7 +264,9 @@ class _CategoryItem extends StatelessWidget {
                 type.label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: isSelected ? AppTheme.dashboardAccentRed : AppTheme.systemGray,
+                  color: isSelected
+                      ? AppTheme.dashboardAccentRed
+                      : AppTheme.systemGray,
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                 ),
               ),
@@ -283,8 +305,9 @@ class _AmountInputState extends State<_AmountInput> {
         final isFuel = state.recordType is RecordTypeFuel;
         // 當為加油類型且金額未被手動編輯時，自動更新顯示的金額
         if (isFuel && !state.isAmountManuallyEdited) {
-          final displayAmount =
-              state.amount > 0 ? state.amount.toStringAsFixed(0) : '';
+          final displayAmount = state.amount > 0
+              ? state.amount.toStringAsFixed(0)
+              : '';
           if (_controller.text != displayAmount) {
             _controller.text = displayAmount;
           }
@@ -297,7 +320,10 @@ class _AmountInputState extends State<_AmountInput> {
               children: [
                 Text(
                   'addRecord.amount'.tr(),
-                  style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
+                  style: const TextStyle(
+                    color: AppTheme.systemGray,
+                    fontSize: 13,
+                  ),
                 ),
                 if (isFuel &&
                     !state.isAmountManuallyEdited &&
@@ -334,7 +360,9 @@ class _AmountInputState extends State<_AmountInput> {
                   controller: _controller,
                   keyboardType: TextInputType.number,
                   style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.w600),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                  ),
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: AppTheme.inputBg,
@@ -352,8 +380,9 @@ class _AmountInputState extends State<_AmountInput> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          const BorderSide(color: AppTheme.dashboardAccentRed),
+                      borderSide: const BorderSide(
+                        color: AppTheme.dashboardAccentRed,
+                      ),
                     ),
                     contentPadding: const EdgeInsets.fromLTRB(40, 14, 16, 14),
                     hintText: '0',
@@ -423,13 +452,14 @@ class _DateInput extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.inputBg,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppTheme.whiteTransparent08,
-                  ),
+                  border: Border.all(color: AppTheme.whiteTransparent08),
                 ),
                 child: Text(
                   '${state.date.year}-${state.date.month.toString().padLeft(2, '0')}-${state.date.day.toString().padLeft(2, '0')}',
-                  style: const TextStyle(fontSize: 16, color: AppTheme.accentColor),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppTheme.accentColor,
+                  ),
                 ),
               ),
             ),
@@ -465,19 +495,17 @@ class _MileageInput extends StatelessWidget {
                 fillColor: AppTheme.inputBg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: AppTheme.whiteTransparent08,
-                  ),
+                  borderSide: BorderSide(color: AppTheme.whiteTransparent08),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: AppTheme.whiteTransparent08,
-                  ),
+                  borderSide: BorderSide(color: AppTheme.whiteTransparent08),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.dashboardAccentRed),
+                  borderSide: const BorderSide(
+                    color: AppTheme.dashboardAccentRed,
+                  ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -740,7 +768,10 @@ class _RemainingFuelSlider extends StatelessWidget {
               children: [
                 Text(
                   'addRecord.remainingFuel'.tr(),
-                  style: const TextStyle(color: AppTheme.systemGray, fontSize: 13),
+                  style: const TextStyle(
+                    color: AppTheme.systemGray,
+                    fontSize: 13,
+                  ),
                 ),
                 Text(
                   '${state.remainingFuel}%',
@@ -758,7 +789,9 @@ class _RemainingFuelSlider extends StatelessWidget {
                 activeTrackColor: AppTheme.dashboardAccentRed,
                 inactiveTrackColor: AppTheme.inputBg,
                 thumbColor: AppTheme.dashboardAccentRed,
-                overlayColor: AppTheme.dashboardAccentRed.withValues(alpha: 0.2),
+                overlayColor: AppTheme.dashboardAccentRed.withValues(
+                  alpha: 0.2,
+                ),
                 trackHeight: 6,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
               ),
@@ -768,9 +801,9 @@ class _RemainingFuelSlider extends StatelessWidget {
                 max: 100,
                 divisions: 50,
                 onChanged: (value) {
-                  context
-                      .read<AddRecordBloc>()
-                      .add(RemainingFuelChanged(value.round()));
+                  context.read<AddRecordBloc>().add(
+                    RemainingFuelChanged(value.round()),
+                  );
                 },
               ),
             ),
@@ -779,11 +812,17 @@ class _RemainingFuelSlider extends StatelessWidget {
               children: const [
                 Text(
                   '50%',
-                  style: TextStyle(color: AppTheme.placeholderGray, fontSize: 12),
+                  style: TextStyle(
+                    color: AppTheme.placeholderGray,
+                    fontSize: 12,
+                  ),
                 ),
                 Text(
                   '100%',
-                  style: TextStyle(color: AppTheme.placeholderGray, fontSize: 12),
+                  style: TextStyle(
+                    color: AppTheme.placeholderGray,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -839,7 +878,9 @@ class _MaintenanceFields extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'addRecord.total'.tr(args: [state.totalMaintenanceAmount.toStringAsFixed(0)]),
+                    'addRecord.total'.tr(
+                      args: [state.totalMaintenanceAmount.toStringAsFixed(0)],
+                    ),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -867,7 +908,9 @@ class _MaintenanceFields extends StatelessWidget {
               const SizedBox(height: 12),
               GestureDetector(
                 onTap: () {
-                  context.read<AddRecordBloc>().add(const AddMaintenanceEntry());
+                  context.read<AddRecordBloc>().add(
+                    const AddMaintenanceEntry(),
+                  );
                 },
                 child: Container(
                   width: double.infinity,
@@ -1024,26 +1067,38 @@ class _MaintenanceEntryCard extends StatelessWidget {
                   children: [
                     Text(
                       'addRecord.amount'.tr(),
-                      style: const TextStyle(color: AppTheme.systemGray, fontSize: 12),
+                      style: const TextStyle(
+                        color: AppTheme.systemGray,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     TextField(
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(fontSize: 14, color: AppTheme.accentColor),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.accentColor,
+                      ),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppTheme.dashboardCardBg,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+                          borderSide: BorderSide(
+                            color: AppTheme.whiteTransparent08,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+                          borderSide: BorderSide(
+                            color: AppTheme.whiteTransparent08,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppTheme.dashboardAccentRed),
+                          borderSide: const BorderSide(
+                            color: AppTheme.dashboardAccentRed,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -1055,7 +1110,9 @@ class _MaintenanceEntryCard extends StatelessWidget {
                           fontSize: 14,
                         ),
                         hintText: '0',
-                        hintStyle: const TextStyle(color: AppTheme.placeholderGray),
+                        hintStyle: const TextStyle(
+                          color: AppTheme.placeholderGray,
+                        ),
                       ),
                       onChanged: (value) {
                         final amount = double.tryParse(value) ?? 0;
@@ -1075,38 +1132,55 @@ class _MaintenanceEntryCard extends StatelessWidget {
                   children: [
                     Text(
                       'addRecord.nextMaintenanceMileage'.tr(),
-                      style: const TextStyle(color: AppTheme.systemGray, fontSize: 12),
+                      style: const TextStyle(
+                        color: AppTheme.systemGray,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     TextField(
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(fontSize: 14, color: AppTheme.accentColor),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.accentColor,
+                      ),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppTheme.dashboardCardBg,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+                          borderSide: BorderSide(
+                            color: AppTheme.whiteTransparent08,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppTheme.whiteTransparent08),
+                          borderSide: BorderSide(
+                            color: AppTheme.whiteTransparent08,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppTheme.dashboardAccentRed),
+                          borderSide: const BorderSide(
+                            color: AppTheme.dashboardAccentRed,
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 10,
                         ),
                         hintText: 'common.unitKm'.tr(),
-                        hintStyle: const TextStyle(color: AppTheme.placeholderGray),
+                        hintStyle: const TextStyle(
+                          color: AppTheme.placeholderGray,
+                        ),
                       ),
                       onChanged: (value) {
                         final km = int.tryParse(value);
                         context.read<AddRecordBloc>().add(
-                          UpdateMaintenanceEntry(index: index, nextMaintenanceKm: km),
+                          UpdateMaintenanceEntry(
+                            index: index,
+                            nextMaintenanceKm: km,
+                          ),
                         );
                       },
                     ),
@@ -1138,7 +1212,9 @@ class _MaintenanceEntryCard extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppTheme.dashboardAccentRed),
+                borderSide: const BorderSide(
+                  color: AppTheme.dashboardAccentRed,
+                ),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
@@ -1180,15 +1256,11 @@ class _NoteInput extends StatelessWidget {
             fillColor: AppTheme.inputBg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppTheme.whiteTransparent08,
-              ),
+              borderSide: BorderSide(color: AppTheme.whiteTransparent08),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppTheme.whiteTransparent08,
-              ),
+              borderSide: BorderSide(color: AppTheme.whiteTransparent08),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1206,4 +1278,3 @@ class _NoteInput extends StatelessWidget {
     );
   }
 }
-
