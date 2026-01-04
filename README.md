@@ -235,7 +235,15 @@ lib/core/
 - [ ] model 授權
 - [ ] OpenMap 授權
 - [ ] 訂閱制
-- [ ] 廣告
+- [x] 廣告 (Google AdMob)
+  - [x] 基礎配置 (iOS/Android App ID, SDK Init)
+  - [x] Banner 廣告 (Settings, Vehicle Management)
+  - [x] 插頁式廣告 (Add Record/Add Vehicle 成功後)
+  - [x] 原生廣告 (All Records 列表中插入)
+  - [x] 獎勵廣告 (Rewarded Ads)
+    - [x] 廣告票券 (Ad Tickets) - 跳過插頁廣告
+    - [x] 移除橫幅 (Remove Banner) - 12小時限時移除
+    - [ ] 雲端同步單次解鎖 (Feature Unlock) - 待實作
 
 ## 授權
 
