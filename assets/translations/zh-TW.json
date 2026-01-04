@@ -97,7 +97,17 @@
     "termsOfService": "使用條款",
     "privacyPolicy": "隱私政策",
     "feedback": "意見回饋",
-    "rateApp": "評分 App"
+    "feedback": "意見回饋",
+    "rateApp": "評分 App",
+    "adManagement": "廣告與獎勵",
+    "adManagementDesc": "觀看廣告獲得獎勵",
+    "adRewards": "廣告獎勵",
+    "earnAdTicket": "觀看廣告獲得票券",
+    "earnAdTicketDesc": "獲得 1 張免插頁廣告票券",
+    "removeBanner": "觀看廣告移除橫幅",
+    "removeBannerDesc": "暫時移除底部廣告 12 小時",
+    "earnedTicketSuccess": "成功獲得 1 張廣告票券！",
+    "removeBannerSuccess": "成功移除橫幅廣告 12 小時！"
   },
   "speedDetection": {
     "title": "測速設置",

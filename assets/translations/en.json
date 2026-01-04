@@ -97,7 +97,17 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "feedback": "Feedback",
-    "rateApp": "Rate App"
+    "feedback": "Feedback",
+    "rateApp": "Rate App",
+    "adManagement": "Ads & Rewards",
+    "adManagementDesc": "Watch ads to earn rewards",
+    "adRewards": "Ad Rewards",
+    "earnAdTicket": "Earn Ad Ticket",
+    "earnAdTicketDesc": "Get 1 ticket to skip interstitial ads",
+    "removeBanner": "Remove Banner",
+    "removeBannerDesc": "Remove bottom banner for 12 hours",
+    "earnedTicketSuccess": "Earned 1 Ad Ticket!",
+    "removeBannerSuccess": "Banner removed for 12 hours!"
   },
   "speedDetection": {
     "title": "Speed Detection",
