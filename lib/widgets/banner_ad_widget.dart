@@ -22,10 +22,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   }
 
   void _loadAd() {
-    if (getIt.repo.userSettings.currentSettings.isAdFree) return;
+    if (getIt.repo.ad.isBannerAdFree) return;
 
     _bannerAd = BannerAd(
-      adUnitId: getIt.service.ad.bannerAdUnitId,
+      adUnitId: getIt.repo.ad.bannerAdUnitId,
       size: widget.adSize,
       request: const AdRequest(),
       listener: BannerAdListener(
@@ -55,9 +55,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (getIt.repo.userSettings.currentSettings.isAdFree ||
-        _bannerAd == null ||
-        !_isLoaded) {
+    if (getIt.repo.ad.isBannerAdFree || _bannerAd == null || !_isLoaded) {
       return const SizedBox.shrink();
     }
 
