@@ -229,7 +229,6 @@ lib/core/
   - [x] Isar 資料庫匯出/匯入邏輯
     - 匯出所有 Vehicle 與 VehicleRecord 為 JSON
     - 還原時重建 IsarLinks 關聯
-- [ ] 資料匯出
 - [ ] 錯誤處理
 - [x] localizeString
 - [ ] model 授權
@@ -244,6 +243,11 @@ lib/core/
     - [x] 廣告票券 (Ad Tickets) - 跳過插頁廣告
     - [x] 移除橫幅 (Remove Banner) - 12小時限時移除
     - [ ] 雲端同步單次解鎖 (Feature Unlock) - 待實作
+
+## 聯絡與反饋
+
+如果您在使用過程中有任何問題或建議，歡迎透過以下方式與我聯絡：
+- **電子郵件**: [drake.garage.app@gmail.com](mailto:drake.garage.app@gmail.com)
 
 ## 授權
 

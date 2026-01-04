@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:garage/screen/settings/settings_page.dart';
+import 'package:garage/screen/settings/static_content_page.dart';
+import 'package:garage/core/utils/app_documents.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/screen/settings/speed_detection_settings/speed_detection_settings_page.dart';
 import 'package:garage/screen/settings/vehicle_management/vehicle_management_page.dart';
 import 'package:garage/screen/settings/cloud_sync/cloud_sync_page.dart';
@@ -13,47 +16,55 @@ import 'package:garage/screen/records/add_vehicle/add_vehicle_page.dart';
 import 'package:garage/screen/records/all_records/all_records_page.dart';
 import 'package:garage/core/models/vehicle.dart';
 
-
 /// 路由路徑枚舉，統一管理所有路由的 path 和 name
 class AppPath {
   final String name;
   final AppPath? previous;
 
-  const AppPath({
-    required this.name,
-    this.previous,
-  });
+  const AppPath({required this.name, this.previous});
 
   // static instances
   static final launch = AppPath(name: 'launch');
   static final home = AppPath(name: 'home');
 
-  static final speedometer =
-      AppPath(name: 'speedometer', previous: home);
+  static final speedometer = AppPath(name: 'speedometer', previous: home);
 
-  static final records =
-      AppPath(name: 'records', previous: home);
+  static final records = AppPath(name: 'records', previous: home);
 
-  static final addRecord =
-      AppPath(name: 'addRecord', previous: records);
+  static final addRecord = AppPath(name: 'addRecord', previous: records);
 
-  static final addVehicle =
-      AppPath(name: 'addVehicle', previous: records);
+  static final addVehicle = AppPath(name: 'addVehicle', previous: records);
 
-  static final allRecords =
-      AppPath(name: 'allRecords', previous: records);
+  static final allRecords = AppPath(name: 'allRecords', previous: records);
 
-  static final settings =
-      AppPath(name: 'settings', previous: home);
+  static final settings = AppPath(name: 'settings', previous: home);
 
-  static final vehicleManagement =
-      AppPath(name: 'vehicleManagement', previous: settings);
+  static final vehicleManagement = AppPath(
+    name: 'vehicleManagement',
+    previous: settings,
+  );
 
-  static final speedDetectionSettings =
-      AppPath(name: 'speedDetectionSettings', previous: settings);
+  static final speedDetectionSettings = AppPath(
+    name: 'speedDetectionSettings',
+    previous: settings,
+  );
 
-  static final cloudSync =
-      AppPath(name: 'cloudSync', previous: settings);
+  static final cloudSync = AppPath(name: 'cloudSync', previous: settings);
+
+  static final termsOfService = AppPath(
+    name: 'termsOfService',
+    previous: settings,
+  );
+
+  static final privacyPolicy = AppPath(
+    name: 'privacyPolicy',
+    previous: settings,
+  );
+
+  static final openSourceLicenses = AppPath(
+    name: 'openSourceLicenses',
+    previous: settings,
+  );
 
   /// compute full path
   String get path {
@@ -63,6 +74,7 @@ class AppPath {
     return '${previous!.path}/$name';
   }
 }
+
 /// 應用程式的路由配置
 class AppRouter {
   /// Root navigator key - 用於全屏路由
@@ -118,18 +130,22 @@ class AppRouter {
                         return CustomTransitionPage(
                           key: state.pageKey,
                           child: const AddVehiclePage(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0, 1),
-                                end: Offset.zero,
-                              ).animate(CurvedAnimation(
-                                parent: animation,
-                                curve: Curves.easeOutCubic,
-                              )),
-                              child: child,
-                            );
-                          },
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                                return SlideTransition(
+                                  position:
+                                      Tween<Offset>(
+                                        begin: const Offset(0, 1),
+                                        end: Offset.zero,
+                                      ).animate(
+                                        CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                                      ),
+                                  child: child,
+                                );
+                              },
                         );
                       },
                     ),
@@ -157,20 +173,49 @@ class AppRouter {
                       path: AppPath.vehicleManagement.path,
                       name: AppPath.vehicleManagement.name,
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => const VehicleManagementPage(),
+                      builder: (context, state) =>
+                          const VehicleManagementPage(),
                     ),
                     GoRoute(
                       path: AppPath.speedDetectionSettings.path,
                       name: AppPath.speedDetectionSettings.name,
                       // 使用 root navigator，跳過 shell 直接全屏顯示
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => const SpeedDetectionSettingsPage(),
+                      builder: (context, state) =>
+                          const SpeedDetectionSettingsPage(),
                     ),
                     GoRoute(
                       path: AppPath.cloudSync.path,
                       name: AppPath.cloudSync.name,
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) => const CloudSyncPage(),
+                    ),
+                    GoRoute(
+                      path: AppPath.termsOfService.path,
+                      name: AppPath.termsOfService.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => StaticContentPage(
+                        title: 'settings.termsOfService'.tr(),
+                        markdownContent: AppDocuments.termsOfService,
+                      ),
+                    ),
+                    GoRoute(
+                      path: AppPath.privacyPolicy.path,
+                      name: AppPath.privacyPolicy.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => StaticContentPage(
+                        title: 'settings.privacyPolicy'.tr(),
+                        markdownContent: AppDocuments.privacyPolicy,
+                      ),
+                    ),
+                    GoRoute(
+                      path: AppPath.openSourceLicenses.path,
+                      name: AppPath.openSourceLicenses.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => StaticContentPage(
+                        title: 'settings.openSourceLicenses'.tr(),
+                        markdownContent: AppDocuments.openSourceLicenses,
+                      ),
                     ),
                   ],
                 ),

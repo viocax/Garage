@@ -5,6 +5,7 @@ import 'settings_event.dart';
 import 'settings_state.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final ISpeedCameraRepository _speedCameraRepository = getIt.repo.speedCamera;
@@ -19,8 +20,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) async {
     switch (event) {
-      case ExportData():
-        _onExportData(emit);
       case ClearData():
         _onClearData(emit);
       case ClickSpeedSetting():
@@ -31,6 +30,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         await _onWatchAdForTicket(emit);
       case WatchAdForBannerRemoval():
         await _onWatchAdForBannerRemoval(emit);
+      case SendFeedback():
+        await _onSendFeedback(emit);
     }
   }
 
@@ -49,11 +50,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     } else {
       emit(const GoToSpeedSetting());
     }
-  }
-
-  void _onExportData(Emitter<SettingsState> emit) {
-    // TODO: Implement export data logic
-    debugPrint('Export Data Triggered');
   }
 
   void _onClearData(Emitter<SettingsState> emit) {
@@ -87,5 +83,34 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         ); // 暫時用 Error state 來顯示 Toast
       },
     );
+  }
+
+  Future<void> _onSendFeedback(Emitter<SettingsState> emit) async {
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'drake.garage.app@gmail.com', // 預設一個開發者聯絡信箱
+      query: _encodeQueryParameters(<String, String>{
+        'subject': 'Garage App Feedback',
+      }),
+    );
+
+    try {
+      if (await canLaunchUrl(emailLaunchUri)) {
+        await launchUrl(emailLaunchUri);
+      } else {
+        emit(const SettingsError('無法開啟郵件應用程式'));
+      }
+    } catch (e) {
+      emit(SettingsError('發生錯誤：$e'));
+    }
+  }
+
+  String? _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map(
+          (e) =>
+              '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+        )
+        .join('&');
   }
 }

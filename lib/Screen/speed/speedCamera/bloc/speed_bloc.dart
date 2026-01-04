@@ -115,7 +115,13 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     } catch (e) {
       // 3. 處理錯誤
       debugPrint('SpeedBloc: 啟動偵測失敗 - $e');
-      emit(currentState.copyWith(isDetecting: false));
+      if (e.toString().contains('Location permission denied')) {
+        emit(
+          currentState.copyWith(isDetecting: false, showPermissionAlert: true),
+        );
+      } else {
+        emit(currentState.copyWith(isDetecting: false));
+      }
     }
   }
 

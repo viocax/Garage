@@ -96,6 +96,7 @@
     "about": "About",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
+    "openSourceLicenses": "Open Source Licenses",
     "feedback": "Feedback",
     "rateApp": "Rate App",
     "adManagement": "Ads & Rewards",
@@ -107,6 +108,12 @@
     "removeBannerDesc": "Remove bottom banner for 12 hours",
     "earnedTicketSuccess": "Earned 1 Ad Ticket!",
     "removeBannerSuccess": "Banner removed for 12 hours!"
+  },
+  "speedCamera": {
+    "permission": {
+      "title": "Location Permission Required",
+      "message": "Speed detection needs access to your location to work properly. Please go to settings to enable location permission."
+    }
   },
   "speedDetection": {
     "title": "Speed Detection",

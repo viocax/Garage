@@ -20,6 +20,7 @@ final class SpeedData extends SpeedState {
   final String? upperSpeed; // 最高速限
   final int alertDistance; // 警告距離
   final bool isDetecting; // 是否正在偵測
+  final bool showPermissionAlert; // 是否顯示權限警示
 
   // Getter
   LocationData? get currentLocation =>
@@ -46,25 +47,28 @@ final class SpeedData extends SpeedState {
     this.lowerSpeed,
     this.upperSpeed,
     this.isDetecting = false,
+    this.showPermissionAlert = false,
   });
 
   SpeedData copyWith({
-    SpeedCameraModel? model, 
+    SpeedCameraModel? model,
     List<LocationData>? cameraLocations,
     SpeedUnit? unit,
     int? alertDistance,
     String? lowerSpeed,
     String? upperSpeed,
     bool? isDetecting,
+    bool? showPermissionAlert,
   }) {
     return SpeedData(
-      model: model ?? this.model, 
+      model: model ?? this.model,
       cameraLocations: cameraLocations ?? this.cameraLocations,
       unit: unit ?? this.unit,
       alertDistance: alertDistance ?? this.alertDistance,
       lowerSpeed: lowerSpeed ?? this.lowerSpeed,
       upperSpeed: upperSpeed ?? this.upperSpeed,
       isDetecting: isDetecting ?? this.isDetecting,
+      showPermissionAlert: showPermissionAlert ?? this.showPermissionAlert,
     );
   }
 

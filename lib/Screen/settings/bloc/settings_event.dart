@@ -2,11 +2,6 @@ sealed class SettingsEvent {
   const SettingsEvent();
 }
 
-// Export data
-final class ExportData extends SettingsEvent {
-  const ExportData();
-}
-
 // Clear data
 final class ClearData extends SettingsEvent {
   const ClearData();
@@ -28,4 +23,9 @@ final class WatchAdForTicket extends SettingsEvent {
 // Watch ad for banner removal
 final class WatchAdForBannerRemoval extends SettingsEvent {
   const WatchAdForBannerRemoval();
+}
+
+// Send feedback
+final class SendFeedback extends SettingsEvent {
+  const SendFeedback();
 }

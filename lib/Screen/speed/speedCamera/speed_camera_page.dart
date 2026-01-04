@@ -17,6 +17,10 @@ import '../car3d/bloc/car_3d_event.dart';
 import 'bloc/speed_bloc.dart';
 import 'bloc/speed_state.dart';
 import 'bloc/speed_event.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:garage/core/extensions/extensions.dart';
 
 class SpeedCameraPage extends StatefulWidget {
   const SpeedCameraPage({super.key});
@@ -100,6 +104,24 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
         listeners: [
           BlocListener<SpeedBloc, SpeedState>(
             listener: (context, state) {
+              if (state is SpeedData) {
+                if (state.showPermissionAlert) {
+                  context.showAdaptivePermissionAlert(
+                    title: 'speedCamera.permission.title'.tr(),
+                    message: 'speedCamera.permission.message'.tr(),
+                    cancelText: 'common.cancel'.tr(),
+                    confirmText: 'common.goToSettings'.tr(),
+                    onConfirm: () async {
+                      // 開啟系統設定
+                      await Geolocator.openAppSettings();
+                    },
+                    onCancel: () {
+                      // 使用者取消，可以在這裡重置狀態（如果需要）
+                    },
+                  );
+                }
+              }
+
               switch (state) {
                 case SpeedData(
                   // :final animationDuration, // TODO: 到時侯試試看要不要移除
@@ -378,45 +400,51 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             ),
           ),
         ),
-        if (isDetecting) ...[
-          const SizedBox(height: 16),
-          // Stop Button
-          GestureDetector(
-            onTap: () {
+        const SizedBox(height: 16),
+        // Start/Stop Toggle Button
+        GestureDetector(
+          onTap: () {
+            if (isDetecting) {
               context.read<SpeedBloc>().add(const StopDetection());
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: BackdropFilter(
-                filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.systemRed.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.whiteTransparent20,
-                      width: 1,
+            } else {
+              context.read<SpeedBloc>().add(const StartDetection());
+            }
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isDetecting
+                      ? AppTheme.systemRed.withValues(alpha: 0.8)
+                      : AppTheme.systemGreen.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.whiteTransparent20,
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDetecting
+                          ? AppTheme.systemRed.withValues(alpha: 0.4)
+                          : AppTheme.systemGreen.withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      spreadRadius: 2,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.systemRed.withValues(alpha: 0.4),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.stop_rounded,
-                    color: AppTheme.accentColor,
-                    size: 24,
-                  ),
+                  ],
+                ),
+                child: Icon(
+                  isDetecting ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                  color: AppTheme.accentColor,
+                  size: 24,
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ],
     );
   }
@@ -504,8 +532,9 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                     child: Transform.rotate(
                       angle: data.model.heading * (pi / 180), // 將度數轉換為弧度
                       child: Icon(
-                        Icons.directions_car,
-                        color: AppTheme.darkSurface,
+                        Icons.navigation_rounded,
+                        color: AppTheme.primaryColor,
+                        size: 16,
                       ),
                     ),
                   ),
@@ -524,29 +553,46 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                 }),
               ],
             ),
+            RichAttributionWidget(
+              attributions: [
+                TextSourceAttribution(
+                  'OpenStreetMap contributors',
+                  onTap: () => launchUrl(
+                    Uri.parse('https://openstreetmap.org/copyright'),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
         if (location == null) ...[
-          Container(color: AppTheme.blackTransparent75),
-          CustomPaint(painter: GridBackgroundPainter(), size: Size.infinite),
+          IgnorePointer(child: Container(color: AppTheme.blackTransparent75)),
+          IgnorePointer(
+            child: CustomPaint(
+              painter: GridBackgroundPainter(),
+              size: Size.infinite,
+            ),
+          ),
         ] else ...[
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             height: MediaQuery.of(context).size.height * 0.25,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppTheme.darkSurface,
-                    AppTheme.darkSurface.withValues(alpha: 0.9),
-                    AppTheme.darkSurface.withValues(alpha: 0.7),
-                    AppTheme.darkSurface.withValues(alpha: 0),
-                  ],
-                  stops: const [0.0, 0.2, 0.45, 1.0],
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppTheme.darkSurface,
+                      AppTheme.darkSurface.withValues(alpha: 0.9),
+                      AppTheme.darkSurface.withValues(alpha: 0.7),
+                      AppTheme.darkSurface.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 0.2, 0.45, 1.0],
+                  ),
                 ),
               ),
             ),
@@ -558,18 +604,20 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
           left: 0,
           right: 0,
           height: MediaQuery.of(context).size.height * 0.6,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppTheme.darkSurface.withValues(alpha: 0),
-                  AppTheme.darkSurface.withValues(alpha: 0.7),
-                  AppTheme.darkSurface.withValues(alpha: 0.9),
-                  AppTheme.darkSurface,
-                ],
-                stops: const [0.0, 0.6, 0.85, 1.0],
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppTheme.darkSurface.withValues(alpha: 0),
+                    AppTheme.darkSurface.withValues(alpha: 0.7),
+                    AppTheme.darkSurface.withValues(alpha: 0.9),
+                    AppTheme.darkSurface,
+                  ],
+                  stops: const [0.0, 0.6, 0.85, 1.0],
+                ),
               ),
             ),
           ),
@@ -586,35 +634,28 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     return AnimatedBuilder(
       animation: _roadAnimationController,
       builder: (context, child) {
-        return GestureDetector(
-          onDoubleTap: () {
-            if (!isDetecting) {
-              context.read<SpeedBloc>().add(const StartDetection());
-            }
-          },
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Road Visualization with animation
-              CustomPaint(
-                size: Size.infinite,
-                painter: RoadPainter(
-                  activeLaneColor: AppTheme.whiteTransparent20,
-                  animationValue: _roadAnimationController.value,
-                ),
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Road Visualization with animation
+            CustomPaint(
+              size: Size.infinite,
+              painter: RoadPainter(
+                activeLaneColor: AppTheme.whiteTransparent20,
+                animationValue: _roadAnimationController.value,
               ),
+            ),
 
-              // Car Model (3D)
-              Positioned(
-                bottom: 20,
-                child: SizedBox(
-                  width: carWidth,
-                  height: carHeight,
-                  child: const Car3DView(),
-                ),
+            // Car Model (3D)
+            Positioned(
+              bottom: 20,
+              child: SizedBox(
+                width: carWidth,
+                height: carHeight,
+                child: const Car3DView(),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
