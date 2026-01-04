@@ -41,7 +41,17 @@
     "totalSpent": "總花費",
     "recordCount": "記錄數",
     "recordCountWithUnit": "{} 筆",
-    "loadFailed": "載入失敗"
+    "loadFailed": "載入失敗",
+    "monthlyExpense": "月度消費",
+    "categories": "分類",
+    "annualExpenseComparison": "年度花費對比",
+    "yearFormat": "{} 年",
+    "fuelEfficiencyTrend": "油耗趨勢 (km/L)",
+    "fuelEfficiencyEmpty": "需要至少兩筆加油紀錄來計算油耗",
+    "selectMonth": "選擇月份",
+    "filter": "篩選：",
+    "all": "全部",
+    "noFilteredRecords": "沒有符合條件的記錄"
   },
   "addRecord": {
     "title": "新增紀錄",
@@ -59,7 +69,9 @@
     "notes": "備註",
     "notesPlaceholder": "輸入備註...",
     "itemNumber": "項目 {}",
-    "total": "總計：${}"
+    "total": "總計：${}",
+    "invalidFuelAmount": "請輸入有效的加油量",
+    "atLeastOneMaintenanceItem": "請至少輸入一個保養項目"
   },
   "recordType": {
     "fuel": "加油",
@@ -70,7 +82,8 @@
     "octane92": "92",
     "octane95": "95",
     "octane98": "98",
-    "diesel": "柴油"
+    "diesel": "柴油",
+    "unleadedFormat": "無鉛{}"
   },
   "maintenanceItem": {
     "engineOil": "機油",
@@ -189,7 +202,9 @@
     "maintenanceIntervalPlaceholder": "5000",
     "submit": "完成新增",
     "editLaterHint": "之後可以在設定中編輯車輛資訊",
-    "errorOccurred": "發生錯誤"
+    "errorOccurred": "發生錯誤",
+    "fillAllFields": "請填寫完整",
+    "addVehicleFailed": "新增車輛失敗"
   },
   "premium": {
     "successTitle": "恭喜！",

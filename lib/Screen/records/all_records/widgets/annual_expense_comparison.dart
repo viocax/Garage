@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/app_theme.dart';
 import '../bloc/all_records_state.dart';
@@ -21,8 +22,8 @@ class AnnualExpenseComparison extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '年度花費對比',
+          Text(
+            'records.annualExpenseComparison'.tr(),
             style: TextStyle(fontSize: 12, color: AppTheme.systemGray),
           ),
           const SizedBox(height: 12),
@@ -36,7 +37,7 @@ class AnnualExpenseComparison extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${d.year} 年',
+                        'records.yearFormat'.tr(args: [d.year.toString()]),
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppTheme.accentColor,

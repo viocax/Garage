@@ -272,7 +272,7 @@ class _RecordsContentState extends State<_RecordsContent> {
             itemBuilder: (context, index) {
               final vehicle = widget.vehicles[index];
               final odometerString = vehicle.currentKm.toString();
-              final unitString = 'km'; // 這邊要根據使用者那邊資料
+              final unitString = 'common.unitKm'.tr();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -314,10 +314,7 @@ class _RecordsContentState extends State<_RecordsContent> {
                       const SizedBox(height: 16),
 
                       // 分隔线
-                      Container(
-                        height: 1,
-                        color: AppTheme.whiteTransparent15,
-                      ),
+                      Container(height: 1, color: AppTheme.whiteTransparent15),
 
                       const SizedBox(height: 16),
 
@@ -474,11 +471,7 @@ class _HeroSection extends StatelessWidget {
               textPrimary: textPrimary,
             ),
             const SizedBox(width: 12),
-            Container(
-              width: 1,
-              height: 24,
-              color: AppTheme.whiteTransparent20,
-            ),
+            Container(width: 1, height: 24, color: AppTheme.whiteTransparent20),
             const SizedBox(width: 12),
             _StatChip(
               icon: Icons.local_gas_station_outlined,
@@ -514,19 +507,9 @@ class _StatChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: textSecondary,
-        ),
+        Icon(icon, size: 16, color: textSecondary),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: textSecondary,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: textSecondary)),
         const SizedBox(width: 6),
         Text(
           value,
@@ -732,10 +715,7 @@ class _WheelTransactionCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.blackTransparent60,
-            AppTheme.blackTransparent90,
-          ],
+          colors: [AppTheme.blackTransparent60, AppTheme.blackTransparent90],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTheme.whiteTransparent20, width: 1),

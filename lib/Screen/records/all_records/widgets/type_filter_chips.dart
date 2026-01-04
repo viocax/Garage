@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -11,9 +12,19 @@ class TypeFilterChips extends StatelessWidget {
   const TypeFilterChips({super.key, required this.selectedTypes});
 
   static const _types = [
-    ('fuel', '加油', Icons.local_gas_station, AppTheme.recordTypeFuelColor),
-    ('maintenance', '保養', Icons.build, AppTheme.recordTypeMaintenanceColor),
-    ('other', '其他', Icons.receipt, AppTheme.recordTypeOtherColor),
+    (
+      'fuel',
+      'recordType.fuel',
+      Icons.local_gas_station,
+      AppTheme.recordTypeFuelColor,
+    ),
+    (
+      'maintenance',
+      'recordType.maintenance',
+      Icons.build,
+      AppTheme.recordTypeMaintenanceColor,
+    ),
+    ('other', 'recordType.other', Icons.receipt, AppTheme.recordTypeOtherColor),
   ];
 
   @override
@@ -22,8 +33,8 @@ class TypeFilterChips extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          const Text(
-            '篩選：',
+          Text(
+            'records.filter'.tr(),
             style: TextStyle(fontSize: 12, color: AppTheme.systemGray),
           ),
           const SizedBox(width: 8),
@@ -32,7 +43,7 @@ class TypeFilterChips extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: _FilterChip(
                 typeName: type.$1,
-                label: type.$2,
+                label: type.$2.tr(),
                 icon: type.$3,
                 color: type.$4,
                 isSelected:

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -17,10 +18,7 @@ class MonthlyExpenseChart extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.whiteTransparent08,
-            AppTheme.whiteTransparent04,
-          ],
+          colors: [AppTheme.whiteTransparent08, AppTheme.whiteTransparent04],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.whiteTransparent15),
@@ -28,19 +26,16 @@ class MonthlyExpenseChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '月度消費',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.systemGray,
-            ),
+          Text(
+            'records.monthlyExpense'.tr(),
+            style: TextStyle(fontSize: 12, color: AppTheme.systemGray),
           ),
           const SizedBox(height: 12),
           Expanded(
             child: data.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      '暫無數據',
+                      'common.noData'.tr(),
                       style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.systemGray,
@@ -112,10 +107,7 @@ class MonthlyExpenseChart extends StatelessWidget {
         padding: const EdgeInsets.only(top: 8),
         child: Text(
           data[index].monthLabel,
-          style: const TextStyle(
-            fontSize: 10,
-            color: AppTheme.systemGray,
-          ),
+          style: const TextStyle(fontSize: 10, color: AppTheme.systemGray),
         ),
       );
     }
@@ -132,15 +124,10 @@ class MonthlyExpenseChart extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
-              colors: [
-                AppTheme.recordCardWineRed,
-                AppTheme.dashboardAccentRed,
-              ],
+              colors: [AppTheme.recordCardWineRed, AppTheme.dashboardAccentRed],
             ),
             width: 16,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(4),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
           ),
         ],
       );

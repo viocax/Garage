@@ -215,7 +215,7 @@ lib/core/
 - [x] 設定頁面 - 個人化選項
 - [x] 3D 車輛動畫
 - [x] TTS 語音播報
-- [x] 分類統計圖表
+- [x] 進階統計圖表 (分類花費、油耗趨勢、年度對比)
 - [x] 背景執行支援
 - [ ] 區間測速偵測
 - [x] 雲端同步 (iOS: iCloud / Android: Google Drive)
@@ -239,7 +239,7 @@ lib/core/
     - 匯出所有 Vehicle 與 VehicleRecord 為 JSON
     - 還原時重建 IsarLinks 關聯
 - [ ] 錯誤處理
-- [x] localizeString
+- [x] 全面本地化 (包含圖表、錯誤訊息與資料模型)
 - [x] 訂閱制 (Garage Pro)
   - [x] RevenueCat 整合 (`purchases_flutter`)
   - [x] PremiumPage 訂閱介面與功能

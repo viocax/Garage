@@ -41,7 +41,17 @@
     "totalSpent": "Total Spent",
     "recordCount": "Records",
     "recordCountWithUnit": "{} items",
-    "loadFailed": "Load failed"
+    "loadFailed": "Load failed",
+    "monthlyExpense": "Monthly Expenses",
+    "categories": "Categories",
+    "annualExpenseComparison": "Annual Expense Comparison",
+    "yearFormat": "Year {}",
+    "fuelEfficiencyTrend": "Fuel Efficiency Trend (km/L)",
+    "fuelEfficiencyEmpty": "At least two fuel records are needed to calculate fuel efficiency",
+    "selectMonth": "Select Month",
+    "filter": "Filter: ",
+    "all": "All",
+    "noFilteredRecords": "No matching records found"
   },
   "addRecord": {
     "title": "Add Record",
@@ -59,7 +69,9 @@
     "notes": "Notes",
     "notesPlaceholder": "Enter notes...",
     "itemNumber": "Item {}",
-    "total": "Total: ${}"
+    "total": "Total: ${}",
+    "invalidFuelAmount": "Please enter a valid fuel amount",
+    "atLeastOneMaintenanceItem": "Please enter at least one maintenance item"
   },
   "recordType": {
     "fuel": "Fuel",
@@ -70,7 +82,8 @@
     "octane92": "92",
     "octane95": "95",
     "octane98": "98",
-    "diesel": "Diesel"
+    "diesel": "Diesel",
+    "unleadedFormat": "Unleaded {}"
   },
   "maintenanceItem": {
     "engineOil": "Engine Oil",
@@ -189,7 +202,9 @@
     "maintenanceIntervalPlaceholder": "5000",
     "submit": "Complete",
     "editLaterHint": "You can edit vehicle info in settings later",
-    "errorOccurred": "An error occurred"
+    "errorOccurred": "An error occurred",
+    "fillAllFields": "Please fill in all required fields",
+    "addVehicleFailed": "Failed to add vehicle"
   },
   "premium": {
     "successTitle": "Congratulations!",

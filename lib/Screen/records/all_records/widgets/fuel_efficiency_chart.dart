@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -26,16 +27,16 @@ class FuelEfficiencyChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '油耗趨勢 (km/L)',
+          Text(
+            'records.fuelEfficiencyTrend'.tr(),
             style: TextStyle(fontSize: 12, color: AppTheme.systemGray),
           ),
           const SizedBox(height: 12),
           Expanded(
             child: data.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      '需要至少兩筆加油紀錄來計算油耗',
+                      'records.fuelEfficiencyEmpty'.tr(),
                       style: TextStyle(
                         fontSize: 10,
                         color: AppTheme.systemGray,

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/core/di/service_locator.dart';
@@ -80,7 +81,10 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
   ) async {
     if (!state.isValid) {
       emit(
-        state.copyWith(status: AddVehicleStatus.failure, errorMessage: '請填寫完整'),
+        state.copyWith(
+          status: AddVehicleStatus.failure,
+          errorMessage: 'addVehicle.fillAllFields'.tr(),
+        ),
       );
       return;
     }
@@ -108,7 +112,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
         emit(
           state.copyWith(
             status: AddVehicleStatus.failure,
-            errorMessage: '新增車輛失敗',
+            errorMessage: 'addVehicle.addVehicleFailed'.tr(),
           ),
         );
       }

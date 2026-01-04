@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/app_theme.dart';
 import '../bloc/all_records_state.dart';
@@ -40,8 +41,8 @@ class MonthFilterSheet extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '選擇月份',
+                Text(
+                  'records.selectMonth'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -53,8 +54,8 @@ class MonthFilterSheet extends StatelessWidget {
                     onSelect(null);
                     Navigator.pop(context);
                   },
-                  child: const Text(
-                    '全部',
+                  child: Text(
+                    'records.all'.tr(),
                     style: TextStyle(color: AppTheme.dashboardAccentRed),
                   ),
                 ),
@@ -65,9 +66,9 @@ class MonthFilterSheet extends StatelessWidget {
           SizedBox(
             height: 300,
             child: availableMonths.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      '暫無記錄',
+                      'common.noData'.tr(),
                       style: TextStyle(color: AppTheme.systemGray),
                     ),
                   )

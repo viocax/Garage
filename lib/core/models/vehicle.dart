@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:isar_community/isar.dart';
 import 'package:uuid/uuid.dart';
 import 'vehicle_record.dart';
@@ -112,5 +113,5 @@ class Vehicle implements PickerOption {
   String getTitle() => carName;
 
   @override
-  String getSubTitle() => '$currentKm km';
+  String getSubTitle() => '$currentKm ${'common.unitKm'.tr()}';
 }

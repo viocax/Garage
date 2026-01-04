@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -51,8 +52,8 @@ class AllRecordsList extends StatelessWidget {
                 color: AppTheme.systemGray.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 16),
-              const Text(
-                '沒有符合條件的記錄',
+              Text(
+                'records.noFilteredRecords'.tr(),
                 style: TextStyle(fontSize: 14, color: AppTheme.systemGray),
               ),
             ],
