@@ -52,8 +52,14 @@ class UserSettings {
   final MapDisplayMode mapDisplayMode;
 
   // ===== 進階設定 =====
-  /// 是否免廣告
+  /// 是否免廣告 (VIP)
   final bool isAdFree;
+
+  /// 廣告票券數量 (可用於跳過插頁廣告)
+  final int adTicketCount;
+
+  /// 橫幅廣告移除期限 (獎勵廣告)
+  final DateTime? bannerAdFreeUntil;
 
   const UserSettings({
     // 測速設定
@@ -81,6 +87,8 @@ class UserSettings {
 
     // 進階設定
     this.isAdFree = false,
+    this.adTicketCount = 0,
+    this.bannerAdFreeUntil,
   });
 
   /// 預設設定
@@ -125,6 +133,10 @@ class UserSettings {
 
       // 進階設定
       isAdFree: json['isAdFree'] ?? false,
+      adTicketCount: json['adTicketCount'] ?? 0,
+      bannerAdFreeUntil: json['bannerAdFreeUntil'] != null
+          ? DateTime.parse(json['bannerAdFreeUntil'])
+          : null,
     );
   }
 
@@ -155,7 +167,10 @@ class UserSettings {
       'mapDisplayMode': mapDisplayMode.name,
 
       // 進階設定
+      // 進階設定
       'isAdFree': isAdFree,
+      'adTicketCount': adTicketCount,
+      'bannerAdFreeUntil': bannerAdFreeUntil?.toIso8601String(),
     };
   }
 
@@ -187,6 +202,8 @@ class UserSettings {
 
     // 進階設定
     bool? isAdFree,
+    int? adTicketCount,
+    DateTime? bannerAdFreeUntil,
   }) {
     return UserSettings(
       // 測速設定
@@ -217,6 +234,8 @@ class UserSettings {
 
       // 進階設定
       isAdFree: isAdFree ?? this.isAdFree,
+      adTicketCount: adTicketCount ?? this.adTicketCount,
+      bannerAdFreeUntil: bannerAdFreeUntil ?? this.bannerAdFreeUntil,
     );
   }
 
@@ -226,7 +245,9 @@ class UserSettings {
         'speedUnit: $speedUnit, '
         'isVoiceAlertEnabled: $isVoiceAlertEnabled, '
         'voiceVolume: $voiceVolume, '
-        'isAdFree: $isAdFree'
+        'isAdFree: $isAdFree, '
+        'adTicketCount: $adTicketCount, '
+        'bannerAdFreeUntil: $bannerAdFreeUntil'
         ')';
   }
 
@@ -250,7 +271,9 @@ class UserSettings {
         other.showSpeedLimit == showSpeedLimit &&
         other.showSpeedCamera == showSpeedCamera &&
         other.mapDisplayMode == mapDisplayMode &&
-        other.isAdFree == isAdFree;
+        other.isAdFree == isAdFree &&
+        other.adTicketCount == adTicketCount &&
+        other.bannerAdFreeUntil == bannerAdFreeUntil;
   }
 
   @override
@@ -272,6 +295,8 @@ class UserSettings {
       showSpeedCamera,
       mapDisplayMode,
       isAdFree,
+      adTicketCount,
+      bannerAdFreeUntil,
     );
   }
 }

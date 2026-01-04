@@ -65,6 +65,14 @@ class SettingsPage extends StatelessWidget {
                         // 一般設定
                         SettingsSectionHeader(title: 'settings.general'.tr()),
                         SettingsItem(
+                          title: 'settings.adManagement'.tr(),
+                          icon: Icons.card_giftcard,
+                          subtitle: 'settings.adManagementDesc'.tr(),
+                          onTap: () {
+                            _showAdManagementDialog(context);
+                          },
+                        ),
+                        SettingsItem(
                           title: 'settings.vehicleManagement'.tr(),
                           icon: Icons.directions_car_outlined,
                           onTap: () {
@@ -141,6 +149,68 @@ class SettingsPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showAdManagementDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'settings.adRewards'.tr(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.confirmation_number_outlined),
+                title: Text('settings.earnAdTicket'.tr()),
+                subtitle: Text('settings.earnAdTicketDesc'.tr()),
+                trailing: const Icon(Icons.play_circle_outline),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<SettingsBloc>().add(const WatchAdForTicket());
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.remove_circle_outline),
+                title: Text('settings.removeBanner'.tr()),
+                subtitle: Text('settings.removeBannerDesc'.tr()),
+                trailing: const Icon(Icons.play_circle_outline),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<SettingsBloc>().add(
+                    const WatchAdForBannerRemoval(),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
