@@ -123,10 +123,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               }
 
               switch (state) {
-                case SpeedData(
-                  // :final animationDuration, // TODO: 到時侯試試看要不要移除
-                  :final currentLocation,
-                ):
+                case SpeedData(:final currentLocation):
                   // 更新道路動畫時長
                   // _roadAnimationController.duration = animationDuration;
 

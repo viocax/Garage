@@ -41,13 +41,13 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
   @override
   void onAppResumed() {
     debugPrint('SpeedBloc: App 回到前景，使用高精度定位');
-    getIt.service.location.updatePolicy(LocationPolicy.best);
+    repository.setLocationPolicyBest();
   }
 
   @override
   void onAppPaused() {
     debugPrint('SpeedBloc: App 進入背景，切換至平衡定位模式');
-    getIt.service.location.updatePolicy(LocationPolicy.background);
+    repository.setLocationPolicyBackground();
   }
 
   Future<void> _onSpeedLoading(

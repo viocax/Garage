@@ -34,7 +34,6 @@ class LocalAdRepository implements AdRepository {
     // 檢查是否有廣告票券
     if (adTicketCount > 0) {
       await consumeAdTicket();
-      // TODO: 顯示 Toast 告知使用者使用了票券 (需透過 UI 層處理，這裡先只做邏輯)
       debugPrint('Used 1 Ad Ticket. Remaining: $adTicketCount');
       onComplete();
       return;

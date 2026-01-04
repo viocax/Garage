@@ -45,7 +45,7 @@ class SettingsPage extends StatelessWidget {
             );
             break;
           case SettingsError():
-            // TODO: show toast
+            // Error state - UI can optionally show feedback
             break;
         }
       },

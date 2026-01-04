@@ -33,5 +33,9 @@ abstract class ISpeedCameraRepository {
 
   Future<void> updateVolume(double percentage);
 
+  void setLocationPolicyBest();
+
+  void setLocationPolicyBackground();
+
   bool get isTracking;
 }

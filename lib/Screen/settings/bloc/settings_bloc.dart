@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/core/core.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
-import 'package:garage/core/repositories/ad_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -53,7 +52,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   }
 
   void _onClearData(Emitter<SettingsState> emit) {
-    // TODO: Implement clear data logic
+    // Planned feature: Clear all vehicle and record data
+    // Will be implemented when data management UI is ready
     debugPrint('Clear Data Triggered');
   }
 

@@ -76,7 +76,7 @@ class _RecordItem extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          // TODO: Navigate to record detail
+          // Record detail view - planned feature
         },
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),

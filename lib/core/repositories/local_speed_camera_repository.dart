@@ -167,7 +167,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       final hasPermission = await requestPermission(background: true);
       if (!hasPermission) {
         debugPrint('LocalSpeedCameraRepository: No location permission');
-        throw Exception('Location permission denied'); // TODO: 跳轉到權限設定頁面
+        throw Exception('Location permission denied');
       }
       _speedSubscription = _locationService.getPositionStream().listen(
         (position) async {
@@ -470,5 +470,15 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   Future<void> updateVolume(double percentage) async {
     final volume = percentage.clamp(0.0, 1.0);
     await _ttsService.setVolume(volume);
+  }
+
+  @override
+  void setLocationPolicyBest() {
+    _locationService.updatePolicy(LocationPolicy.best);
+  }
+
+  @override
+  void setLocationPolicyBackground() {
+    _locationService.updatePolicy(LocationPolicy.background);
   }
 }
