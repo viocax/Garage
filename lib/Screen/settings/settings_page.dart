@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/extensions/dialog_extension.dart';
 import 'package:garage/router/app_router.dart';
+import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:garage/widgets/widgets.dart';
 
@@ -11,6 +12,7 @@ import 'bloc/settings_event.dart';
 import 'bloc/settings_state.dart';
 import 'widgets/settings_item.dart';
 import 'widgets/settings_section_header.dart';
+import 'package:garage/screen/premium/premium_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -27,13 +29,18 @@ class SettingsPage extends StatelessWidget {
     final theme = Theme.of(context);
     return BlocConsumer<SettingsBloc, SettingsState>(
       listener: (context, state) {
-        switch (state) {
-          case SettingsNormal():
+        if (state.errorMessage != null) {
+          // Toast implementation can be added here
+        }
+
+        switch (state.action) {
+          case SettingsAction.none:
             break;
-          case GoToSpeedSetting():
+          case SettingsAction.goToSpeedSetting:
             context.goPath(AppPath.speedDetectionSettings);
+            context.read<SettingsBloc>().add(const ResetSettingsAction());
             break;
-          case RemindUserStopTrackingAlert():
+          case SettingsAction.showStopTrackingAlert:
             context.showAdaptivePermissionAlert(
               title: 'speedDetection.speedRunning'.tr(),
               message: 'speedDetection.speedRunningMsg'.tr(),
@@ -43,9 +50,7 @@ class SettingsPage extends StatelessWidget {
                 context.read<SettingsBloc>().add(const StopTracking());
               },
             );
-            break;
-          case SettingsError():
-            // Error state - UI can optionally show feedback
+            context.read<SettingsBloc>().add(const ResetSettingsAction());
             break;
         }
       },
@@ -62,16 +67,34 @@ class SettingsPage extends StatelessWidget {
                     child: ListView(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       children: [
-                        // 一般設定
-                        SettingsSectionHeader(title: 'settings.general'.tr()),
+                        // Garage Pro
+                        SettingsSectionHeader(title: 'GARAGE PRO'),
                         SettingsItem(
-                          title: 'settings.adManagement'.tr(),
-                          icon: Icons.card_giftcard,
-                          subtitle: 'settings.adManagementDesc'.tr(),
+                          title: 'Garage Pro',
+                          icon: Icons.star_outline,
+                          iconColor: AppTheme.accentColor,
+                          subtitle: '解鎖雲端同步與進階統計',
                           onTap: () {
-                            _showAdManagementDialog(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PremiumPage(),
+                              ),
+                            );
                           },
                         ),
+
+                        // 一般設定
+                        SettingsSectionHeader(title: 'settings.general'.tr()),
+                        if (!state.isPro)
+                          SettingsItem(
+                            title: 'settings.adManagement'.tr(),
+                            icon: Icons.card_giftcard,
+                            subtitle: 'settings.adManagementDesc'.tr(),
+                            onTap: () {
+                              _showAdManagementDialog(context);
+                            },
+                          ),
                         SettingsItem(
                           title: 'settings.vehicleManagement'.tr(),
                           icon: Icons.directions_car_outlined,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -99,8 +100,9 @@ class _PremiumAppBar extends StatelessWidget {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
       leading: IconButton(
-        icon: const Icon(Icons.close, color: Colors.white),
+        icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
         onPressed: () => Navigator.pop(context),
       ),
       pinned: true,
@@ -113,43 +115,71 @@ class _PremiumHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppTheme.dashboardAccentRed.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppTheme.dashboardAccentRed.withValues(alpha: 0.5),
+    return BlocBuilder<PremiumBloc, PremiumState>(
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.dashboardAccentRed.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppTheme.dashboardAccentRed.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: const Text(
+                    'GARAGE PRO',
+                    style: TextStyle(
+                      color: AppTheme.dashboardAccentRed,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+                if (state.isPro) ...[
+                  const SizedBox(width: 12),
+                  const Icon(
+                    Icons.verified,
+                    color: AppTheme.accentColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    '您已是 PRO 成員',
+                    style: TextStyle(
+                      color: AppTheme.accentColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ),
-          child: const Text(
-            'GARAGE PRO',
-            style: TextStyle(
-              color: AppTheme.dashboardAccentRed,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 2,
+            const SizedBox(height: 16),
+            const Text(
+              '解鎖所有進階功能',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          '解鎖所有進階功能',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          '升級 Pro 成員，享受無限同步與數據追蹤。',
-          style: TextStyle(color: AppTheme.systemGray, fontSize: 16),
-        ),
-      ],
+            const SizedBox(height: 8),
+            const Text(
+              '升級 Pro 成員，享受無限同步與數據追蹤。',
+              style: TextStyle(color: AppTheme.systemGray, fontSize: 16),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -230,6 +260,41 @@ class _OfferingsSection extends StatelessWidget {
       builder: (context, state) {
         if (state.status == PremiumStatus.loading) {
           return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state.isPro) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.accentColor, width: 1),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  color: AppTheme.accentColor,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '感謝您的支持！',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '您目前擁有 Garage Pro 的所有權限。',
+                  style: TextStyle(color: AppTheme.systemGray, fontSize: 14),
+                ),
+              ],
+            ),
+          );
         }
 
         if (state.offerings.isEmpty) {

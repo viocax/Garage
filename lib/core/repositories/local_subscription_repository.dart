@@ -22,4 +22,7 @@ class LocalSubscriptionRepository extends SubscriptionRepository {
 
   @override
   Future<void> restorePurchases() => _subscriptionService.restorePurchases();
+
+  @override
+  bool get isProCached => _subscriptionService.isProCached;
 }

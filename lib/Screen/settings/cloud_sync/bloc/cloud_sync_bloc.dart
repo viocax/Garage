@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/repositories/cloud_sync_repository.dart';
+import 'package:garage/core/repositories/subscription_repository.dart';
 import 'package:garage/core/service/cloud_sync/cloud_sync_service.dart';
 
 import 'cloud_sync_event.dart';
@@ -9,10 +10,15 @@ import 'cloud_sync_state.dart';
 
 class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
   final CloudSyncRepository _repository;
+  final SubscriptionRepository _subscriptionRepository;
 
-  CloudSyncBloc({CloudSyncRepository? repository})
-    : _repository = repository ?? getIt.repo.cloudSync,
-      super(const CloudSyncInitial()) {
+  CloudSyncBloc({
+    CloudSyncRepository? repository,
+    SubscriptionRepository? subscriptionRepository,
+  }) : _repository = repository ?? getIt.repo.cloudSync,
+       _subscriptionRepository =
+           subscriptionRepository ?? getIt.repo.subscription,
+       super(const CloudSyncInitial()) {
     on<CloudSyncEvent>(_onEvent);
     add(const LoadCloudSyncStatus());
   }
@@ -65,10 +71,13 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
         ? providerStatuses.first.provider
         : null;
 
+    final isPro = await _subscriptionRepository.isPro();
+
     emit(
       CloudSyncLoaded(
         providers: providerStatuses,
         selectedProvider: selectedProvider,
+        isPro: isPro,
       ),
     );
   }

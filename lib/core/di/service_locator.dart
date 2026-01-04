@@ -44,12 +44,15 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<AppOpenAdRepository>(
     () => AppOpenAdRepository(getIt<UserSettingsRepository>()),
   );
-  getIt.registerLazySingleton<AdRepository>(
-    () =>
-        LocalAdRepository(getIt<AdService>(), getIt<UserSettingsRepository>()),
-  );
   getIt.registerLazySingleton<SubscriptionRepository>(
     () => LocalSubscriptionRepository(getIt<SubscriptionService>()),
+  );
+  getIt.registerLazySingleton<AdRepository>(
+    () => LocalAdRepository(
+      getIt<AdService>(),
+      getIt<UserSettingsRepository>(),
+      getIt<SubscriptionRepository>(),
+    ),
   );
 }
 

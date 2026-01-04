@@ -7,4 +7,5 @@ abstract class SubscriptionService {
   Future<bool> purchasePackage(Package package);
   Future<void> restorePurchases();
   Stream<bool> get proStatusStream;
+  bool get isProCached;
 }

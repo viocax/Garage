@@ -29,3 +29,11 @@ final class WatchAdForBannerRemoval extends SettingsEvent {
 final class SendFeedback extends SettingsEvent {
   const SendFeedback();
 }
+
+final class LoadSettingsStatus extends SettingsEvent {
+  const LoadSettingsStatus();
+}
+
+final class ResetSettingsAction extends SettingsEvent {
+  const ResetSettingsAction();
+}

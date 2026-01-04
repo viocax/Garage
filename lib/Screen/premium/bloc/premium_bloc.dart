@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:garage/core/repositories/repositories.dart';
 import 'premium_event.dart';
@@ -5,6 +6,7 @@ import 'premium_state.dart';
 
 class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
   final SubscriptionRepository _subscriptionRepository;
+  StreamSubscription<bool>? _subscriptionSubscription;
 
   PremiumBloc({required SubscriptionRepository subscriptionRepository})
     : _subscriptionRepository = subscriptionRepository,
@@ -12,6 +14,13 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
     on<LoadPremiumOfferings>(_onLoadOfferings);
     on<PurchasePackage>(_onPurchasePackage);
     on<RestorePurchases>(_onRestorePurchases);
+    on<UpdateProStatus>(_onUpdateProStatus);
+
+    _subscriptionSubscription = _subscriptionRepository.isProStream.listen((
+      isPro,
+    ) {
+      add(UpdateProStatus(isPro: isPro));
+    });
 
     add(LoadPremiumOfferings());
   }
@@ -87,5 +96,15 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         ),
       );
     }
+  }
+
+  void _onUpdateProStatus(UpdateProStatus event, Emitter<PremiumState> emit) {
+    emit(state.copyWith(isPro: event.isPro));
+  }
+
+  @override
+  Future<void> close() {
+    _subscriptionSubscription?.cancel();
+    return super.close();
   }
 }

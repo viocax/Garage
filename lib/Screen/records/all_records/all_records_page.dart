@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
+import 'package:garage/core/di/service_locator.dart';
 
 import 'bloc/all_records_bloc.dart';
 import 'bloc/all_records_event.dart';
@@ -16,6 +18,7 @@ import 'widgets/all_records_list.dart';
 import 'widgets/fuel_efficiency_chart.dart';
 import 'widgets/annual_expense_comparison.dart';
 import 'package:garage/widgets/pro_feature_overlay.dart';
+import 'package:garage/screen/premium/premium_page.dart';
 
 class AllRecordsPage extends StatelessWidget {
   final Vehicle vehicle;
@@ -25,7 +28,10 @@ class AllRecordsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AllRecordsBloc(vehicle: vehicle),
+      create: (context) => AllRecordsBloc(
+        vehicle: vehicle,
+        subscriptionRepository: getIt.repo.subscription,
+      ),
       child: const _AllRecordsContent(),
     );
   }
@@ -43,6 +49,7 @@ class _AllRecordsContent extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
@@ -291,7 +298,12 @@ class _ChartsSection extends StatelessWidget {
                 ProFeatureOverlay(
                   isPro: state.isPro,
                   onUpgrade: () {
-                    // TODO: Open Premium Page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PremiumPage(),
+                      ),
+                    );
                   },
                   child: FuelEfficiencyChart(data: state.fuelEfficiencyData),
                 ),
@@ -300,7 +312,12 @@ class _ChartsSection extends StatelessWidget {
                 ProFeatureOverlay(
                   isPro: state.isPro,
                   onUpgrade: () {
-                    // TODO: Open Premium Page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PremiumPage(),
+                      ),
+                    );
                   },
                   child: AnnualExpenseComparison(data: state.annualExpenseData),
                 ),

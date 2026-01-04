@@ -19,3 +19,11 @@ class PurchasePackage extends PremiumEvent {
 }
 
 class RestorePurchases extends PremiumEvent {}
+
+class UpdateProStatus extends PremiumEvent {
+  final bool isPro;
+  const UpdateProStatus({required this.isPro});
+
+  @override
+  List<Object?> get props => [isPro];
+}

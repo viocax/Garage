@@ -6,9 +6,13 @@ import 'subscription_service.dart';
 
 class RevenueCatService extends SubscriptionService {
   final _proStatusController = StreamController<bool>.broadcast();
+  bool _isProCached = false;
 
   @override
   Stream<bool> get proStatusStream => _proStatusController.stream;
+
+  @override
+  bool get isProCached => _isProCached;
 
   @override
   Future<void> initialize() async {
@@ -47,6 +51,7 @@ class RevenueCatService extends SubscriptionService {
   void _updateProStatusFromInfo(CustomerInfo customerInfo) {
     // We assume the entitlement ID is "pro"
     final isPro = customerInfo.entitlements.active.containsKey("pro");
+    _isProCached = isPro;
     _proStatusController.add(isPro);
   }
 

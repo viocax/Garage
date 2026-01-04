@@ -1,21 +1,32 @@
+import 'package:equatable/equatable.dart';
 
-sealed class SettingsState {
-  const SettingsState();
-}
+enum SettingsAction { none, goToSpeedSetting, showStopTrackingAlert }
 
-final class SettingsNormal extends SettingsState {
-  const SettingsNormal();
-}
+class SettingsState extends Equatable {
+  final bool isPro;
+  final SettingsAction action;
+  final String? errorMessage;
 
-final class GoToSpeedSetting extends SettingsState {
-  const GoToSpeedSetting();
-}
+  const SettingsState({
+    this.isPro = false,
+    this.action = SettingsAction.none,
+    this.errorMessage,
+  });
 
-final class RemindUserStopTrackingAlert extends SettingsState {
-  const RemindUserStopTrackingAlert();
-}
+  @override
+  List<Object?> get props => [isPro, action, errorMessage];
 
-final class SettingsError extends SettingsState {
-  final String message;
-  const SettingsError(this.message);
+  SettingsState copyWith({
+    bool? isPro,
+    SettingsAction? action,
+    String? errorMessage,
+    bool clearAction = false,
+    bool clearError = false,
+  }) {
+    return SettingsState(
+      isPro: isPro ?? this.isPro,
+      action: clearAction ? SettingsAction.none : (action ?? this.action),
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
 }

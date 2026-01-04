@@ -16,8 +16,12 @@ class ProviderStatus extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [provider, isAvailable, isAuthenticated, lastSyncTime];
+  List<Object?> get props => [
+    provider,
+    isAvailable,
+    isAuthenticated,
+    lastSyncTime,
+  ];
 }
 
 sealed class CloudSyncState extends Equatable {
@@ -39,6 +43,7 @@ final class CloudSyncLoaded extends CloudSyncState {
   final bool isSyncing;
   final String? syncMessage;
   final String? errorMessage;
+  final bool isPro;
 
   const CloudSyncLoaded({
     required this.providers,
@@ -46,16 +51,18 @@ final class CloudSyncLoaded extends CloudSyncState {
     this.isSyncing = false,
     this.syncMessage,
     this.errorMessage,
+    this.isPro = false,
   });
 
   @override
   List<Object?> get props => [
-        providers,
-        selectedProvider,
-        isSyncing,
-        syncMessage,
-        errorMessage,
-      ];
+    providers,
+    selectedProvider,
+    isSyncing,
+    syncMessage,
+    errorMessage,
+    isPro,
+  ];
 
   CloudSyncLoaded copyWith({
     List<ProviderStatus>? providers,
@@ -66,15 +73,17 @@ final class CloudSyncLoaded extends CloudSyncState {
     bool clearError = false,
     bool clearSelected = false,
     bool clearSyncMessage = false,
+    bool? isPro,
   }) {
     return CloudSyncLoaded(
       providers: providers ?? this.providers,
-      selectedProvider:
-          clearSelected ? null : (selectedProvider ?? this.selectedProvider),
+      selectedProvider: clearSelected
+          ? null
+          : (selectedProvider ?? this.selectedProvider),
       isSyncing: isSyncing ?? this.isSyncing,
-      syncMessage:
-          clearSyncMessage ? null : (syncMessage ?? this.syncMessage),
+      syncMessage: clearSyncMessage ? null : (syncMessage ?? this.syncMessage),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      isPro: isPro ?? this.isPro,
     );
   }
 }

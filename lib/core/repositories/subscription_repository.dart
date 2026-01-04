@@ -6,4 +6,5 @@ abstract class SubscriptionRepository {
   Future<List<Offering>> getOfferings();
   Future<bool> purchasePackage(Package package);
   Future<void> restorePurchases();
+  bool get isProCached;
 }

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/screen/settings/widgets/settings_section_header.dart';
+import 'package:garage/widgets/pro_feature_overlay.dart';
+import 'package:garage/screen/premium/premium_page.dart';
 import 'package:garage/theme/theme.dart';
 
 import 'bloc/cloud_sync_bloc.dart';
@@ -73,29 +75,40 @@ class _CloudSyncBody extends StatelessWidget {
           _buildHeader(context),
           // Content
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                SettingsSectionHeader(
-                  title: state.providers.length == 1
-                      ? 'cloudSync.service'.tr()
-                      : 'cloudSync.selectService'.tr(),
-                ),
-                ...state.providers.map(
-                  (status) => _buildProviderTile(
-                    context,
-                    status,
-                    isSelected:
-                        state.providers.length > 1 &&
-                        state.selectedProvider == status.provider,
+            child: ProFeatureOverlay(
+              isPro: state.isPro,
+              onUpgrade: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PremiumPage()),
+                );
+              },
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: [
+                  SettingsSectionHeader(
+                    title: state.providers.length == 1
+                        ? 'cloudSync.service'.tr()
+                        : 'cloudSync.selectService'.tr(),
                   ),
-                ),
-                const SizedBox(height: 16),
-                if (state.selectedProvider != null) ...[
-                  SettingsSectionHeader(title: 'cloudSync.syncOperations'.tr()),
-                  _buildSyncActions(context, state),
+                  ...state.providers.map(
+                    (status) => _buildProviderTile(
+                      context,
+                      status,
+                      isSelected:
+                          state.providers.length > 1 &&
+                          state.selectedProvider == status.provider,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (state.selectedProvider != null) ...[
+                    SettingsSectionHeader(
+                      title: 'cloudSync.syncOperations'.tr(),
+                    ),
+                    _buildSyncActions(context, state),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ],

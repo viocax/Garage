@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/core/core.dart';
@@ -9,9 +10,20 @@ import 'package:url_launcher/url_launcher.dart';
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final ISpeedCameraRepository _speedCameraRepository = getIt.repo.speedCamera;
   final AdRepository _adRepository = getIt.repo.ad;
+  final SubscriptionRepository _subscriptionRepository =
+      getIt.repo.subscription;
+  StreamSubscription<bool>? _subscriptionSubscription;
 
-  SettingsBloc() : super(const SettingsNormal()) {
+  SettingsBloc() : super(const SettingsState()) {
     on<SettingsEvent>(_onEvent);
+
+    _subscriptionSubscription = _subscriptionRepository.isProStream.listen((
+      isPro,
+    ) {
+      add(const LoadSettingsStatus());
+    });
+
+    add(const LoadSettingsStatus());
   }
 
   Future<void> _onEvent(
@@ -31,56 +43,57 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         await _onWatchAdForBannerRemoval(emit);
       case SendFeedback():
         await _onSendFeedback(emit);
+      case LoadSettingsStatus():
+        await _onLoadStatus(emit);
+      case ResetSettingsAction():
+        emit(state.copyWith(clearAction: true));
     }
+  }
+
+  Future<void> _onLoadStatus(Emitter<SettingsState> emit) async {
+    final isPro = await _subscriptionRepository.isPro();
+    emit(state.copyWith(isPro: isPro));
   }
 
   Future<void> _onStopTracking(Emitter<SettingsState> emit) async {
     try {
       await _speedCameraRepository.stopLocationTracking();
-      emit(const GoToSpeedSetting());
+      emit(state.copyWith(action: SettingsAction.goToSpeedSetting));
     } catch (e) {
-      emit(SettingsError(e.toString()));
+      emit(state.copyWith(errorMessage: e.toString()));
     }
   }
 
   void _onClickSpeedSetting(Emitter<SettingsState> emit) {
     if (_speedCameraRepository.isTracking) {
-      emit(const RemindUserStopTrackingAlert());
+      emit(state.copyWith(action: SettingsAction.showStopTrackingAlert));
     } else {
-      emit(const GoToSpeedSetting());
+      emit(state.copyWith(action: SettingsAction.goToSpeedSetting));
     }
   }
 
   void _onClearData(Emitter<SettingsState> emit) {
-    // Planned feature: Clear all vehicle and record data
-    // Will be implemented when data management UI is ready
     debugPrint('Clear Data Triggered');
   }
 
   Future<void> _onWatchAdForTicket(Emitter<SettingsState> emit) async {
-    // 檢查是否已是 VIP
     if (_adRepository.isAdFree) return;
 
     await _adRepository.showRewardedAd(
       onReward: () async {
         await _adRepository.grantAdTicket(1);
-        emit(
-          SettingsError('settings.earnedTicketSuccess'.tr()),
-        ); // 暫時用 Error state 來顯示 Toast
+        emit(state.copyWith(errorMessage: 'settings.earnedTicketSuccess'.tr()));
       },
     );
   }
 
   Future<void> _onWatchAdForBannerRemoval(Emitter<SettingsState> emit) async {
-    // 檢查是否已是 VIP
     if (_adRepository.isAdFree) return;
 
     await _adRepository.showRewardedAd(
       onReward: () async {
         await _adRepository.grantBannerAdFree(const Duration(hours: 12));
-        emit(
-          SettingsError('settings.removeBannerSuccess'.tr()),
-        ); // 暫時用 Error state 來顯示 Toast
+        emit(state.copyWith(errorMessage: 'settings.removeBannerSuccess'.tr()));
       },
     );
   }
@@ -88,7 +101,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   Future<void> _onSendFeedback(Emitter<SettingsState> emit) async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'drake.garage.app@gmail.com', // 預設一個開發者聯絡信箱
+      path: 'drake.garage.app@gmail.com',
       query: _encodeQueryParameters(<String, String>{
         'subject': 'Garage App Feedback',
       }),
@@ -98,10 +111,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       if (await canLaunchUrl(emailLaunchUri)) {
         await launchUrl(emailLaunchUri);
       } else {
-        emit(const SettingsError('無法開啟郵件應用程式'));
+        emit(state.copyWith(errorMessage: '無法開啟郵件應用程式'));
       }
     } catch (e) {
-      emit(SettingsError('發生錯誤：$e'));
+      emit(state.copyWith(errorMessage: '發生錯誤：$e'));
     }
   }
 
@@ -112,5 +125,11 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
               '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
         )
         .join('&');
+  }
+
+  @override
+  Future<void> close() {
+    _subscriptionSubscription?.cancel();
+    return super.close();
   }
 }

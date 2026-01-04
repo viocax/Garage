@@ -1,16 +1,24 @@
 import 'package:flutter/widgets.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
+import 'package:garage/core/repositories/subscription_repository.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:garage/core/service/ad/ad_service.dart';
 
 class LocalAdRepository implements AdRepository {
   final AdService _adService;
   final UserSettingsRepository _userSettings;
+  final SubscriptionRepository _subscriptionRepository;
 
-  LocalAdRepository(this._adService, this._userSettings);
+  LocalAdRepository(
+    this._adService,
+    this._userSettings,
+    this._subscriptionRepository,
+  );
 
   @override
-  bool get isAdFree => _userSettings.currentSettings.isAdFree;
+  bool get isAdFree =>
+      _userSettings.currentSettings.isAdFree ||
+      _subscriptionRepository.isProCached;
 
   @override
   bool get isBannerAdFree {

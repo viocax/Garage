@@ -59,6 +59,7 @@ class _AddVehicleViewContent extends StatelessWidget {
             SliverAppBar(
               backgroundColor: Colors.transparent,
               surfaceTintColor: Colors.transparent,
+              systemOverlayStyle: SystemUiOverlayStyle.light,
               pinned: true,
               expandedHeight: 280,
               leading: _CloseButton(),

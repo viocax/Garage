@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/core/models/vehicle.dart';
@@ -56,6 +57,7 @@ class _AddRecordViewContent extends StatelessWidget {
         backgroundColor: AppTheme.dashboardBg,
         appBar: AppBar(
           backgroundColor: AppTheme.dashboardBg,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
           surfaceTintColor:
               Colors.transparent, // Disable Material 3 surface tint
           centerTitle: true,

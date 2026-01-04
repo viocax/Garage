@@ -14,9 +14,9 @@
 - [ ] Task: 實作「還原購買 (Restore Purchases)」功能並驗證狀態同步。
 - [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
-## Phase 3: 功能門控與權限實作 (Feature Gating)
-- [ ] Task: 整合訂閱狀態至 `AdRepository`，為 Pro 用戶移除所有廣告單元。
-- [ ] Task: 限制「雲端備份與還原」功能僅供 Pro 用戶使用。
-- [ ] Task: 解鎖 Phase 1 實作的進階統計圖表。
+## Phase 3: 功能權限控管 (Feature Gating)
+- [x] Task: 實作 AdService 的 `removeAds` 邏輯，當 `isPro` 為 true 時停用所有廣告。
+- [x] Task: 實作 Cloud Sync 的權限檢查，非 Pro 用戶限制使用雲端備份功能。
+- [x] Task: 在全域 Bloc (如 `AppBloc` 或透過 `SubscriptionRepository` 流) 中實作訂閱狀態的自動更新。
 - [ ] Task: 實作訂閱成功後的歡迎導引或狀態標籤更新。
 - [ ] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
