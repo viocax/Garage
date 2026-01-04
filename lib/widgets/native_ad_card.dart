@@ -10,9 +10,13 @@ class NativeAdCard extends StatefulWidget {
   State<NativeAdCard> createState() => _NativeAdCardState();
 }
 
-class _NativeAdCardState extends State<NativeAdCard> {
+class _NativeAdCardState extends State<NativeAdCard>
+    with AutomaticKeepAliveClientMixin {
   NativeAd? _nativeAd;
   bool _isLoaded = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -30,6 +34,10 @@ class _NativeAdCardState extends State<NativeAdCard> {
       request: const AdRequest(),
       listener: NativeAdListener(
         onAdLoaded: (ad) {
+          if (!mounted) {
+            ad.dispose();
+            return;
+          }
           setState(() {
             _isLoaded = true;
           });
@@ -37,6 +45,11 @@ class _NativeAdCardState extends State<NativeAdCard> {
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
           debugPrint('NativeAd failed to load: $error');
+          if (mounted) {
+            setState(() {
+              _isLoaded = false;
+            });
+          }
         },
       ),
     )..load();
@@ -50,6 +63,7 @@ class _NativeAdCardState extends State<NativeAdCard> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // 必須呼叫 super.build
     if (getIt.repo.ad.isAdFree) {
       return const SizedBox.shrink();
     }
