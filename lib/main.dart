@@ -19,6 +19,9 @@ void main() async {
   // 載入使用者設定
   await getIt.repo.userSettings.loadSettings();
 
+  // 初始化年度訂閱服務
+  await getIt.service.subscription.initialize();
+
   // 初始化廣告服務
   await getIt.service.ad.initialize();
   getIt.repo.appOpenAd.loadAd();
