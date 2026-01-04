@@ -247,7 +247,7 @@ class RecordTypeOther extends RecordType {
   IconData get icon => Icons.receipt;
 
   @override
-  Color get color => AppTheme.systemGray;
+  Color get color => AppTheme.recordTypeOtherColor;
 
   @override
   String get typeName => 'other';
@@ -349,4 +349,17 @@ class VehicleRecord {
   // Helper to format km
   String get formattedKm =>
       '${km.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} km';
+
+  /// 計算油耗 (km/L)
+  /// 需要提供上一次加油時的里程數
+  double calculateFuelEfficiency(int previousKm) {
+    if (typeName != 'fuel' || fuelData == null || fuelData!.fuelAmount <= 0) {
+      return 0.0;
+    }
+
+    final distance = km - previousKm;
+    if (distance <= 0) return 0.0;
+
+    return distance / fuelData!.fuelAmount;
+  }
 }

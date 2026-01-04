@@ -13,7 +13,7 @@ class TypeFilterChips extends StatelessWidget {
   static const _types = [
     ('fuel', '加油', Icons.local_gas_station, AppTheme.recordTypeFuelColor),
     ('maintenance', '保養', Icons.build, AppTheme.recordTypeMaintenanceColor),
-    ('other', '其他', Icons.receipt, AppTheme.systemGray),
+    ('other', '其他', Icons.receipt, AppTheme.recordTypeOtherColor),
   ];
 
   @override
@@ -24,28 +24,25 @@ class TypeFilterChips extends StatelessWidget {
         children: [
           const Text(
             '篩選：',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.systemGray,
-            ),
+            style: TextStyle(fontSize: 12, color: AppTheme.systemGray),
           ),
           const SizedBox(width: 8),
-          ..._types.map((type) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: _FilterChip(
-                  typeName: type.$1,
-                  label: type.$2,
-                  icon: type.$3,
-                  color: type.$4,
-                  isSelected:
-                      selectedTypes.isEmpty || selectedTypes.contains(type.$1),
-                  onTap: () {
-                    context.read<AllRecordsBloc>().add(
-                          ToggleTypeFilter(type.$1),
-                        );
-                  },
-                ),
-              )),
+          ..._types.map(
+            (type) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: _FilterChip(
+                typeName: type.$1,
+                label: type.$2,
+                icon: type.$3,
+                color: type.$4,
+                isSelected:
+                    selectedTypes.isEmpty || selectedTypes.contains(type.$1),
+                onTap: () {
+                  context.read<AllRecordsBloc>().add(ToggleTypeFilter(type.$1));
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -86,7 +83,11 @@ class _FilterChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: isSelected ? color : AppTheme.systemGray),
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected ? color : AppTheme.systemGray,
+            ),
             const SizedBox(width: 4),
             Text(
               label,

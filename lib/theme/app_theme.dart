@@ -44,8 +44,11 @@ class AppTheme {
     0xFFD9923B,
   ); // Fuel record orange
   static const Color recordTypeMaintenanceColor = Color(
-    0xFF7A8A99,
-  ); // Maintenance record grey-blue
+    0xFF007AFF,
+  ); // Maintenance record vibrant blue
+  static const Color recordTypeOtherColor = Color(
+    0xFF5856D6,
+  ); // Other record vibrant purple
 
   // Speed Indicator Colors
   static const Color speedSlow = Color(0xFF34C759); // Green for low speed

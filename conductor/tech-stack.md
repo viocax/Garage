@@ -29,3 +29,7 @@
 - **Location**: [geolocator](https://pub.dev/packages/geolocator)
 - **Text-to-Speech**: [flutter_tts](https://pub.dev/packages/flutter_tts)
 - **Network**: [dio](https://pub.dev/packages/dio)
+
+## 6. Monetization & Analytics
+- **Subscription**: [RevenueCat](https://www.revenuecat.com/) (`purchases_flutter`)
+- **Advertising**: [Google Mobile Ads SDK](https://pub.dev/packages/google_mobile_ads)

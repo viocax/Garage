@@ -38,7 +38,7 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
       final availableMonths = _extractAvailableMonths(records);
 
       // Calculate chart data
-      
+
       final monthlyData = _calculateMonthlyExpense(records);
       final categoryData = _calculateCategoryExpense(records);
       final totalExpense = records.fold(0.0, (sum, r) => sum + r.cost);
@@ -83,6 +83,9 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
       newTypes.remove(event.typeName);
     } else {
       newTypes.add(event.typeName);
+    }
+    if (newTypes.isEmpty) {
+      return;
     }
     emit(state.copyWith(selectedTypes: newTypes));
     _applyFilters(emit);
@@ -207,13 +210,13 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
     const colorMap = {
       'fuel': AppTheme.recordTypeFuelColor,
       'maintenance': AppTheme.recordTypeMaintenanceColor,
-      'other': AppTheme.systemGray,
+      'other': AppTheme.recordTypeOtherColor,
     };
 
     final labelMap = {
       'fuel': 'recordType.fuel'.tr(),
       'maintenance': 'recordType.maintenance'.tr(),
-      'other': 'recordType.other'.tr()
+      'other': 'recordType.other'.tr(),
     };
 
     return categoryTotals.entries

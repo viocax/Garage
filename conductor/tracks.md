@@ -11,3 +11,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ## [ ] Track: Google AdMob 整合計畫 (AdMob Integration)
 *Link: [./conductor/tracks/ads_integration_20260103/](./conductor/tracks/ads_integration_20260103/)*
+
+---
+
+## [ ] Track: 訂閱制與進階統計 (Pro Subscription & Advanced Statistics)
+*Link: [./conductor/tracks/subscription_stats_20260104/](./conductor/tracks/subscription_stats_20260104/)*
