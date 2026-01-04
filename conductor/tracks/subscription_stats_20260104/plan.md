@@ -2,9 +2,9 @@
 
 ## Phase 1: 進階統計功能 (Advanced Statistics)
 - [x] Task: 更新 `VehicleRecord` 模型，增加油耗計算輔助方法 `km/L`。 50b5a48
-- [ ] Task: 實作 `FuelEfficiencyChart` 元件，展示加油效率趨勢（折線圖）。
-- [ ] Task: 實作 `AnnualExpenseComparison` 元件，比較不同年度的總花費。
-- [ ] Task: 整合進階統計至 `AllRecordsPage`，並為非訂閱用戶實作鎖定/預覽遮蓋 UI。
+- [x] Task: 實作 `FuelEfficiencyChart` 元件，展示加油效率趨勢（折線圖）。 2c7afd6
+- [x] Task: 實作 `AnnualExpenseComparison` 元件，比較不同年度的總花費。 2c7afd6
+- [x] Task: 整合進階統計至 `AllRecordsPage`，並為非訂閱用戶實作鎖定/預覽遮蓋 UI。 1d20d64
 - [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: RevenueCat 整合與訂閱架構 (RevenueCat Integration)
