@@ -8,6 +8,7 @@ class SettingsItem extends StatelessWidget {
   final String? subtitle;
   final bool isDestructive;
   final Color? iconColor;
+  final Widget? trailing;
   final VoidCallback? onTap;
 
   const SettingsItem({
@@ -17,6 +18,7 @@ class SettingsItem extends StatelessWidget {
     this.subtitle,
     this.isDestructive = false,
     this.iconColor,
+    this.trailing,
     this.onTap,
   });
 
@@ -61,7 +63,9 @@ class SettingsItem extends StatelessWidget {
                   ),
                 )
               : null,
-          trailing: const Icon(Icons.chevron_right, color: AppTheme.systemGray),
+          trailing:
+              trailing ??
+              const Icon(Icons.chevron_right, color: AppTheme.systemGray),
           onTap: onTap ?? () {},
         ),
       ),

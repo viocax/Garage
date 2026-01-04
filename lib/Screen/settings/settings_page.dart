@@ -67,13 +67,26 @@ class SettingsPage extends StatelessWidget {
                     child: ListView(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       children: [
+                        const _SettingsHeader(),
+                        const SizedBox(height: 16),
                         // Garage Pro
                         SettingsSectionHeader(title: 'GARAGE PRO'),
                         SettingsItem(
                           title: 'Garage Pro',
-                          icon: Icons.star_outline,
+                          icon: state.isPro
+                              ? Icons.verified
+                              : Icons.star_outline,
                           iconColor: AppTheme.accentColor,
-                          subtitle: '解鎖雲端同步與進階統計',
+                          subtitle: state.isPro ? 'Pro 功能已全數解鎖' : '解鎖雲端同步與進階統計',
+                          trailing: state.isPro
+                              ? const Text(
+                                  '已啟用',
+                                  style: TextStyle(
+                                    color: AppTheme.accentColor,
+                                    fontSize: 12,
+                                  ),
+                                )
+                              : null,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -254,6 +267,84 @@ class SettingsPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SettingsHeader extends StatelessWidget {
+  const _SettingsHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.whiteTransparent05,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: state.isPro
+                        ? AppTheme.accentColor
+                        : AppTheme.whiteTransparent15,
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    state.isPro ? Icons.star : Icons.person_outline,
+                    size: 40,
+                    color: state.isPro
+                        ? AppTheme.accentColor
+                        : AppTheme.systemGray,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'My Garage',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if (state.isPro) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: AppTheme.accentColor),
+                      ),
+                      child: const Text(
+                        'PRO',
+                        style: TextStyle(
+                          color: AppTheme.accentColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

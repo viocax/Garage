@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:garage/router/app_router.dart';
 import 'bloc/premium_bloc.dart';
 import 'bloc/premium_event.dart';
 import 'bloc/premium_state.dart';
@@ -26,67 +27,105 @@ class PremiumView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.dashboardBg,
-      body: Stack(
-        children: [
-          // Background Gradient
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.darkSurface,
-                    const Color(0xFF1A1A1A),
-                    AppTheme.dashboardBg,
-                  ],
-                ),
+    return BlocListener<PremiumBloc, PremiumState>(
+      listenWhen: (previous, current) =>
+          previous.status == PremiumStatus.purchasing &&
+          current.status == PremiumStatus.success,
+      listener: (context, state) {
+        if (state.status == PremiumStatus.success && state.isPro) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: AppTheme.darkSurface,
+              title: const Text('恭喜！', style: TextStyle(color: Colors.white)),
+              content: const Text(
+                '您已成功啟用 Garage Pro 權限，享受完整功能。',
+                style: TextStyle(color: AppTheme.systemGray),
               ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    '太棒了',
+                    style: TextStyle(color: AppTheme.accentColor),
+                  ),
+                ),
+              ],
             ),
-          ),
-          // Content
-          CustomScrollView(
-            slivers: [
-              const _PremiumAppBar(),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _PremiumHeader(),
-                      const SizedBox(height: 32),
-                      const _FeatureList(),
-                      const SizedBox(height: 40),
-                      const _OfferingsSection(),
-                      const SizedBox(height: 24),
-                      const _RestoreButton(),
-                      const SizedBox(height: 40),
+          );
+        } else if (state.status == PremiumStatus.failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? '操作失敗'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.dashboardBg,
+        body: Stack(
+          children: [
+            // Background Gradient
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppTheme.darkSurface,
+                      const Color(0xFF1A1A1A),
+                      AppTheme.dashboardBg,
                     ],
                   ),
                 ),
               ),
-            ],
-          ),
-          // Loading Overlay
-          BlocBuilder<PremiumBloc, PremiumState>(
-            builder: (context, state) {
-              if (state.status == PremiumStatus.purchasing) {
-                return Container(
-                  color: Colors.black54,
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.dashboardAccentRed,
+            ),
+            // Content
+            CustomScrollView(
+              slivers: [
+                const _PremiumAppBar(),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _PremiumHeader(),
+                        const SizedBox(height: 32),
+                        const _FeatureList(),
+                        const SizedBox(height: 40),
+                        const _OfferingsSection(),
+                        const SizedBox(height: 24),
+                        const _RestoreButton(),
+                        const SizedBox(height: 24),
+                        const _LegalLinks(),
+                        const SizedBox(height: 40),
+                      ],
                     ),
                   ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ],
+                ),
+              ],
+            ),
+            // Loading Overlay
+            BlocBuilder<PremiumBloc, PremiumState>(
+              builder: (context, state) {
+                if (state.status == PremiumStatus.purchasing) {
+                  return Container(
+                    color: Colors.black54,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.dashboardAccentRed,
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -444,6 +483,36 @@ class _RestoreButton extends StatelessWidget {
             fontSize: 14,
             decoration: TextDecoration.underline,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LegalLinks extends StatelessWidget {
+  const _LegalLinks();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _linkButton(context, '服務條款', AppPath.termsOfService),
+        const Text(' | ', style: TextStyle(color: AppTheme.systemGray)),
+        _linkButton(context, '隱私政策', AppPath.privacyPolicy),
+      ],
+    );
+  }
+
+  Widget _linkButton(BuildContext context, String text, AppPath path) {
+    return TextButton(
+      onPressed: () => context.goPath(path),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppTheme.systemGray,
+          fontSize: 12,
+          decoration: TextDecoration.underline,
         ),
       ),
     );

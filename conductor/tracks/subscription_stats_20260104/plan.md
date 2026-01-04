@@ -19,4 +19,11 @@
 - [x] Task: 實作 Cloud Sync 的權限檢查，非 Pro 用戶限制使用雲端備份功能。
 - [x] Task: 在全域 Bloc (如 `AppBloc` 或透過 `SubscriptionRepository` 流) 中實作訂閱狀態的自動更新。
 - [ ] Task: 實作訂閱成功後的歡迎導引或狀態標籤更新。
-- [ ] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
+- [ ] Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
+
+## Phase 4: 體驗優化與合規性 (Experience & Compliance Optimization)
+- [x] Task: 在 `PremiumPage` 加入服務條款 (Terms) 與隱私政策 (Privacy) 連結 (商店審核必備)。
+- [x] Task: 優化購買/還原成功的反饋 UI（例如顯示成功對話框或動畫）。
+- [x] Task: 在「設定」頁面頂部或側邊欄加入 Pro 專屬徽章，增強歸屬感。
+- [x] Task: 確保所有購買流程中都有明確的 Loading 狀態與錯誤提示。
+- [ ] Task: Conductor - User Manual Verification 'Phase 4' (Protocol in workflow.md)
