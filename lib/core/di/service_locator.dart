@@ -1,25 +1,7 @@
-import 'package:garage/core/repositories/local_user_settings_repository.dart';
-import 'package:garage/core/repositories/user_settings_repository.dart'
-    show UserSettingsRepository;
-import 'package:garage/core/repositories/vehicle_repository.dart';
-import 'package:garage/core/repositories/local_vehicle_repository.dart';
-import 'package:garage/core/repositories/cloud_sync_repository.dart';
-import 'package:garage/core/repositories/local_cloud_sync_repository.dart';
-import 'package:garage/core/repositories/app_open_ad_repository.dart';
-import 'package:garage/core/repositories/ad_repository.dart';
-import 'package:garage/core/repositories/local_ad_repository.dart';
-import 'package:garage/core/service/ad/ad_service.dart';
-import 'package:garage/core/service/ad/mobile_ad_service.dart';
 import 'package:get_it/get_it.dart';
-import '../service/isar_service.dart';
-import '../service/network/http_service.dart';
-import '../service/location/location_service.dart';
-import '../service/shared_preferences/shared_preferences_service.dart';
-import '../service/tts/tts_service.dart';
-import '../service/cloud_sync/icloud_sync_service.dart';
-import '../service/cloud_sync/google_drive_sync_service.dart';
-import '../repositories/speed_camera_repository.dart';
-import '../repositories/local_speed_camera_repository.dart';
+
+import '../repositories/repositories.dart';
+import '../service/services.dart';
 
 final getIt = GetIt.instance;
 

@@ -132,7 +132,10 @@ lib/core/
 │       ├── vehicle_repository.dart
 │       ├── local_vehicle_repository.dart
 │       ├── cloud_sync_repository.dart
-│       └── local_cloud_sync_repository.dart
+│       ├── local_cloud_sync_repository.dart
+│       ├── app_open_ad_repository.dart
+│       ├── ad_repository.dart
+│       └── local_ad_repository.dart
 │
 ├── service/
 │   └── services.dart              # 匯出所有 service
@@ -151,8 +154,14 @@ lib/core/
 │       ├── shared_preferences/
 │       │   ├── shared_preferences_service.dart
 │       │   └── shared_preferences_interface.dart
-│       └── cloud_sync/
-│           └── cloud_sync.dart    # 匯出 cloud_sync_service.dart
+│       ├── cloud_sync/
+│       │   └── cloud_sync.dart    # 匯出所有 cloud sync 相關 service
+│       │       ├── cloud_sync_service.dart
+│       │       ├── google_drive_sync_service.dart
+│       │       └── icloud_sync_service.dart
+│       └── ad/
+│           ├── ad_service.dart
+│           └── mobile_ad_service.dart
 │
 ├── extensions/
 │   └── extensions.dart            # 匯出所有 extension
@@ -165,7 +174,8 @@ lib/core/
 ├── utils/
 │   └── utils.dart                 # 匯出所有 utility
 │       ├── auto_release_queue.dart
-│       └── stream_extensions.dart
+│       ├── stream_extensions.dart
+│       └── app_documents.dart
 │
 └── di/
     └── service_locator.dart       # GetIt 依賴注入設定
