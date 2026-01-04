@@ -15,6 +15,7 @@ import 'package:garage/screen/records/add_record/add_record_page.dart';
 import 'package:garage/screen/records/add_vehicle/add_vehicle_page.dart';
 import 'package:garage/screen/records/all_records/all_records_page.dart';
 import 'package:garage/core/models/vehicle.dart';
+import 'package:garage/screen/premium/premium_page.dart';
 
 /// 路由路徑枚舉，統一管理所有路由的 path 和 name
 class AppPath {
@@ -50,6 +51,8 @@ class AppPath {
   );
 
   static final cloudSync = AppPath(name: 'cloudSync', previous: settings);
+
+  static final premium = AppPath(name: 'premium', previous: settings);
 
   static final termsOfService = AppPath(
     name: 'termsOfService',
@@ -216,6 +219,12 @@ class AppRouter {
                         title: 'settings.openSourceLicenses'.tr(),
                         markdownContent: AppDocuments.openSourceLicenses,
                       ),
+                    ),
+                    GoRoute(
+                      path: AppPath.premium.path,
+                      name: AppPath.premium.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const PremiumPage(),
                     ),
                   ],
                 ),

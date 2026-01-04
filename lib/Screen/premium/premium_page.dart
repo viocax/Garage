@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:garage/core/di/service_locator.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:garage/core/core.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:garage/router/app_router.dart';
@@ -37,17 +38,20 @@ class PremiumView extends StatelessWidget {
             context: context,
             builder: (context) => AlertDialog(
               backgroundColor: AppTheme.darkSurface,
-              title: const Text('恭喜！', style: TextStyle(color: Colors.white)),
-              content: const Text(
-                '您已成功啟用 Garage Pro 權限，享受完整功能。',
-                style: TextStyle(color: AppTheme.systemGray),
+              title: Text(
+                'premium.successTitle'.tr(),
+                style: const TextStyle(color: Colors.white),
+              ),
+              content: Text(
+                'premium.successDesc'.tr(),
+                style: const TextStyle(color: AppTheme.systemGray),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    '太棒了',
-                    style: TextStyle(color: AppTheme.accentColor),
+                  child: Text(
+                    'premium.successButton'.tr(),
+                    style: const TextStyle(color: AppTheme.accentColor),
                   ),
                 ),
               ],
@@ -56,7 +60,9 @@ class PremiumView extends StatelessWidget {
         } else if (state.status == PremiumStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? '操作失敗'),
+              content: Text(
+                state.errorMessage ?? 'premium.failureMessage'.tr(),
+              ),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -191,9 +197,9 @@ class _PremiumHeader extends StatelessWidget {
                     size: 20,
                   ),
                   const SizedBox(width: 4),
-                  const Text(
-                    '您已是 PRO 成員',
-                    style: TextStyle(
+                  Text(
+                    'premium.proMemberStatus'.tr(),
+                    style: const TextStyle(
                       color: AppTheme.accentColor,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -203,18 +209,18 @@ class _PremiumHeader extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              '解鎖所有進階功能',
-              style: TextStyle(
+            Text(
+              'premium.unlockAllFeatures'.tr(),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '升級 Pro 成員，享受無限同步與數據追蹤。',
-              style: TextStyle(color: AppTheme.systemGray, fontSize: 16),
+            Text(
+              'premium.upgradeProDesc'.tr(),
+              style: const TextStyle(color: AppTheme.systemGray, fontSize: 16),
             ),
           ],
         );
@@ -229,13 +235,25 @@ class _FeatureList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final features = [
-      {'icon': Icons.block, 'title': '無廣告體驗', 'desc': '移除所有插頁式與橫幅廣告。'},
-      {'icon': Icons.cloud_done, 'title': '雲端自動同步', 'desc': '讓您的數據在多台設備間無縫切換。'},
-      {'icon': Icons.insights, 'title': '進階統計數據', 'desc': '包含油耗趨勢與年度花費對比。'},
+      {
+        'icon': Icons.block,
+        'title': 'premium.features.noAds'.tr(),
+        'desc': 'premium.features.noAdsDesc'.tr(),
+      },
+      {
+        'icon': Icons.cloud_done,
+        'title': 'premium.features.cloudSync'.tr(),
+        'desc': 'premium.features.cloudSyncDesc'.tr(),
+      },
+      {
+        'icon': Icons.insights,
+        'title': 'premium.features.stats'.tr(),
+        'desc': 'premium.features.statsDesc'.tr(),
+      },
       {
         'icon': Icons.support_agent,
-        'title': '優先客服支援',
-        'desc': '我們的新功能將優先提供給 Pro 用戶。',
+        'title': 'premium.features.support'.tr(),
+        'desc': 'premium.features.supportDesc'.tr(),
       },
     ];
 
@@ -318,18 +336,21 @@ class _OfferingsSection extends StatelessWidget {
                   size: 48,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  '感謝您的支持！',
-                  style: TextStyle(
+                Text(
+                  'premium.thanksSupport'.tr(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  '您目前擁有 Garage Pro 的所有權限。',
-                  style: TextStyle(color: AppTheme.systemGray, fontSize: 14),
+                Text(
+                  'premium.allAccess'.tr(),
+                  style: const TextStyle(
+                    color: AppTheme.systemGray,
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
@@ -337,10 +358,10 @@ class _OfferingsSection extends StatelessWidget {
         }
 
         if (state.offerings.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              '目前沒有可選的方案',
-              style: TextStyle(color: AppTheme.systemGray),
+              'premium.noOfferings'.tr(),
+              style: const TextStyle(color: AppTheme.systemGray),
             ),
           );
         }
@@ -408,9 +429,9 @@ class _PackageCard extends StatelessWidget {
                             color: AppTheme.dashboardAccentRed,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            '最佳選擇',
-                            style: TextStyle(
+                          child: Text(
+                            'premium.bestChoice'.tr(),
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -448,9 +469,9 @@ class _PackageCard extends StatelessWidget {
   String _getPackageTitle(Package p) {
     switch (p.packageType) {
       case PackageType.monthly:
-        return '按月訂閱';
+        return 'premium.monthlyPlan'.tr();
       case PackageType.annual:
-        return '年度訂閱';
+        return 'premium.annualPlan'.tr();
       default:
         return p.storeProduct.title;
     }
@@ -459,9 +480,9 @@ class _PackageCard extends StatelessWidget {
   String _getPackageDescription(Package p) {
     switch (p.packageType) {
       case PackageType.monthly:
-        return '隨時取消，無壓力享受 Pro。';
+        return 'premium.monthlyDesc'.tr();
       case PackageType.annual:
-        return '一年長效，價格更優惠。';
+        return 'premium.annualDesc'.tr();
       default:
         return '';
     }
@@ -476,8 +497,8 @@ class _RestoreButton extends StatelessWidget {
     return Center(
       child: TextButton(
         onPressed: () => context.read<PremiumBloc>().add(RestorePurchases()),
-        child: const Text(
-          '還原購買 (Restore Purchases)',
+        child: Text(
+          'premium.restorePurchases'.tr(),
           style: TextStyle(
             color: AppTheme.systemGray,
             fontSize: 14,
@@ -497,9 +518,17 @@ class _LegalLinks extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _linkButton(context, '服務條款', AppPath.termsOfService),
+        _linkButton(
+          context,
+          'settings.termsOfService'.tr(),
+          AppPath.termsOfService,
+        ),
         const Text(' | ', style: TextStyle(color: AppTheme.systemGray)),
-        _linkButton(context, '隱私政策', AppPath.privacyPolicy),
+        _linkButton(
+          context,
+          'settings.privacyPolicy'.tr(),
+          AppPath.privacyPolicy,
+        ),
       ],
     );
   }

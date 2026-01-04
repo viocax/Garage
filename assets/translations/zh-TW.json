@@ -107,7 +107,11 @@
     "removeBanner": "觀看廣告移除橫幅",
     "removeBannerDesc": "暫時移除底部廣告 12 小時",
     "earnedTicketSuccess": "成功獲得 1 張廣告票券！",
-    "removeBannerSuccess": "成功移除橫幅廣告 12 小時！"
+    "removeBannerSuccess": "成功移除橫幅廣告 12 小時！",
+    "garagePro": "Garage Pro",
+    "proUnlocked": "Pro 功能已全數解鎖",
+    "proUnlockDesc": "解鎖雲端同步與進階統計",
+    "proEnabled": "已啟用"
   },
   "speedCamera": {
     "permission": {
@@ -186,5 +190,33 @@
     "submit": "完成新增",
     "editLaterHint": "之後可以在設定中編輯車輛資訊",
     "errorOccurred": "發生錯誤"
+  },
+  "premium": {
+    "successTitle": "恭喜！",
+    "successDesc": "您已成功啟用 Garage Pro 權限，享受完整功能。",
+    "successButton": "太棒了",
+    "failureMessage": "操作失敗",
+    "proMemberStatus": "您已是 PRO 成員",
+    "unlockAllFeatures": "解鎖所有進階功能",
+    "upgradeProDesc": "升級 Pro 成員，享受無限同步與數據追蹤。",
+    "thanksSupport": "感謝您的支持！",
+    "allAccess": "您目前擁有 Garage Pro 的所有權限。",
+    "noOfferings": "目前沒有可選的方案",
+    "bestChoice": "最佳選擇",
+    "monthlyPlan": "按月訂閱",
+    "annualPlan": "年度訂閱",
+    "monthlyDesc": "隨時取消，無壓力享受 Pro。",
+    "annualDesc": "一年長效，價格更優惠。",
+    "restorePurchases": "還原購買 (Restore Purchases)",
+    "features": {
+      "noAds": "無廣告體驗",
+      "noAdsDesc": "移除所有插頁式與橫幅廣告。",
+      "cloudSync": "雲端自動同步",
+      "cloudSyncDesc": "讓您的數據在多台設備間無縫切換。",
+      "stats": "進階統計數據",
+      "statsDesc": "包含油耗趨勢與年度花費對比。",
+      "support": "優先客服支援",
+      "supportDesc": "我們的新功能將優先提供給 Pro 用戶。"
+    }
   }
 }

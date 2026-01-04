@@ -2,10 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:garage/core/models/vehicle.dart';
+import 'package:garage/core/core.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
-import 'package:garage/core/di/service_locator.dart';
 
 import 'bloc/all_records_bloc.dart';
 import 'bloc/all_records_event.dart';
@@ -18,7 +17,7 @@ import 'widgets/all_records_list.dart';
 import 'widgets/fuel_efficiency_chart.dart';
 import 'widgets/annual_expense_comparison.dart';
 import 'package:garage/widgets/pro_feature_overlay.dart';
-import 'package:garage/screen/premium/premium_page.dart';
+import 'package:garage/router/app_router.dart';
 
 class AllRecordsPage extends StatelessWidget {
   final Vehicle vehicle;
@@ -297,28 +296,14 @@ class _ChartsSection extends StatelessWidget {
                 // Fuel Efficiency Trend
                 ProFeatureOverlay(
                   isPro: state.isPro,
-                  onUpgrade: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PremiumPage(),
-                      ),
-                    );
-                  },
+                  onUpgrade: () => context.goPath(AppPath.premium),
                   child: FuelEfficiencyChart(data: state.fuelEfficiencyData),
                 ),
                 const SizedBox(height: 12),
                 // Annual Expense Comparison
                 ProFeatureOverlay(
                   isPro: state.isPro,
-                  onUpgrade: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PremiumPage(),
-                      ),
-                    );
-                  },
+                  onUpgrade: () => context.goPath(AppPath.premium),
                   child: AnnualExpenseComparison(data: state.annualExpenseData),
                 ),
               ],

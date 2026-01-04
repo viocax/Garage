@@ -107,7 +107,11 @@
     "removeBanner": "Remove Banner",
     "removeBannerDesc": "Remove bottom banner for 12 hours",
     "earnedTicketSuccess": "Earned 1 Ad Ticket!",
-    "removeBannerSuccess": "Banner removed for 12 hours!"
+    "removeBannerSuccess": "Banner removed for 12 hours!",
+    "garagePro": "Garage Pro",
+    "proUnlocked": "Pro features unlocked",
+    "proUnlockDesc": "Unlock cloud sync and advanced stats",
+    "proEnabled": "Enabled"
   },
   "speedCamera": {
     "permission": {
@@ -186,5 +190,33 @@
     "submit": "Complete",
     "editLaterHint": "You can edit vehicle info in settings later",
     "errorOccurred": "An error occurred"
+  },
+  "premium": {
+    "successTitle": "Congratulations!",
+    "successDesc": "You have successfully enabled Garage Pro privileges and enjoy full functionality.",
+    "successButton": "Awesome",
+    "failureMessage": "Operation failed",
+    "proMemberStatus": "You are a PRO member",
+    "unlockAllFeatures": "Unlock all advanced features",
+    "upgradeProDesc": "Upgrade to Pro for unlimited sync and data tracking.",
+    "thanksSupport": "Thanks for your support!",
+    "allAccess": "You currently have all Garage Pro privileges.",
+    "noOfferings": "No plans available at the moment",
+    "bestChoice": "Best Choice",
+    "monthlyPlan": "Monthly Subscription",
+    "annualPlan": "Annual Subscription",
+    "monthlyDesc": "Cancel anytime, enjoy Pro without pressure.",
+    "annualDesc": "One year long, better price.",
+    "restorePurchases": "Restore Purchases",
+    "features": {
+      "noAds": "Ad-free experience",
+      "noAdsDesc": "Remove all interstitial and banner ads.",
+      "cloudSync": "Cloud Auto Sync",
+      "cloudSyncDesc": "Seamlessly switch your data between multiple devices.",
+      "stats": "Advanced Statistics",
+      "statsDesc": "Includes fuel consumption trends and annual spending comparison.",
+      "support": "Priority Customer Support",
+      "supportDesc": "Our new features will be prioritized for Pro users."
+    }
   }
 }
