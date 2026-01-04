@@ -8,9 +8,9 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: RevenueCat 整合與訂閱架構 (RevenueCat Integration)
-- [ ] Task: 安裝 `purchases_flutter` 並實作 `SubscriptionService` 初始化核心邏輯。
-- [ ] Task: 實作 `SubscriptionRepository` 以管理訂閱狀態流與購買動作。
-- [ ] Task: 建立 `PremiumPage` 訂閱頁面 UI，包含月訂閱與年訂閱選項。
+- [x] Task: 安裝 `purchases_flutter` 並實作 `SubscriptionService` 初始化核心邏輯。
+- [x] Task: 實作 `SubscriptionRepository` 以管理訂閱狀態流與購買動作力。
+- [~] Task: 建立 `PremiumPage` 訂閱頁面 UI，包含月訂閱與年訂閱選項。
 - [ ] Task: 實作「還原購買 (Restore Purchases)」功能並驗證狀態同步。
 - [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
