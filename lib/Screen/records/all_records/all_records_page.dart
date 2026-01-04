@@ -13,6 +13,9 @@ import 'widgets/category_pie_chart.dart';
 import 'widgets/type_filter_chips.dart';
 import 'widgets/month_filter_sheet.dart';
 import 'widgets/all_records_list.dart';
+import 'widgets/fuel_efficiency_chart.dart';
+import 'widgets/annual_expense_comparison.dart';
+import 'package:garage/widgets/pro_feature_overlay.dart';
 
 class AllRecordsPage extends StatelessWidget {
   final Vehicle vehicle;
@@ -93,9 +96,7 @@ class _AllRecordsContent extends StatelessWidget {
       body: Stack(
         children: [
           // Background Grid Pattern
-          Positioned.fill(
-            child: CustomPaint(painter: GridBackgroundPainter()),
-          ),
+          Positioned.fill(child: CustomPaint(painter: GridBackgroundPainter())),
           // Content
           SafeArea(
             child: BlocBuilder<AllRecordsBloc, AllRecordsState>(
@@ -120,14 +121,10 @@ class _AllRecordsContent extends StatelessWidget {
                 return CustomScrollView(
                   slivers: [
                     // Summary Section
-                    SliverToBoxAdapter(
-                      child: _SummarySection(state: state),
-                    ),
+                    SliverToBoxAdapter(child: _SummarySection(state: state)),
 
                     // Charts Section
-                    SliverToBoxAdapter(
-                      child: _ChartsSection(state: state),
-                    ),
+                    SliverToBoxAdapter(child: _ChartsSection(state: state)),
 
                     // Active Filters Display
                     if (state.selectedMonth != null)
@@ -135,7 +132,9 @@ class _AllRecordsContent extends StatelessWidget {
                         child: _ActiveFilterBadge(
                           label: state.selectedMonth!.displayName,
                           onClear: () {
-                            context.read<AllRecordsBloc>().add(const SelectMonth(null));
+                            context.read<AllRecordsBloc>().add(
+                              const SelectMonth(null),
+                            );
                           },
                         ),
                       ),
@@ -151,9 +150,7 @@ class _AllRecordsContent extends StatelessWidget {
                     AllRecordsList(records: state.filteredRecords),
 
                     // Bottom padding
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 20),
-                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
                   ],
                 );
               },
@@ -196,10 +193,7 @@ class _SummarySection extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppTheme.whiteTransparent10,
-              AppTheme.whiteTransparent05,
-            ],
+            colors: [AppTheme.whiteTransparent10, AppTheme.whiteTransparent05],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppTheme.whiteTransparent20),
@@ -242,7 +236,9 @@ class _SummarySection extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'records.recordCountWithUnit'.tr(args: [state.recordCount.toString()]),
+                    'records.recordCountWithUnit'.tr(
+                      args: [state.recordCount.toString()],
+                    ),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
@@ -270,19 +266,45 @@ class _ChartsSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          // Monthly Bar Chart
           Expanded(
-            flex: 2,
-            child: MonthlyExpenseChart(
-              data: state.monthlyExpenseData,
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Category Pie Chart
-          Expanded(
-            flex: 1,
-            child: CategoryPieChart(
-              data: state.categoryExpenseData,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Monthly Bar Chart
+                    Expanded(
+                      flex: 2,
+                      child: MonthlyExpenseChart(
+                        data: state.monthlyExpenseData,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Category Pie Chart
+                    Expanded(
+                      flex: 1,
+                      child: CategoryPieChart(data: state.categoryExpenseData),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Fuel Efficiency Trend
+                ProFeatureOverlay(
+                  isPro: state.isPro,
+                  onUpgrade: () {
+                    // TODO: Open Premium Page
+                  },
+                  child: FuelEfficiencyChart(data: state.fuelEfficiencyData),
+                ),
+                const SizedBox(height: 12),
+                // Annual Expense Comparison
+                ProFeatureOverlay(
+                  isPro: state.isPro,
+                  onUpgrade: () {
+                    // TODO: Open Premium Page
+                  },
+                  child: AnnualExpenseComparison(data: state.annualExpenseData),
+                ),
+              ],
             ),
           ),
         ],
@@ -295,10 +317,7 @@ class _ActiveFilterBadge extends StatelessWidget {
   final String label;
   final VoidCallback onClear;
 
-  const _ActiveFilterBadge({
-    required this.label,
-    required this.onClear,
-  });
+  const _ActiveFilterBadge({required this.label, required this.onClear});
 
   @override
   Widget build(BuildContext context) {

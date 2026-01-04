@@ -41,6 +41,8 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
 
       final monthlyData = _calculateMonthlyExpense(records);
       final categoryData = _calculateCategoryExpense(records);
+      final fuelEfficiencyData = _calculateFuelEfficiencyData(records);
+      final annualData = _calculateAnnualExpense(records);
       final totalExpense = records.fold(0.0, (sum, r) => sum + r.cost);
 
       emit(
@@ -51,6 +53,8 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
           availableMonths: availableMonths,
           monthlyExpenseData: monthlyData,
           categoryExpenseData: categoryData,
+          fuelEfficiencyData: fuelEfficiencyData,
+          annualExpenseData: annualData,
           totalExpense: totalExpense,
           recordCount: records.length,
         ),
@@ -131,6 +135,8 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
 
     final monthlyData = _calculateMonthlyExpense(filtered);
     final categoryData = _calculateCategoryExpense(filtered);
+    final fuelEfficiencyData = _calculateFuelEfficiencyData(filtered);
+    final annualData = _calculateAnnualExpense(filtered);
 
     final totalExpense = filtered.fold(0.0, (sum, r) => sum + r.cost);
     emit(
@@ -140,6 +146,8 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
         recordCount: filtered.length,
         monthlyExpenseData: monthlyData,
         categoryExpenseData: categoryData,
+        fuelEfficiencyData: fuelEfficiencyData,
+        annualExpenseData: annualData,
       ),
     );
   }
@@ -229,6 +237,51 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
             percentage: total > 0 ? (e.value / total * 100) : 0,
             color: colorMap[e.key]!,
           ),
+        )
+        .toList();
+  }
+
+  List<FuelEfficiencyData> _calculateFuelEfficiencyData(
+    List<VehicleRecord> records,
+  ) {
+    // 取得所有加油紀錄，依照日期從舊到新排列（為了計算里程差）
+    final fuelRecords = records.where((r) => r.typeName == 'fuel').toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    if (fuelRecords.length < 2) return [];
+
+    final result = <FuelEfficiencyData>[];
+
+    for (int i = 1; i < fuelRecords.length; i++) {
+      final current = fuelRecords[i];
+      final previous = fuelRecords[i - 1];
+
+      final efficiency = current.calculateFuelEfficiency(previous.km);
+      if (efficiency > 0) {
+        result.add(
+          FuelEfficiencyData(date: current.date, kmPerLiter: efficiency),
+        );
+      }
+    }
+
+    // 回傳時保持日期從舊到新（適合折線圖）
+    return result;
+  }
+
+  List<AnnualExpenseData> _calculateAnnualExpense(List<VehicleRecord> records) {
+    if (records.isEmpty) return [];
+
+    final annualTotals = <int, double>{};
+    for (final record in records) {
+      final year = record.date.year;
+      annualTotals[year] = (annualTotals[year] ?? 0) + record.cost;
+    }
+
+    final sortedYears = annualTotals.keys.toList()..sort();
+    return sortedYears
+        .map(
+          (year) =>
+              AnnualExpenseData(year: year, totalCost: annualTotals[year]!),
         )
         .toList();
   }
