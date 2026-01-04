@@ -1,11 +1,11 @@
 # Plan: 訂閱制與進階統計 (Pro Subscription & Advanced Statistics)
 
-## Phase 1: 進階統計功能 (Advanced Statistics)
+## Phase 1: 進階統計功能 (Advanced Statistics) [checkpoint: 2a0dee1]
 - [x] Task: 更新 `VehicleRecord` 模型，增加油耗計算輔助方法 `km/L`。 50b5a48
 - [x] Task: 實作 `FuelEfficiencyChart` 元件，展示加油效率趨勢（折線圖）。 2c7afd6
 - [x] Task: 實作 `AnnualExpenseComparison` 元件，比較不同年度的總花費。 2c7afd6
 - [x] Task: 整合進階統計至 `AllRecordsPage`，並為非訂閱用戶實作鎖定/預覽遮蓋 UI。 1d20d64
-- [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: RevenueCat 整合與訂閱架構 (RevenueCat Integration)
 - [ ] Task: 安裝 `purchases_flutter` 並實作 `SubscriptionService` 初始化核心邏輯。
