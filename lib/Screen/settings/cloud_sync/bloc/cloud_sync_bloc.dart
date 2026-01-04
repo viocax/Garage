@@ -11,8 +11,8 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
   final CloudSyncRepository _repository;
 
   CloudSyncBloc({CloudSyncRepository? repository})
-      : _repository = repository ?? getIt.repo.cloudSync,
-        super(const CloudSyncInitial()) {
+    : _repository = repository ?? getIt.repo.cloudSync,
+      super(const CloudSyncInitial()) {
     on<CloudSyncEvent>(_onEvent);
     add(const LoadCloudSyncStatus());
   }
@@ -43,20 +43,34 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
 
     for (final provider in availableProviders) {
       final isAvailable = await _repository.isAvailable(provider);
-      final isAuthenticated =
-          isAvailable ? await _repository.isAuthenticated(provider) : false;
-      final lastSync =
-          isAuthenticated ? await _repository.getLastSyncTime(provider) : null;
+      final isAuthenticated = isAvailable
+          ? await _repository.isAuthenticated(provider)
+          : false;
+      final lastSync = isAuthenticated
+          ? await _repository.getLastSyncTime(provider)
+          : null;
 
-      providerStatuses.add(ProviderStatus(
-        provider: provider,
-        isAvailable: isAvailable,
-        isAuthenticated: isAuthenticated,
-        lastSyncTime: lastSync,
-      ));
+      providerStatuses.add(
+        ProviderStatus(
+          provider: provider,
+          isAvailable: isAvailable,
+          isAuthenticated: isAuthenticated,
+          lastSyncTime: lastSync,
+        ),
+      );
     }
 
-    emit(CloudSyncLoaded(providers: providerStatuses));
+    final selectedProvider =
+        (providerStatuses.length == 1 && providerStatuses.first.isAuthenticated)
+        ? providerStatuses.first.provider
+        : null;
+
+    emit(
+      CloudSyncLoaded(
+        providers: providerStatuses,
+        selectedProvider: selectedProvider,
+      ),
+    );
   }
 
   void _onSelectProvider(CloudProvider provider, Emitter<CloudSyncState> emit) {
@@ -73,7 +87,12 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     final currentState = state;
     if (currentState is! CloudSyncLoaded) return;
 
-    emit(currentState.copyWith(isSyncing: true, syncMessage: 'cloudSync.loggingIn'.tr()));
+    emit(
+      currentState.copyWith(
+        isSyncing: true,
+        syncMessage: 'cloudSync.loggingIn'.tr(),
+      ),
+    );
 
     final result = await _repository.authenticate(provider);
 
@@ -81,10 +100,12 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
       // Reload status to update auth state
       add(const LoadCloudSyncStatus());
     } else {
-      emit(currentState.copyWith(
-        isSyncing: false,
-        errorMessage: result.errorMessage ?? 'cloudSync.loginFailed'.tr(),
-      ));
+      emit(
+        currentState.copyWith(
+          isSyncing: false,
+          errorMessage: result.errorMessage ?? 'cloudSync.loginFailed'.tr(),
+        ),
+      );
     }
   }
 
@@ -100,26 +121,39 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     final currentState = state;
     if (currentState is! CloudSyncLoaded) return;
     if (currentState.selectedProvider == null) {
-      emit(currentState.copyWith(errorMessage: 'cloudSync.selectServiceFirst'.tr()));
+      emit(
+        currentState.copyWith(
+          errorMessage: 'cloudSync.selectServiceFirst'.tr(),
+        ),
+      );
       return;
     }
 
-    emit(currentState.copyWith(isSyncing: true, syncMessage: 'cloudSync.uploading'.tr()));
+    emit(
+      currentState.copyWith(
+        isSyncing: true,
+        syncMessage: 'cloudSync.uploading'.tr(),
+      ),
+    );
 
     final result = await _repository.uploadData(currentState.selectedProvider!);
 
     if (result.success) {
-      emit(currentState.copyWith(
-        isSyncing: false,
-        syncMessage: 'cloudSync.uploadComplete'.tr(),
-      ));
+      emit(
+        currentState.copyWith(
+          isSyncing: false,
+          syncMessage: 'cloudSync.uploadComplete'.tr(),
+        ),
+      );
       // Reload to update last sync time
       add(const LoadCloudSyncStatus());
     } else {
-      emit(currentState.copyWith(
-        isSyncing: false,
-        errorMessage: result.errorMessage ?? 'cloudSync.uploadFailed'.tr(),
-      ));
+      emit(
+        currentState.copyWith(
+          isSyncing: false,
+          errorMessage: result.errorMessage ?? 'cloudSync.uploadFailed'.tr(),
+        ),
+      );
     }
   }
 
@@ -127,26 +161,40 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     final currentState = state;
     if (currentState is! CloudSyncLoaded) return;
     if (currentState.selectedProvider == null) {
-      emit(currentState.copyWith(errorMessage: 'cloudSync.selectServiceFirst'.tr()));
+      emit(
+        currentState.copyWith(
+          errorMessage: 'cloudSync.selectServiceFirst'.tr(),
+        ),
+      );
       return;
     }
 
-    emit(currentState.copyWith(isSyncing: true, syncMessage: 'cloudSync.downloading'.tr()));
+    emit(
+      currentState.copyWith(
+        isSyncing: true,
+        syncMessage: 'cloudSync.downloading'.tr(),
+      ),
+    );
 
-    final result =
-        await _repository.downloadData(currentState.selectedProvider!);
+    final result = await _repository.downloadData(
+      currentState.selectedProvider!,
+    );
 
     if (result.success) {
-      emit(currentState.copyWith(
-        isSyncing: false,
-        syncMessage: 'cloudSync.downloadComplete'.tr(),
-      ));
+      emit(
+        currentState.copyWith(
+          isSyncing: false,
+          syncMessage: 'cloudSync.downloadComplete'.tr(),
+        ),
+      );
       add(const LoadCloudSyncStatus());
     } else {
-      emit(currentState.copyWith(
-        isSyncing: false,
-        errorMessage: result.errorMessage ?? 'cloudSync.downloadFailed'.tr(),
-      ));
+      emit(
+        currentState.copyWith(
+          isSyncing: false,
+          errorMessage: result.errorMessage ?? 'cloudSync.downloadFailed'.tr(),
+        ),
+      );
     }
   }
 }

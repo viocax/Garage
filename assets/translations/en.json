@@ -97,7 +97,6 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "feedback": "Feedback",
-    "feedback": "Feedback",
     "rateApp": "Rate App",
     "adManagement": "Ads & Rewards",
     "adManagementDesc": "Watch ads to earn rewards",
@@ -131,6 +130,7 @@
   },
   "cloudSync": {
     "title": "Cloud Sync",
+    "service": "Cloud Service",
     "selectService": "Select Cloud Service",
     "syncOperations": "Sync Operations",
     "notSupported": "Not Supported",

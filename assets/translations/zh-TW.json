@@ -97,7 +97,6 @@
     "termsOfService": "使用條款",
     "privacyPolicy": "隱私政策",
     "feedback": "意見回饋",
-    "feedback": "意見回饋",
     "rateApp": "評分 App",
     "adManagement": "廣告與獎勵",
     "adManagementDesc": "觀看廣告獲得獎勵",
@@ -131,6 +130,7 @@
   },
   "cloudSync": {
     "title": "同步雲端",
+    "service": "雲端服務",
     "selectService": "選擇雲端服務",
     "syncOperations": "同步操作",
     "notSupported": "不支援",

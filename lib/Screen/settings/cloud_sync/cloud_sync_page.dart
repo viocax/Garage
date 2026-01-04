@@ -76,12 +76,20 @@ class _CloudSyncBody extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                SettingsSectionHeader(title: 'cloudSync.selectService'.tr()),
-                ...state.providers.map((status) => _buildProviderTile(
-                      context,
-                      status,
-                      isSelected: state.selectedProvider == status.provider,
-                    )),
+                SettingsSectionHeader(
+                  title: state.providers.length == 1
+                      ? 'cloudSync.service'.tr()
+                      : 'cloudSync.selectService'.tr(),
+                ),
+                ...state.providers.map(
+                  (status) => _buildProviderTile(
+                    context,
+                    status,
+                    isSelected:
+                        state.providers.length > 1 &&
+                        state.selectedProvider == status.provider,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 if (state.selectedProvider != null) ...[
                   SettingsSectionHeader(title: 'cloudSync.syncOperations'.tr()),
@@ -104,10 +112,7 @@ class _CloudSyncBody extends StatelessWidget {
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.arrow_back_ios,
-              color: theme.colorScheme.primary,
-            ),
+            icon: Icon(Icons.arrow_back_ios, color: theme.colorScheme.primary),
           ),
           Text(
             'cloudSync.title'.tr(),
@@ -161,11 +166,13 @@ class _CloudSyncBody extends StatelessWidget {
           subtitle: _buildProviderSubtitle(context, status),
           trailing: isAvailable
               ? (status.isAuthenticated
-                  ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
-                  : Icon(
-                      Icons.chevron_right,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                    ))
+                    ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                    : Icon(
+                        Icons.chevron_right,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
+                      ))
               : Text(
                   'cloudSync.notSupported'.tr(),
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -177,12 +184,12 @@ class _CloudSyncBody extends StatelessWidget {
               ? () {
                   if (!status.isAuthenticated) {
                     context.read<CloudSyncBloc>().add(
-                          AuthenticateProvider(status.provider),
-                        );
+                      AuthenticateProvider(status.provider),
+                    );
                   } else {
                     context.read<CloudSyncBloc>().add(
-                          SelectProvider(status.provider),
-                        );
+                      SelectProvider(status.provider),
+                    );
                   }
                 }
               : null,
@@ -255,8 +262,9 @@ class _CloudSyncBody extends StatelessWidget {
     bool isDestructive = false,
   }) {
     final theme = Theme.of(context);
-    final color =
-        isDestructive ? theme.colorScheme.error : theme.colorScheme.primary;
+    final color = isDestructive
+        ? theme.colorScheme.error
+        : theme.colorScheme.primary;
 
     return Container(
       decoration: BoxDecoration(
@@ -281,10 +289,7 @@ class _CloudSyncBody extends StatelessWidget {
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
-          trailing: Icon(
-            Icons.chevron_right,
-            color: AppTheme.systemGray,
-          ),
+          trailing: Icon(Icons.chevron_right, color: AppTheme.systemGray),
           onTap: onTap,
         ),
       ),
@@ -325,8 +330,9 @@ class _CloudSyncBody extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                theme.colorScheme.primary,
+              ),
             ),
             if (message != null) ...[
               const SizedBox(height: 16),

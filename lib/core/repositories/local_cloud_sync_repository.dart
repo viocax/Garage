@@ -20,7 +20,7 @@ class LocalCloudSyncRepository implements CloudSyncRepository {
   @override
   List<CloudProvider> getAvailableProviders() {
     if (Platform.isIOS) {
-      return [CloudProvider.iCloud, CloudProvider.googleDrive];
+      return [CloudProvider.iCloud];
     } else if (Platform.isAndroid) {
       return [CloudProvider.googleDrive];
     }
