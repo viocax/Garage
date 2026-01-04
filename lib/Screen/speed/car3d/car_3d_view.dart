@@ -128,8 +128,40 @@ class _Car3DViewState extends State<Car3DView>
     double carHeight,
     String cameraOrbit,
   ) {
+    // 優化：預先構建 ModelViewer，避免在動畫每一幀重建 Platform View
+    final carModel = Padding(
+      padding: const EdgeInsets.all(24),
+      child: AbsorbPointer(
+        child: ModelViewer(
+          key: ValueKey(modelSrc), // 防止重複創建 Platform View
+          src: modelSrc,
+          alt: "A 3D car model",
+          autoRotate: false,
+          cameraControls: false,
+          backgroundColor: AppTheme.accentColor.withAlpha(0),
+          loading: Loading.eager, // 立即載入
+          // 使用百分比讓模型自動適配容器
+          cameraOrbit: cameraOrbit,
+          cameraTarget: "0m 10mm 0m", // 對準車身上方
+          fieldOfView: "30deg", // 增視野讓車看起來更小
+          environmentImage: "neutral",
+          exposure: 1.0,
+          shadowIntensity: 0.8,
+          shadowSoftness: 0.5,
+          minCameraOrbit: cameraOrbit,
+          maxCameraOrbit: cameraOrbit,
+          disableZoom: true,
+          disablePan: true,
+          disableTap: true,
+          touchAction: TouchAction.none,
+          interactionPrompt: InteractionPrompt.none,
+        ),
+      ),
+    );
+
     return AnimatedBuilder(
-      animation: _offsetAnimation,
+      animation: _animationController,
+      child: carModel, // 將不變的組件傳入 child
       builder: (context, child) {
         return Transform.scale(
           scale: _scaleAnimation.value,
@@ -139,35 +171,8 @@ class _Car3DViewState extends State<Car3DView>
               children: [
                 // 梯形陰影
                 _buildCarPlaceHolder(carWidth, carHeight),
-                Padding(
-                  padding: EdgeInsets.all(24),
-                  child: AbsorbPointer(
-                    child: ModelViewer(
-                      key: ValueKey(modelSrc), // 添加 key 防止重复创建 Platform View
-                      src: modelSrc,
-                      alt: "A 3D car model",
-                      autoRotate: false,
-                      cameraControls: false,
-                      backgroundColor: AppTheme.accentColor.withAlpha(0),
-                      loading: Loading.eager, // 立即載入，隱藏載入指示器
-                      // 使用百分比让模型自动适配容器（180度让车尾朝前）
-                      cameraOrbit: cameraOrbit, // 相机更远，降低俯视角度
-                      cameraTarget: "0m 10mm 0m", // 对准车身上方，让车显示在画面下方
-                      fieldOfView: "30deg", // 增大视野让车看起来更小
-                      environmentImage: "neutral",
-                      exposure: 1.0,
-                      shadowIntensity: 0.8,
-                      shadowSoftness: 0.5,
-                      minCameraOrbit: cameraOrbit,
-                      maxCameraOrbit: cameraOrbit,
-                      disableZoom: true,
-                      disablePan: true,
-                      disableTap: true,
-                      touchAction: TouchAction.none, // 禁用所有触摸动作
-                      interactionPrompt: InteractionPrompt.none,
-                    ),
-                  ),
-                ),
+                // 3D 模型 (使用 child 避免重建)
+                if (child != null) child,
               ],
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage/screen/settings/settings_page.dart';
 import 'package:garage/screen/settings/speed_detection_settings/speed_detection_settings_page.dart';
 import 'package:garage/screen/settings/vehicle_management/vehicle_management_page.dart';
+import 'package:garage/screen/settings/cloud_sync/cloud_sync_page.dart';
 import 'package:garage/screen/records/records_page.dart';
 import 'package:garage/screen/speed/speedCamera/speed_camera_page.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import 'package:garage/screen/app/home/garage_home_page.dart';
 import 'package:garage/screen/app/launch/launch_page.dart';
 import 'package:garage/screen/records/add_record/add_record_page.dart';
 import 'package:garage/screen/records/add_vehicle/add_vehicle_page.dart';
+import 'package:garage/screen/records/all_records/all_records_page.dart';
 import 'package:garage/core/models/vehicle.dart';
 
 
@@ -38,6 +40,9 @@ class AppPath {
   static final addVehicle =
       AppPath(name: 'addVehicle', previous: records);
 
+  static final allRecords =
+      AppPath(name: 'allRecords', previous: records);
+
   static final settings =
       AppPath(name: 'settings', previous: home);
 
@@ -46,6 +51,9 @@ class AppPath {
 
   static final speedDetectionSettings =
       AppPath(name: 'speedDetectionSettings', previous: settings);
+
+  static final cloudSync =
+      AppPath(name: 'cloudSync', previous: settings);
 
   /// compute full path
   String get path {
@@ -106,8 +114,32 @@ class AppRouter {
                       path: AppPath.addVehicle.path,
                       name: AppPath.addVehicle.name,
                       parentNavigatorKey: _rootNavigatorKey,
+                      pageBuilder: (context, state) {
+                        return CustomTransitionPage(
+                          key: state.pageKey,
+                          child: const AddVehiclePage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 1),
+                                end: Offset.zero,
+                              ).animate(CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              )),
+                              child: child,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    GoRoute(
+                      path: AppPath.allRecords.path,
+                      name: AppPath.allRecords.name,
+                      parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) {
-                        return const AddVehiclePage();
+                        final vehicle = state.extra as Vehicle;
+                        return AllRecordsPage(vehicle: vehicle);
                       },
                     ),
                   ],
@@ -133,6 +165,12 @@ class AppRouter {
                       // 使用 root navigator，跳過 shell 直接全屏顯示
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) => const SpeedDetectionSettingsPage(),
+                    ),
+                    GoRoute(
+                      path: AppPath.cloudSync.path,
+                      name: AppPath.cloudSync.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const CloudSyncPage(),
                     ),
                   ],
                 ),

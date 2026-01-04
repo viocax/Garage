@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:garage/core/repositories/user_settings_repository.dart';
+import 'package:garage/core/core.dart';
 import 'speed_detection_settings_event.dart';
 import 'speed_detection_settings_state.dart';
-import 'package:garage/core/models/speed_unit.dart';
-import 'package:garage/core/models/user_settings.dart';
-import 'package:garage/core/mixins/app_lifecycle_mixin.dart';
-import 'package:garage/core/core.dart';
 
 class SpeedDetectionSettingsBloc
     extends Bloc<SpeedDetectionSettingsEvent, SpeedDetectionSettingsState>
@@ -214,7 +210,7 @@ class SpeedDetectionSettingsBloc
         await userSettingRepo.saveSettings(updatedSettings);
       } catch (e) {
         // 保存失败记录日志（不阻塞 close）
-        print('Failed to save settings: $e');
+        debugPrint('Failed to save settings: $e');
       }
     }
   }

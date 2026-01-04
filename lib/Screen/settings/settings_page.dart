@@ -1,13 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:garage/core/extensions/dialog_extension.dart';
-import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/core/extensions/dialog_extension.dart';
 import 'package:garage/router/app_router.dart';
+import 'package:garage/theme/themed_status_bar.dart';
+import 'package:garage/widgets/widgets.dart';
+
 import 'bloc/settings_bloc.dart';
-import 'bloc/settings_state.dart';
 import 'bloc/settings_event.dart';
-import 'widgets/settings_section_header.dart';
+import 'bloc/settings_state.dart';
 import 'widgets/settings_item.dart';
+import 'widgets/settings_section_header.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -32,21 +35,17 @@ class SettingsPage extends StatelessWidget {
             break;
           case RemindUserStopTrackingAlert():
             context.showAdaptivePermissionAlert(
-              title: '目前正開啟測速中',
-              message: '調整設定需要關閉測速',
-              cancelText: '取消',
-              confirmText: '確定',
+              title: 'speedDetection.speedRunning'.tr(),
+              message: 'speedDetection.speedRunningMsg'.tr(),
+              cancelText: 'common.cancel'.tr(),
+              confirmText: 'common.confirm'.tr(),
               onConfirm: () {
                 context.read<SettingsBloc>().add(const StopTracking());
               },
             );
             break;
-          case SettingsError(:final message):
-          // TODO: show toast
-            break;
-          case ExportData():
-            break;
-          case ClearData():
+          case SettingsError():
+            // TODO: show toast
             break;
         }
       },
@@ -54,91 +53,164 @@ class SettingsPage extends StatelessWidget {
         return ThemedStatusBar(
           theme: StatusBarTheme.system,
           child: Scaffold(
-            body: Stack(
+            body: Column(
               children: [
                 // 主要內容 - 始終顯示
-                SafeArea(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    children: [
-                      // 一般設定
-                      const SettingsSectionHeader(title: '一般'),
-                      SettingsItem(
-                        title: '車輛管理',
-                        icon: Icons.directions_car_outlined,
-                        onTap: () {
-                          context.goPath(AppPath.vehicleManagement);
-                        },
-                      ),
-                      SettingsItem(
-                        title: '測速設置',
-                        icon: Icons.radar_outlined,
-                        onTap: () {
-                          context.read<SettingsBloc>().add(
-                            const ClickSpeedSetting(),
-                          );
-                        },
-                      ),
+                Expanded(
+                  child: SafeArea(
+                    bottom: false,
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      children: [
+                        // 一般設定
+                        SettingsSectionHeader(title: 'settings.general'.tr()),
+                        SettingsItem(
+                          title: 'settings.adManagement'.tr(),
+                          icon: Icons.card_giftcard,
+                          subtitle: 'settings.adManagementDesc'.tr(),
+                          onTap: () {
+                            _showAdManagementDialog(context);
+                          },
+                        ),
+                        SettingsItem(
+                          title: 'settings.vehicleManagement'.tr(),
+                          icon: Icons.directions_car_outlined,
+                          onTap: () {
+                            context.goPath(AppPath.vehicleManagement);
+                          },
+                        ),
+                        SettingsItem(
+                          title: 'settings.speedDetection'.tr(),
+                          icon: Icons.radar_outlined,
+                          onTap: () {
+                            context.read<SettingsBloc>().add(
+                              const ClickSpeedSetting(),
+                            );
+                          },
+                        ),
 
-                      // 資料管理
-                      const SettingsSectionHeader(title: '資料'),
-                      SettingsItem(
-                        title: '匯出資料',
-                        icon: Icons.upload_file_outlined,
-                        onTap: () {
-                          context.read<SettingsBloc>().add(
-                            const ExportData(),
-                          );
-                        },
-                      ),
-                      SettingsItem(
-                        title: '清除資料',
-                        icon: Icons.delete_outline,
-                        isDestructive: true,
-                        onTap: () {
-                          context.read<SettingsBloc>().add(const ClearData());
-                        },
-                      ),
+                        // 資料管理
+                        SettingsSectionHeader(title: 'settings.data'.tr()),
+                        SettingsItem(
+                          title: 'settings.cloudSync'.tr(),
+                          icon: Icons.cloud_sync_outlined,
+                          onTap: () {
+                            context.goPath(AppPath.cloudSync);
+                          },
+                        ),
+                        SettingsItem(
+                          title: 'settings.clearData'.tr(),
+                          icon: Icons.delete_outline,
+                          isDestructive: true,
+                          onTap: () {
+                            context.read<SettingsBloc>().add(const ClearData());
+                          },
+                        ),
 
-                      // 關於
-                      const SettingsSectionHeader(title: '關於'),
-                      const SettingsItem(
-                        title: '使用條款',
-                        icon: Icons.description_outlined,
-                      ),
-                      const SettingsItem(
-                        title: '隱私政策',
-                        icon: Icons.privacy_tip_outlined,
-                      ),
-                      const SettingsItem(
-                        title: '意見回饋',
-                        icon: Icons.feedback_outlined,
-                      ),
-                      const SettingsItem(
-                        title: '評分 App',
-                        icon: Icons.star_outline,
-                      ),
+                        // 關於
+                        SettingsSectionHeader(title: 'settings.about'.tr()),
+                        SettingsItem(
+                          title: 'settings.termsOfService'.tr(),
+                          icon: Icons.description_outlined,
+                        ),
+                        SettingsItem(
+                          title: 'settings.privacyPolicy'.tr(),
+                          icon: Icons.privacy_tip_outlined,
+                        ),
+                        SettingsItem(
+                          title: 'settings.feedback'.tr(),
+                          icon: Icons.feedback_outlined,
+                        ),
+                        SettingsItem(
+                          title: 'settings.rateApp'.tr(),
+                          icon: Icons.star_outline,
+                        ),
 
-                      const SizedBox(height: 40),
-                      Center(
-                        child: Text(
-                          'Garage v1.0.0',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.3,
+                        const SizedBox(height: 40),
+                        Center(
+                          child: Text(
+                            'Garage v1.0.0',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
+                // 固定在底部的廣告
+                const SafeArea(top: false, child: BannerAdWidget()),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  void _showAdManagementDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'settings.adRewards'.tr(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.confirmation_number_outlined),
+                title: Text('settings.earnAdTicket'.tr()),
+                subtitle: Text('settings.earnAdTicketDesc'.tr()),
+                trailing: const Icon(Icons.play_circle_outline),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<SettingsBloc>().add(const WatchAdForTicket());
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.remove_circle_outline),
+                title: Text('settings.removeBanner'.tr()),
+                subtitle: Text('settings.removeBannerDesc'.tr()),
+                trailing: const Icon(Icons.play_circle_outline),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<SettingsBloc>().add(
+                    const WatchAdForBannerRemoval(),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

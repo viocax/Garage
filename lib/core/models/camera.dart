@@ -1,70 +1,55 @@
-// import 'package:isar_community/isar.dart'; // MARK: Isar 暫時不使用
 import 'dart:math';
 
-// part 'speed_camera.g.dart'; // MARK: Isar 暫時不使用
-
 /// 測速照相點位資料模型
-// @collection // MARK: Isar 暫時不使用
 class Camera {
-  // Id id = Isar.autoIncrement; // Auto-increment ID // MARK: Isar 暫時不使用
+  /// 測速照相機 ID
+  final String id;
 
-  // @Index(type: IndexType.value, caseSensitive: false) // MARK: Isar 暫時不使用
-  late String cityName; // 城市名稱
+  /// 速限（公里/小時）
+  final int speedLimit;
 
-  // @Index(type: IndexType.value, caseSensitive: false) // MARK: Isar 暫時不使用
-  late String regionName; // 地區名稱
+  /// WGS84 北緯度
+  final double latitude;
 
-  // @Index(type: IndexType.value, caseSensitive: false) // MARK: Isar 暫時不使用
-  late String address; // 地址
+  /// WGS84 東經度
+  final double longitude;
 
-  late String deptName; // 部門名稱
+  /// 方向
+  final String direction;
 
-  late String branchName; // 分局名稱
+  /// 描述（包含完整地址和方向）
+  final String description;
 
-  // @Index(type: IndexType.value) // MARK: Isar 暫時不使用
-  late double longitude; // WGS84 東經度
+  const Camera({
+    required this.id,
+    required this.speedLimit,
+    required this.latitude,
+    required this.longitude,
+    required this.direction,
+    required this.description,
+  });
 
-  // @Index(type: IndexType.value) // MARK: Isar 暫時不使用
-  late double latitude; // WGS84 北緯度
-
-  // @Index() // MARK: Isar 暫時不使用
-  late String direction; // 方向
-
-  // @Index() // MARK: Isar 暫時不使用
-  late int speedLimit; // 速限（公里/小時）
-
-  late DateTime lastUpdated; // 最後更新時間
-
-  /// 預設 constructor
-  Camera();
-
-  /// 從 JSON 資料建立 SpeedCamera 物件
+  /// 從 JSON 資料建立 Camera 物件
   factory Camera.fromJson(Map<String, dynamic> json) {
-    return Camera()
-      ..cityName = json['CityName'] ?? ''
-      ..regionName = json['RegionName'] ?? ''
-      ..address = json['Address'] ?? ''
-      ..deptName = json['DeptNm'] ?? ''
-      ..branchName = json['BranchNm'] ?? ''
-      ..longitude = (json['Longitude'] as num?)?.toDouble() ?? 0.0
-      ..latitude = (json['Latitude'] as num?)?.toDouble() ?? 0.0
-      ..direction = json['direct'] ?? ''
-      ..speedLimit = int.tryParse(json['limitspeed']?.toString() ?? '0') ?? 0
-      ..lastUpdated = DateTime.now();
+    return Camera(
+      id: json['id'] as String? ?? '',
+      speedLimit: json['lim'] as int? ?? 0,
+      latitude: (json['lat'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['lon'] as num?)?.toDouble() ?? 0.0,
+      direction: json['dir'] as String? ?? '',
+      description: json['disc'] as String? ?? '',
+    );
   }
 
   /// 轉換為 JSON 格式
   Map<String, dynamic> toJson() {
     return {
-      'CityName': cityName,
-      'RegionName': regionName,
-      'Address': address,
-      'DeptNm': deptName,
-      'BranchNm': branchName,
-      'Longitude': longitude,
-      'Latitude': latitude,
-      'direct': direction,
-      'limitspeed': speedLimit.toString(),
+      'id': id,
+      'lim': speedLimit,
+      'lat': latitude,
+      'lon': longitude,
+      'dir': direction,
+      'disc': description,
     };
   }
 
@@ -89,8 +74,36 @@ class Camera {
     return degrees * pi / 180;
   }
 
+  /// 複製並修改部分屬性
+  Camera copyWith({
+    String? id,
+    int? speedLimit,
+    double? latitude,
+    double? longitude,
+    String? direction,
+    String? description,
+  }) {
+    return Camera(
+      id: id ?? this.id,
+      speedLimit: speedLimit ?? this.speedLimit,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      direction: direction ?? this.direction,
+      description: description ?? this.description,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Camera && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
   @override
   String toString() {
-    return 'SpeedCamera(city: $cityName, region: $regionName, address: $address, direction: $direction, speedLimit: $speedLimit km/h)';
+    return 'Camera(id: $id, speedLimit: $speedLimit km/h, direction: $direction, description: $description)';
   }
 }

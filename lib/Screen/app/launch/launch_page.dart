@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -291,7 +292,7 @@ class LaunchView extends StatelessWidget {
         child: Transform.translate(
           offset: Offset(0, bloc.animationHolder.taglinePosition.value),
           child: Text(
-            'Your Cash · Your Call',
+            'app.tagline'.tr(),
             style: TextStyle(
               fontSize: 18,
               letterSpacing: 4,

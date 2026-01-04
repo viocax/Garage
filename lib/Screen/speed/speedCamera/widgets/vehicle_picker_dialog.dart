@@ -1,13 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/app_theme.dart';
+import 'package:garage/core/models/picker_option.dart';
 import 'dart:ui';
-
-abstract class PickerOption {
-  String getIdentifier();
-  String getTitle();
-  String getSubTitle();
-}
 
 /// A floating vehicle picker dialog with a wheel selector
 class PickerDialog extends StatefulWidget {

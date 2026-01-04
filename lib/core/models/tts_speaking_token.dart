@@ -36,47 +36,6 @@ class TTSSpeakingToken implements QueueableItem {
     }
   }
 
-  /// 判断是否应该重新播报
-  ///
-  /// 条件：
-  /// 1. 冷却时间已过
-  /// 2. 速度变化超过阈值
-  /// 3. 距离变化超过阈值（可选）
-  ///
-  /// [nextToken] 下一个要播报的令牌
-  bool shouldSpeak(
-    TTSSpeakingToken nextToken, {
-    Duration cooldown = const Duration(seconds: 5),
-    double speedThreshold = 10.0,
-    double distanceThreshold = 100.0,
-  }) {
-    final timeSinceLastReport = nextToken.lastReportTime.difference(lastReportTime);
-
-    // 1. 检查冷却时间
-    if (timeSinceLastReport < cooldown) {
-      return false;
-    }
-
-    // 2. 检查速度限制是否改变（进入不同测速区域）
-    if (nextToken.speedLimit != speedLimit) {
-      return true;
-    }
-
-    // 3. 检查速度变化是否显著
-    final speedDiff = (nextToken.currentSpeed - currentSpeed).abs();
-    if (speedDiff < speedThreshold) {
-      return false;
-    }
-
-    // 4. 检查距离变化是否显著
-    final distanceDiff = (nextToken.distance - distance).abs();
-    if (distanceDiff < distanceThreshold) {
-      return false;
-    }
-
-    return true;
-  }
-
   /// 创建新的令牌副本
   TTSSpeakingToken copyWith({
     double? currentSpeed,
@@ -96,8 +55,13 @@ class TTSSpeakingToken implements QueueableItem {
 
   @override
   String toString() {
-    return 'TTSSpeakingToken(currentSpeed: $currentSpeed, speedLimit: $speedLimit, '
-        'distance: $distance, lastReportTime: $lastReportTime)';
+    String text = '前方 ${distance.toStringAsFixed(0)} 公尺， 限速 ${speedLimit.toStringAsFixed(0)} 公里， 目前速度 ${currentSpeed.toStringAsFixed(0)} 公里';
+    if (currentSpeed > speedLimit) {
+      text += '已超速';
+    } else {
+      text += '未超速，請注意';
+    }
+    return text;
   }
 
   @override

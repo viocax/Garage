@@ -16,6 +16,6 @@ extension SpeedUnitExtension on double {
   double get mile => this * 0.621371;
   double get km => this * 1.60934;
   String format(SpeedUnit unit) {
-    return this.toStringAsFixed(2) + unit.displayName;
+    return toStringAsFixed(2) + unit.displayName;
   }
 }

@@ -4,123 +4,164 @@ import 'package:garage/core/models/vehicle_record.dart';
 enum AddRecordStatus { initial, valid, submitting, success, failure }
 
 class AddRecordState extends Equatable {
+  /// 記錄類型（包含該類型的所有資料，包括 recordDate 和 odometer）
   final RecordType recordType;
-  final double amount; // 用於加油、其他類型
-  final DateTime date;
-  final int km;
-  final String note; // 用於其他類型
+
+  /// 狀態相關
   final AddRecordStatus status;
   final String? errorMessage;
   final VehicleRecord? createdRecord;
 
-  // 保養相關狀態 - 支援批次新增
-  final List<MaintenanceData> maintenanceEntries;
+  /// 加油專用：追蹤金額是否被手動編輯
+  final bool isAmountManuallyEdited;
 
-  // 加油相關狀態
-  final FuelType fuelType;
-  final double fuelAmount; // 加油量（公升）
-  final double pricePerLiter; // 每公升油價
-  final int remainingFuel; // 剩餘油量百分比
-  final bool isAmountManuallyEdited; // 追蹤金額是否被手動編輯
-
-  AddRecordState({
-    RecordType? recordType,
-    this.amount = 0,
-    required this.date,
-    this.km = 0,
-    this.note = '',
+  const AddRecordState({
+    required this.recordType,
     this.status = AddRecordStatus.initial,
     this.errorMessage,
     this.createdRecord,
-    // 保養相關預設值
-    this.maintenanceEntries = const [],
-    // 加油相關預設值
-    this.fuelType = FuelType.octane95,
-    this.fuelAmount = 0,
-    this.pricePerLiter = 0,
-    this.remainingFuel = 90,
     this.isAmountManuallyEdited = false,
-  }) : recordType = recordType ?? RecordTypeMaintenance([]);
+  });
+
+  // ============ 共用欄位 Getter（從 RecordType 取得）============
+
+  DateTime get date => recordType.recordDate;
+  int get km => recordType.odometer;
+
+  // ============ Fuel 相關 Getter ============
+
+  /// 取得 FuelData（僅當 recordType 為 Fuel 時有效）
+  FuelData get fuelData => recordType is RecordTypeFuel
+      ? (recordType as RecordTypeFuel).data
+      : FuelData();
+
+  FuelType get fuelType => fuelData.fuelType;
+  double get fuelAmount => fuelData.fuelAmount;
+  double get pricePerLiter => fuelData.pricePerLiter;
+  int get remainingFuel => fuelData.remainingFuel;
+
+  /// 加油金額（自動計算或手動輸入）
+  double get amount => fuelData.calculatedCost;
+
+  // ============ Maintenance 相關 Getter ============
+
+  /// 取得保養項目列表
+  List<MaintenanceData> get maintenanceEntries =>
+      recordType is RecordTypeMaintenance
+      ? (recordType as RecordTypeMaintenance).data
+      : [];
 
   /// 計算保養項目總金額
-  double get totalMaintenanceAmount =>
-      maintenanceEntries.fold(0, (sum, entry) => sum + entry.amount);
+  double get totalMaintenanceAmount => recordType is RecordTypeMaintenance
+      ? (recordType as RecordTypeMaintenance).totalAmount
+      : 0;
 
-  /// 取得當前狀態對應的 RecordType 實例
-  RecordType get activeRecordType {
-    switch (recordType) {
-      case RecordTypeMaintenance():
-        return RecordTypeMaintenance(maintenanceEntries);
-      case RecordTypeFuel():
-        return RecordTypeFuel(
-          FuelData(
-            fuelType: fuelType,
-            fuelAmount: fuelAmount,
-            pricePerLiter: pricePerLiter,
-            remainingFuel: remainingFuel,
-          ),
-        );
-      case RecordTypeOther():
-        return RecordTypeOther(OtherData(amount: amount, note: note));
-    }
-  }
+  // ============ Other 相關 Getter ============
+
+  /// 取得 OtherData（僅當 recordType 為 Other 時有效）
+  OtherData get otherData => recordType is RecordTypeOther
+      ? (recordType as RecordTypeOther).data
+      : OtherData();
+
+  String get note => otherData.note;
+  double get otherAmount => otherData.amount;
+
+  // ============ copyWith ============
 
   AddRecordState copyWith({
     RecordType? recordType,
-    double? amount,
-    DateTime? date,
-    int? km,
-    String? note,
     AddRecordStatus? status,
     String? errorMessage,
     VehicleRecord? createdRecord,
-    // 保養相關
-    List<MaintenanceData>? maintenanceEntries,
-    // 加油相關
+    bool? isAmountManuallyEdited,
+  }) {
+    return AddRecordState(
+      recordType: recordType ?? this.recordType,
+      status: status ?? AddRecordStatus.valid,
+      errorMessage: errorMessage,
+      createdRecord: createdRecord ?? this.createdRecord,
+      isAmountManuallyEdited:
+          isAmountManuallyEdited ?? this.isAmountManuallyEdited,
+    );
+  }
+
+  /// 更新共用欄位（date, km）
+  AddRecordState copyWithCommonFields({DateTime? date, int? km}) {
+    final newDate = date ?? this.date;
+    final newKm = km ?? this.km;
+
+    final RecordType newType = switch (recordType) {
+      RecordTypeFuel(:final data) => RecordTypeFuel(
+        data: data,
+        recordDate: newDate,
+        odometer: newKm,
+      ),
+      RecordTypeMaintenance(:final data) => RecordTypeMaintenance(
+        data: data,
+        recordDate: newDate,
+        odometer: newKm,
+      ),
+      RecordTypeOther(:final data) => RecordTypeOther(
+        data: data,
+        recordDate: newDate,
+        odometer: newKm,
+      ),
+    };
+
+    return copyWith(recordType: newType);
+  }
+
+  /// 更新 FuelData 的便捷方法
+  AddRecordState copyWithFuelData({
     FuelType? fuelType,
     double? fuelAmount,
     double? pricePerLiter,
     int? remainingFuel,
     bool? isAmountManuallyEdited,
   }) {
-    return AddRecordState(
-      recordType: recordType ?? this.recordType,
-      amount: amount ?? this.amount,
-      date: date ?? this.date,
-      km: km ?? this.km,
-      note: note ?? this.note,
-      status: status ?? this.status,
-      errorMessage: errorMessage ?? this.errorMessage,
-      createdRecord: createdRecord ?? this.createdRecord,
-      // 保養相關
-      maintenanceEntries: maintenanceEntries ?? this.maintenanceEntries,
-      // 加油相關
-      fuelType: fuelType ?? this.fuelType,
-      fuelAmount: fuelAmount ?? this.fuelAmount,
-      pricePerLiter: pricePerLiter ?? this.pricePerLiter,
-      remainingFuel: remainingFuel ?? this.remainingFuel,
-      isAmountManuallyEdited:
-          isAmountManuallyEdited ?? this.isAmountManuallyEdited,
+    final currentData = fuelData;
+    final newData = currentData.copyWith(
+      fuelType: fuelType,
+      fuelAmount: fuelAmount,
+      pricePerLiter: pricePerLiter,
+      remainingFuel: remainingFuel,
+    );
+    return copyWith(
+      recordType: RecordTypeFuel(data: newData, recordDate: date, odometer: km),
+      isAmountManuallyEdited: isAmountManuallyEdited ?? false,
+    );
+  }
+
+  /// 更新 MaintenanceData 列表的便捷方法
+  AddRecordState copyWithMaintenanceEntries(List<MaintenanceData> entries) {
+    return copyWith(
+      recordType: RecordTypeMaintenance(
+        data: entries,
+        recordDate: date,
+        odometer: km,
+      ),
+    );
+  }
+
+  /// 更新 OtherData 的便捷方法
+  AddRecordState copyWithOtherData({double? amount, String? note}) {
+    final currentData = otherData;
+    final newData = currentData.copyWith(amount: amount, note: note);
+    return copyWith(
+      recordType: RecordTypeOther(
+        data: newData,
+        recordDate: date,
+        odometer: km,
+      ),
     );
   }
 
   @override
   List<Object?> get props => [
     recordType,
-    amount,
-    date,
-    km,
-    note,
     status,
     errorMessage,
     createdRecord,
-    // 保養相關
-    maintenanceEntries,
-    // 加油相關
-    fuelType,
-    fuelAmount,
-    pricePerLiter,
-    remainingFuel,
     isAmountManuallyEdited,
   ];
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:garage/theme/app_theme.dart';
 
 /// 對話框擴展
 ///
@@ -203,7 +204,7 @@ extension DialogExtension on BuildContext {
             child: Text(
               confirmText,
               style: isDestructiveAction
-                  ? const TextStyle(color: Colors.red)
+                  ? const TextStyle(color: AppTheme.systemRed)
                   : null,
             ),
           ),

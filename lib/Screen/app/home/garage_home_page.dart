@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
@@ -44,17 +45,17 @@ class GarageHomePage extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.speed_outlined),
               activeIcon: Icon(Icons.speed),
-              label: '測速',
+              label: 'tabs.speedometer'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.book_outlined),
               activeIcon: Icon(Icons.book),
-              label: '紀錄',
+              label: 'tabs.records'.tr(),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
               activeIcon: Icon(Icons.settings),
-              label: '設定',
+              label: 'tabs.settings'.tr(),
             ),
           ],
         ),

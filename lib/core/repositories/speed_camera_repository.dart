@@ -12,7 +12,7 @@ abstract class ISpeedCameraRepository {
   Future<void> syncFromRemote({bool force = false});
 
   /// 取得所有測速照相點位
-  Future<List<Camera>> getAll();
+  List<Camera> getAll();
 
   /// 取得資料總數
   Future<int> getCount();
@@ -25,13 +25,11 @@ abstract class ISpeedCameraRepository {
 
   Future<bool> checkPermission();
 
-  Future<bool> requestPermission();
+  Future<bool> requestPermission({bool background = false});
 
   Future<void> startLocationTracking(Function(SpeedCameraModel?) callback);
 
   Future<void> stopLocationTracking();
-
-  Future<void> updateLocationAccuracyPolicy(double currentSpeed);
 
   Future<void> updateVolume(double percentage);
 

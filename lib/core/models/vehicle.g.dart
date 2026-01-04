@@ -28,30 +28,35 @@ const VehicleSchema = CollectionSchema(
       name: r'kmToNextMaintenance',
       type: IsarType.long,
     ),
-    r'maintenanceHealth': PropertySchema(
+    r'licensePlate': PropertySchema(
       id: 3,
+      name: r'licensePlate',
+      type: IsarType.string,
+    ),
+    r'maintenanceHealth': PropertySchema(
+      id: 4,
       name: r'maintenanceHealth',
       type: IsarType.double,
     ),
     r'maintenanceIntervalKm': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'maintenanceIntervalKm',
       type: IsarType.long,
     ),
-    r'order': PropertySchema(id: 5, name: r'order', type: IsarType.long),
-    r'remindKm': PropertySchema(id: 6, name: r'remindKm', type: IsarType.long),
+    r'order': PropertySchema(id: 6, name: r'order', type: IsarType.long),
+    r'remindKm': PropertySchema(id: 7, name: r'remindKm', type: IsarType.long),
     r'spentThisMonth': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'spentThisMonth',
       type: IsarType.string,
     ),
     r'totalSpent': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'totalSpent',
       type: IsarType.string,
     ),
     r'vehicleId': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'vehicleId',
       type: IsarType.string,
     ),
@@ -100,6 +105,7 @@ int _vehicleEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.carName.length * 3;
+  bytesCount += 3 + object.licensePlate.length * 3;
   bytesCount += 3 + object.spentThisMonth.length * 3;
   bytesCount += 3 + object.totalSpent.length * 3;
   bytesCount += 3 + object.vehicleId.length * 3;
@@ -115,13 +121,14 @@ void _vehicleSerialize(
   writer.writeString(offsets[0], object.carName);
   writer.writeLong(offsets[1], object.currentKm);
   writer.writeLong(offsets[2], object.kmToNextMaintenance);
-  writer.writeDouble(offsets[3], object.maintenanceHealth);
-  writer.writeLong(offsets[4], object.maintenanceIntervalKm);
-  writer.writeLong(offsets[5], object.order);
-  writer.writeLong(offsets[6], object.remindKm);
-  writer.writeString(offsets[7], object.spentThisMonth);
-  writer.writeString(offsets[8], object.totalSpent);
-  writer.writeString(offsets[9], object.vehicleId);
+  writer.writeString(offsets[3], object.licensePlate);
+  writer.writeDouble(offsets[4], object.maintenanceHealth);
+  writer.writeLong(offsets[5], object.maintenanceIntervalKm);
+  writer.writeLong(offsets[6], object.order);
+  writer.writeLong(offsets[7], object.remindKm);
+  writer.writeString(offsets[8], object.spentThisMonth);
+  writer.writeString(offsets[9], object.totalSpent);
+  writer.writeString(offsets[10], object.vehicleId);
 }
 
 Vehicle _vehicleDeserialize(
@@ -135,9 +142,10 @@ Vehicle _vehicleDeserialize(
   object.currentKm = reader.readLong(offsets[1]);
   object.id = id;
   object.kmToNextMaintenance = reader.readLong(offsets[2]);
-  object.maintenanceIntervalKm = reader.readLong(offsets[4]);
-  object.order = reader.readLong(offsets[5]);
-  object.vehicleId = reader.readString(offsets[9]);
+  object.licensePlate = reader.readString(offsets[3]);
+  object.maintenanceIntervalKm = reader.readLong(offsets[5]);
+  object.order = reader.readLong(offsets[6]);
+  object.vehicleId = reader.readString(offsets[10]);
   return object;
 }
 
@@ -155,18 +163,20 @@ P _vehicleDeserializeProp<P>(
     case 2:
       return (reader.readLong(offset)) as P;
     case 3:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 5:
       return (reader.readLong(offset)) as P;
     case 6:
       return (reader.readLong(offset)) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 8:
       return (reader.readString(offset)) as P;
     case 9:
+      return (reader.readString(offset)) as P;
+    case 10:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -695,6 +705,153 @@ extension VehicleQueryFilter
           upper: upper,
           includeUpper: includeUpper,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'licensePlate',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'licensePlate',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'licensePlate',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'licensePlate',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'licensePlate',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'licensePlate',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'licensePlate',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'licensePlate',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition> licensePlateIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'licensePlate', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterFilterCondition>
+  licensePlateIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'licensePlate', value: ''),
       );
     });
   }
@@ -1494,6 +1651,18 @@ extension VehicleQuerySortBy on QueryBuilder<Vehicle, Vehicle, QSortBy> {
     });
   }
 
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByLicensePlate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'licensePlate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByLicensePlateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'licensePlate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Vehicle, Vehicle, QAfterSortBy> sortByMaintenanceHealth() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'maintenanceHealth', Sort.asc);
@@ -1630,6 +1799,18 @@ extension VehicleQuerySortThenBy
     });
   }
 
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByLicensePlate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'licensePlate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByLicensePlateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'licensePlate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Vehicle, Vehicle, QAfterSortBy> thenByMaintenanceHealth() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'maintenanceHealth', Sort.asc);
@@ -1738,6 +1919,14 @@ extension VehicleQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Vehicle, Vehicle, QDistinct> distinctByLicensePlate({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'licensePlate', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Vehicle, Vehicle, QDistinct> distinctByMaintenanceHealth() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'maintenanceHealth');
@@ -1813,6 +2002,12 @@ extension VehicleQueryProperty
   QueryBuilder<Vehicle, int, QQueryOperations> kmToNextMaintenanceProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'kmToNextMaintenance');
+    });
+  }
+
+  QueryBuilder<Vehicle, String, QQueryOperations> licensePlateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'licensePlate');
     });
   }
 

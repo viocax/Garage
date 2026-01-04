@@ -3,31 +3,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:garage/core/service/location/geolocator_interface.dart';
 
 /// Mock Geolocator 類別，用於測試時模擬定位服務
-///
-/// 使用方式：
-/// ```dart
-/// final mockGeolocator = MockGeolocator();
-///
-/// // 設定定位服務狀態
-/// mockGeolocator.setLocationServiceEnabled(true);
-///
-/// // 設定權限狀態
-/// mockGeolocator.setPermissionStatus(LocationPermission.always);
-///
-/// // 設定當前位置
-/// mockGeolocator.setCurrentPosition(Position(
-///   latitude: 25.0330,
-///   longitude: 121.5654,
-///   timestamp: DateTime.now(),
-///   accuracy: 10.0,
-///   altitude: 0.0,
-///   heading: 0.0,
-///   speed: 0.0,
-///   speedAccuracy: 0.0,
-///   altitudeAccuracy: 0.0,
-///   headingAccuracy: 0.0,
-/// ));
-/// ```
 class MockGeolocator implements GeolocatorInterface {
   /// 定位服務是否開啟
   bool _isLocationServiceEnabled = true;
@@ -124,7 +99,7 @@ class MockGeolocator implements GeolocatorInterface {
       return Stream.error(_errorToThrow!);
     }
 
-    _positionStreamController = StreamController<Position>();
+    _positionStreamController = StreamController<Position>.broadcast();
     return _positionStreamController!.stream;
   }
 

@@ -21,7 +21,9 @@ class AppTheme {
   static const Color systemGray6 = Color(
     0xFFF5F5F7,
   ); // iOS system gray 6 (light)
-  static const Color placeholderGray = Color(0xFF636366); // Placeholder text color
+  static const Color placeholderGray = Color(
+    0xFF636366,
+  ); // Placeholder text color
 
   // iOS System Colors
   static const Color systemGreen = Color(0xFF34C759); // iOS system green
@@ -31,6 +33,19 @@ class AppTheme {
 
   // Dark Mode Colors
   static const Color darkSurface = Color(0xFF1C1C1E); // iOS system gray 6 dark
+
+  // Status Colors
+  static const Color statusGreen = Color(
+    0xFF22C55E,
+  ); // Online/Success indicator green
+
+  // Record Type Colors
+  static const Color recordTypeFuelColor = Color(
+    0xFFD9923B,
+  ); // Fuel record orange
+  static const Color recordTypeMaintenanceColor = Color(
+    0xFF7A8A99,
+  ); // Maintenance record grey-blue
 
   // Speed Indicator Colors
   static const Color speedSlow = Color(0xFF34C759); // Green for low speed
@@ -67,6 +82,12 @@ class AppTheme {
     0xFF8E8E93,
   ); // Secondary text
   static const Color dashboardAccentRed = Color(0xFFD64045); // Accent red color
+  static const Color recordCardWineRed = Color(
+    0xFF751532,
+  ); // Deep wine red for cards
+  static const Color recordCardCaramelOrange = Color(
+    0xFFD66D2B,
+  ); // Deep caramel orange for cards
   static const Color dashboardGradientStart = Color(
     0xFFF5F5F7,
   ); // Gradient start
@@ -79,14 +100,24 @@ class AppTheme {
   ); // Input field background
 
   // Launch Page Colors
-  static const Color launchGradientStart = Color(0xFF1E1E1E); // Launch gradient start
-  static const Color launchGradientEnd = Color(0xFF0A0A0A); // Launch gradient end
+  static const Color launchGradientStart = Color(
+    0xFF1E1E1E,
+  ); // Launch gradient start
+  static const Color launchGradientEnd = Color(
+    0xFF0A0A0A,
+  ); // Launch gradient end
 
   // Transparent/Opacity Colors
   // White transparent variants
+  static Color whiteTransparent04 = Colors.white.withValues(alpha: 0.04);
+  static Color whiteTransparent05 = Colors.white.withValues(alpha: 0.05);
+  static Color whiteTransparent06 = Colors.white.withValues(alpha: 0.06);
   static Color whiteTransparent08 = Colors.white.withValues(alpha: 0.08);
   static Color whiteTransparent10 = Colors.white.withValues(alpha: 0.1);
+  static Color whiteTransparent12 = Colors.white.withValues(alpha: 0.12);
+  static Color whiteTransparent15 = Colors.white.withValues(alpha: 0.15);
   static Color whiteTransparent20 = Colors.white.withValues(alpha: 0.2);
+  static Color whiteTransparent24 = Colors.white.withValues(alpha: 0.24);
   static Color whiteTransparent30 = Colors.white.withValues(alpha: 0.3);
   static Color whiteTransparent50 = Colors.white.withValues(alpha: 0.5);
   static Color whiteTransparent70 = Colors.white.withValues(alpha: 0.7);
@@ -96,22 +127,44 @@ class AppTheme {
   // Black transparent variants
   static Color blackTransparent10 = Colors.black.withValues(alpha: 0.1);
   static Color blackTransparent15 = Colors.black.withValues(alpha: 0.15);
+  static Color blackTransparent20 = Colors.black.withValues(alpha: 0.2);
+  static Color blackTransparent30 = Colors.black.withValues(alpha: 0.3);
   static Color blackTransparent50 = Colors.black.withValues(alpha: 0.5);
   static Color blackTransparent60 = Colors.black.withValues(alpha: 0.6);
-
+  static Color blackTransparent75 = Colors.black.withValues(alpha: 0.75);
+  static Color blackTransparent90 = Colors.black.withValues(alpha: 0.9);
   // Grey transparent variants
   static Color greyTransparent10 = Colors.grey.withValues(alpha: 0.1);
   static Color greyTransparent20 = Colors.grey.withValues(alpha: 0.2);
 
   // Red transparent variants
-  static Color redTransparent30 = const Color(0xFFFF3B30).withValues(alpha: 0.3);
-  static Color redTransparent90 = const Color(0xFFFF3B30).withValues(alpha: 0.9);
+  static Color redTransparent30 = const Color(
+    0xFFFF3B30,
+  ).withValues(alpha: 0.3);
+  static Color redTransparent90 = const Color(
+    0xFFFF3B30,
+  ).withValues(alpha: 0.9);
 
   // Green transparent variants
-  static Color greenTransparent10 = const Color(0xFF34C759).withValues(alpha: 0.1);
+  static Color greenTransparent10 = const Color(
+    0xFF34C759,
+  ).withValues(alpha: 0.1);
+  static Color greenTransparent30 = const Color(
+    0xFF34C759,
+  ).withValues(alpha: 0.3);
+
+  // Status green transparent variants
+  static Color statusGreenTransparent60 = statusGreen.withValues(alpha: 0.6);
 
   // Accent red transparent variants
-  static Color accentRedTransparent15 = dashboardAccentRed.withValues(alpha: 0.15);
+  static Color accentRedTransparent15 = dashboardAccentRed.withValues(
+    alpha: 0.15,
+  );
+
+  // Record card variants
+  static Color recordCardCaramelOrange60 = recordCardCaramelOrange.withValues(
+    alpha: 0.6,
+  );
 
   // Dark surface transparent variants
   static Color darkSurfaceTransparent85 = darkSurface.withValues(alpha: 0.85);

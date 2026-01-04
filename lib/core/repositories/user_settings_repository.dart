@@ -5,7 +5,11 @@ abstract class UserSettingsRepository {
   /// 載入使用者設定
   Future<UserSettings> loadSettings();
 
+  /// 取得目前快取的設定（需先呼叫過 loadSettings）
+  UserSettings get currentSettings;
+
   Future<UserSettingsRepository> updateSettings(UserSettings settings);
+
   /// 儲存使用者設定
   Future<bool> saveSettings(UserSettings settings);
 

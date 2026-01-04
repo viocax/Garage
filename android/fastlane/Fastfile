@@ -1,6 +1,14 @@
 default_platform(:android)
 
 platform :android do
+  # Sync splash screen color from AppTheme before build
+  private_lane :sync_splash_color do
+    UI.message("🎨 Syncing splash screen color from AppTheme...")
+    Dir.chdir("../..") do
+      system("dart", "run", "tool/sync_splash_color.dart") || UI.user_error!("Splash color sync failed")
+    end
+  end
+
   desc "Runs all the tests"
   lane :test do
     gradle(task: "test")
@@ -8,13 +16,19 @@ platform :android do
 
   desc "Submit a new Beta Build to Crashlytics Beta"
   lane :beta do
-    gradle(task: "clean assembleRelease")
+    sync_splash_color
+    Dir.chdir("../..") do
+      system("flutter", "build", "apk", "--release") || UI.user_error!("Flutter build failed")
+    end
     # crashlytics
   end
 
   desc "Deploy a new version to the Google Play"
   lane :deploy do
-    gradle(task: "clean assembleRelease")
+    sync_splash_color
+    Dir.chdir("../..") do
+      system("flutter", "build", "appbundle", "--release") || UI.user_error!("Flutter build failed")
+    end
     upload_to_play_store
   end
 end

@@ -1,0 +1,8 @@
+{
+  "id": "ads_integration_20260103",
+  "title": "Google AdMob 全面整合",
+  "description": "實作 Banner、App Open、Interstitial、Native、Rewarded 五種廣告形式，並建立統一的廣告管理機制。",
+  "status": "active",
+  "created_at": "2026-01-03",
+  "priority": "medium"
+}

@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:isar_community/isar.dart';
 import 'package:uuid/uuid.dart';
 import 'vehicle_record.dart';
-import 'package:garage/screen/speed/speedCamera/widgets/vehicle_picker_dialog.dart';
+import 'picker_option.dart';
 
 part 'vehicle.g.dart';
 
@@ -14,17 +14,13 @@ class Vehicle implements PickerOption {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
-  late String vehicleId;
-
-  late String carName;
-
-  late int currentKm;
-
-  late int maintenanceIntervalKm; // e.g., every 5000km or 10000km
-
-  late int kmToNextMaintenance;
-
-  late int order; // 排序順序，數字越小越前面
+  String vehicleId = '';
+  String carName = '';
+  String licensePlate = ''; // 車牌號碼
+  int currentKm = 0;
+  int maintenanceIntervalKm = 5000; // e.g., every 5000km or 10000km
+  int kmToNextMaintenance = 5000;
+  int order = 0; // 排序順序，數字越小越前面
 
   final records = IsarLinks<VehicleRecord>();
 
@@ -35,6 +31,7 @@ class Vehicle implements PickerOption {
   factory Vehicle.create({
     String? vehicleId,
     required String carName,
+    String licensePlate = '',
     required int currentKm,
     required int maintenanceIntervalKm,
     order = 0,
@@ -42,6 +39,7 @@ class Vehicle implements PickerOption {
     return Vehicle()
       ..vehicleId = vehicleId ?? _uuid.v4()
       ..carName = carName
+      ..licensePlate = licensePlate
       ..currentKm = currentKm
       ..maintenanceIntervalKm = maintenanceIntervalKm
       ..kmToNextMaintenance = currentKm + maintenanceIntervalKm
@@ -53,6 +51,7 @@ class Vehicle implements PickerOption {
     return Vehicle()
       ..vehicleId = ''
       ..carName = ''
+      ..licensePlate = ''
       ..currentKm = 0
       ..maintenanceIntervalKm = 0
       ..kmToNextMaintenance = 0
@@ -102,7 +101,7 @@ class Vehicle implements PickerOption {
           (Match m) => '${m[1]},',
         );
 
-    return '本月新增 \$$formattedTotal';
+    return '\$$formattedTotal';
   }
 
   // PickerOption implementation

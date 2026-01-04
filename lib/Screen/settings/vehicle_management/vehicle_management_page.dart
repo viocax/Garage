@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/extensions/dialog_extension.dart';
@@ -5,6 +6,8 @@ import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_bloc.dart';
 import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_event.dart';
 import 'package:garage/screen/settings/vehicle_management/bloc/vehicle_management_state.dart';
+import 'package:garage/theme/app_theme.dart';
+import 'package:garage/widgets/widgets.dart';
 
 class VehicleManagementPage extends StatelessWidget {
   const VehicleManagementPage({super.key});
@@ -27,8 +30,10 @@ class _VehicleManagementBody extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('車輛管理'),
+        title: Text('settings.vehicleManagement'.tr()),
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: BlocConsumer<VehicleManagementBloc, VehicleManagementState>(
         listener: (context, state) {
@@ -46,76 +51,93 @@ class _VehicleManagementBody extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state.vehicles.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.directions_car_outlined,
-                    size: 64,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '目前沒有車輛',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
+          return Column(
+            children: [
+              Expanded(
+                child: state.vehicles.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.directions_car_outlined,
+                              size: 64,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'vehicle.noVehicles'.tr(),
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ReorderableListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: state.vehicles.length,
+                        onReorder: (oldIndex, newIndex) {
+                          context.read<VehicleManagementBloc>().add(
+                            ReorderVehicles(
+                              oldIndex: oldIndex,
+                              newIndex: newIndex,
+                            ),
+                          );
+                        },
+                        itemBuilder: (context, index) {
+                          final vehicle = state.vehicles[index];
+                          return Dismissible(
+                            key: ValueKey(vehicle.vehicleId),
+                            direction: DismissDirection.endToStart,
+                            confirmDismiss: (direction) async {
+                              return await context.showAdaptiveConfirmDialog(
+                                title: 'vehicle.confirmDelete'.tr(),
+                                message: 'vehicle.deleteConfirmMessage'.tr(
+                                  args: [vehicle.carName],
+                                ),
+                                cancelText: 'common.cancel'.tr(),
+                                confirmText: 'common.delete'.tr(),
+                                isDestructiveAction: true,
+                              );
+                            },
+                            onDismissed: (direction) {
+                              context.read<VehicleManagementBloc>().add(
+                                DeleteVehicle(vehicle.vehicleId),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'vehicle.deletedMessage'.tr(
+                                      args: [vehicle.carName],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              color: theme.colorScheme.error,
+                              child: const Icon(
+                                Icons.delete_outline,
+                                color: AppTheme.accentColor,
+                              ),
+                            ),
+                            child: _VehicleListTile(
+                              vehicle: vehicle,
+                              index: index,
+                            ),
+                          );
+                        },
+                      ),
               ),
-            );
-          }
-
-          return ReorderableListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: state.vehicles.length,
-            onReorder: (oldIndex, newIndex) {
-              context.read<VehicleManagementBloc>().add(
-                    ReorderVehicles(
-                      oldIndex: oldIndex,
-                      newIndex: newIndex,
-                    ),
-                  );
-            },
-            itemBuilder: (context, index) {
-              final vehicle = state.vehicles[index];
-              return Dismissible(
-                key: ValueKey(vehicle.vehicleId),
-                direction: DismissDirection.endToStart,
-                confirmDismiss: (direction) async {
-                  return await context.showAdaptiveConfirmDialog(
-                    title: '確認刪除',
-                    message: '確定要刪除「${vehicle.carName}」嗎？\n這將同時刪除所有相關記錄。',
-                    cancelText: '取消',
-                    confirmText: '刪除',
-                    isDestructiveAction: true,
-                  );
-                },
-                onDismissed: (direction) {
-                  context.read<VehicleManagementBloc>().add(
-                        DeleteVehicle(vehicle.vehicleId),
-                      );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('已刪除「${vehicle.carName}」')),
-                  );
-                },
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
-                  color: theme.colorScheme.error,
-                  child: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.white,
-                  ),
-                ),
-                child: _VehicleListTile(
-                  vehicle: vehicle,
-                  index: index,
-                ),
-              );
-            },
+              const BannerAdWidget(),
+            ],
           );
         },
       ),
@@ -127,10 +149,7 @@ class _VehicleListTile extends StatelessWidget {
   final Vehicle vehicle;
   final int index;
 
-  const _VehicleListTile({
-    required this.vehicle,
-    required this.index,
-  });
+  const _VehicleListTile({required this.vehicle, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +176,7 @@ class _VehicleListTile extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        subtitle: Text('${vehicle.currentKm} km'),
+        subtitle: Text('${vehicle.currentKm} ${'common.unitKm'.tr()}'),
         trailing: ReorderableDragStartListener(
           index: index,
           child: Icon(

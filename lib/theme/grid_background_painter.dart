@@ -11,7 +11,7 @@ class GridBackgroundPainter extends CustomPainter {
     this.gridSize = 40.0,
     Color? color,
     this.strokeWidth = 1.0,
-  }) : color = color ?? AppTheme.greyTransparent10;
+  }) : color = color ?? AppTheme.greyTransparent20;
 
   @override
   void paint(Canvas canvas, Size size) {

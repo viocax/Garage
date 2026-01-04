@@ -1,6 +1,16 @@
 default_platform(:ios)
 
 platform :ios do
+  # Sync splash screen color from AppTheme before build
+  private_lane :sync_splash_color do
+    UI.message("🎨 Syncing splash screen color from AppTheme...")
+    Dir.chdir("../..") do
+      Bundler.with_unbundled_env do
+        system("dart", "run", "tool/sync_splash_color.dart") || UI.user_error!("Splash color sync failed")
+      end
+    end
+  end
+
   desc "Run Flutter tests"
   lane :build_test do
     # Run flutter test from the project root
@@ -11,6 +21,7 @@ platform :ios do
 
   desc "Compile only (No Code Signing)"
   lane :compile do
+    sync_splash_color
     Dir.chdir("../..") do
       sh("flutter", "build", "ios", "--release", "--no-codesign")
     end
@@ -44,6 +55,9 @@ platform :ios do
     )
     new_build = latest_build + 1
     UI.message("📦 New build number: #{new_build}")
+
+    # Sync splash screen color before build
+    sync_splash_color
 
     # Build Flutter app with new build number (outside bundler to avoid CocoaPods Ruby conflict)
     Dir.chdir("../..") do

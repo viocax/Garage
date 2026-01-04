@@ -6,17 +6,28 @@ import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
+import 'package:garage/core/repositories/ad_repository.dart';
 
 part 'add_vehicle_event.dart';
 part 'add_vehicle_state.dart';
 
 class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
-  final VehicleRepository _vehicleRepository = getIt.repo.vehicle;
-  final UserSettingsRepository _userSettingsRepository = getIt.repo.userSettings;
+  final VehicleRepository _vehicleRepository;
+  final UserSettingsRepository _userSettingsRepository;
+  final AdRepository _adRepository;
 
-  AddVehicleBloc() : super(const AddVehicleState(speedUnit: SpeedUnit.kmh)) {
+  AddVehicleBloc({
+    VehicleRepository? vehicleRepository,
+    UserSettingsRepository? userSettingsRepository,
+    AdRepository? adRepository,
+  }) : _vehicleRepository = vehicleRepository ?? getIt.repo.vehicle,
+       _userSettingsRepository =
+           userSettingsRepository ?? getIt.repo.userSettings,
+       _adRepository = adRepository ?? getIt.repo.ad,
+       super(const AddVehicleState(speedUnit: SpeedUnit.kmh)) {
     on<LoadUserSettings>(_onLoadUserSettings);
     on<VehicleNameChanged>(_onVehicleNameChanged);
+    on<LicensePlateChanged>(_onLicensePlateChanged);
     on<VehicleKmChanged>(_onVehicleKmChanged);
     on<MaintenanceIntervalChanged>(_onMaintenanceIntervalChanged);
     on<SubmitVehicle>(_onSubmitVehicle);
@@ -42,6 +53,13 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     emit(state.copyWith(vehicleName: event.name));
   }
 
+  void _onLicensePlateChanged(
+    LicensePlateChanged event,
+    Emitter<AddVehicleState> emit,
+  ) {
+    emit(state.copyWith(licensePlate: event.licensePlate));
+  }
+
   void _onVehicleKmChanged(
     VehicleKmChanged event,
     Emitter<AddVehicleState> emit,
@@ -62,10 +80,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
   ) async {
     if (!state.isValid) {
       emit(
-        state.copyWith(
-          status: AddVehicleStatus.failure,
-          errorMessage: '請填寫完整',
-        ),
+        state.copyWith(status: AddVehicleStatus.failure, errorMessage: '請填寫完整'),
       );
       return;
     }
@@ -75,6 +90,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     try {
       final vehicle = Vehicle.create(
         carName: state.vehicleName,
+        licensePlate: state.licensePlate,
         currentKm: state.currentKm,
         maintenanceIntervalKm: state.maintenanceIntervalKm,
       );
@@ -104,5 +120,10 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
         ),
       );
     }
+  }
+
+  /// 顯示廣告邏輯（由 UI 呼叫，封裝規則）
+  void showAd({required void Function() onComplete}) {
+    _adRepository.showInterstitialAd(onComplete: onComplete);
   }
 }

@@ -1,7 +1,4 @@
 import 'package:garage/core/core.dart';
-import 'package:garage/core/models/vehicle.dart';
-import 'package:garage/core/models/vehicle_record.dart';
-import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:isar_community/isar.dart';
 
 class LocalVehicleRepository implements VehicleRepository {
@@ -45,6 +42,7 @@ class LocalVehicleRepository implements VehicleRepository {
             ..id = v.id
             ..vehicleId = v.vehicleId
             ..carName = v.carName
+            ..licensePlate = v.licensePlate
             ..currentKm = v.currentKm
             ..maintenanceIntervalKm = v.maintenanceIntervalKm
             ..kmToNextMaintenance = v.kmToNextMaintenance
@@ -169,7 +167,10 @@ class LocalVehicleRepository implements VehicleRepository {
   }
 
   @override
-  Future<bool> updateRecords(String vehicleId, List<VehicleRecord> records) async {
+  Future<bool> updateRecords(
+    String vehicleId,
+    List<VehicleRecord> records,
+  ) async {
     try {
       final db = await isarService.isar;
 

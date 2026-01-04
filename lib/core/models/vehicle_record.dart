@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garage/theme/app_theme.dart';
 import 'package:isar_community/isar.dart';
 import 'package:uuid/uuid.dart';
 
@@ -8,7 +9,8 @@ part 'vehicle_record.g.dart';
 enum FuelType {
   octane92,
   octane95,
-  octane98;
+  octane98,
+  diesel;
 
   String get label {
     switch (this) {
@@ -18,6 +20,8 @@ enum FuelType {
         return '95';
       case FuelType.octane98:
         return '98';
+      case FuelType.diesel:
+        return '柴油';
     }
   }
 }
@@ -59,8 +63,15 @@ class FuelData {
   double get calculatedCost => fuelAmount * pricePerLiter;
 
   /// 格式化顯示
-  String get formattedSummary =>
-      '${fuelType.label} ${fuelAmount.toStringAsFixed(1)}L';
+  String get formattedSummary {
+    final amount = '${fuelAmount.toStringAsFixed(1)}L';
+    switch (fuelType) {
+      case FuelType.diesel:
+        return '柴油  $amount';
+      default:
+        return '無鉛${fuelType.label}  $amount';
+    }
+  }
 }
 
 /// 保養項目資料（embedded object）
@@ -99,25 +110,19 @@ class OtherData {
   double amount; // 金額
   String note; // 備註
 
-  OtherData({
-    this.amount = 0,
-    this.note = '',
-  });
+  OtherData({this.amount = 0, this.note = ''});
 
-  OtherData copyWith({
-    double? amount,
-    String? note,
-  }) {
-    return OtherData(
-      amount: amount ?? this.amount,
-      note: note ?? this.note,
-    );
+  OtherData copyWith({double? amount, String? note}) {
+    return OtherData(amount: amount ?? this.amount, note: note ?? this.note);
   }
 }
 
 /// Sealed class for record types with associated data
 sealed class RecordType {
-  const RecordType();
+  final DateTime recordDate;
+  final int odometer;
+
+  const RecordType({required this.recordDate, required this.odometer});
 
   String get label;
   IconData get icon;
@@ -129,18 +134,32 @@ sealed class RecordType {
 
   static RecordType fromTypeName(
     String typeName, {
+    required DateTime recordDate,
+    required int odometer,
     FuelData? fuelData,
     List<MaintenanceData>? maintenanceData,
     OtherData? otherData,
   }) {
     switch (typeName) {
       case 'fuel':
-        return RecordTypeFuel(fuelData ?? FuelData());
+        return RecordTypeFuel(
+          data: fuelData ?? FuelData(),
+          recordDate: recordDate,
+          odometer: odometer,
+        );
       case 'maintenance':
-        return RecordTypeMaintenance(maintenanceData ?? []);
+        return RecordTypeMaintenance(
+          data: maintenanceData ?? [],
+          recordDate: recordDate,
+          odometer: odometer,
+        );
       case 'other':
       default:
-        return RecordTypeOther(otherData ?? OtherData());
+        return RecordTypeOther(
+          data: otherData ?? OtherData(),
+          recordDate: recordDate,
+          odometer: odometer,
+        );
     }
   }
 }
@@ -148,7 +167,11 @@ sealed class RecordType {
 class RecordTypeFuel extends RecordType {
   final FuelData data;
 
-  const RecordTypeFuel(this.data);
+  const RecordTypeFuel({
+    required this.data,
+    required super.recordDate,
+    required super.odometer,
+  });
 
   @override
   String get label => '加油';
@@ -157,7 +180,7 @@ class RecordTypeFuel extends RecordType {
   IconData get icon => Icons.local_gas_station;
 
   @override
-  Color get color => const Color(0xFFD9923B); // Orange
+  Color get color => AppTheme.recordTypeFuelColor;
 
   @override
   String get typeName => 'fuel';
@@ -174,7 +197,11 @@ class RecordTypeFuel extends RecordType {
 class RecordTypeMaintenance extends RecordType {
   final List<MaintenanceData> data;
 
-  const RecordTypeMaintenance(this.data);
+  const RecordTypeMaintenance({
+    required this.data,
+    required super.recordDate,
+    required super.odometer,
+  });
 
   @override
   String get label => '保養';
@@ -183,7 +210,7 @@ class RecordTypeMaintenance extends RecordType {
   IconData get icon => Icons.build;
 
   @override
-  Color get color => const Color(0xFF7A8A99); // Grey Blue
+  Color get color => AppTheme.recordTypeMaintenanceColor;
 
   @override
   String get typeName => 'maintenance';
@@ -207,7 +234,11 @@ class RecordTypeMaintenance extends RecordType {
 class RecordTypeOther extends RecordType {
   final OtherData data;
 
-  const RecordTypeOther(this.data);
+  const RecordTypeOther({
+    required this.data,
+    required super.recordDate,
+    required super.odometer,
+  });
 
   @override
   String get label => '其他';
@@ -216,7 +247,7 @@ class RecordTypeOther extends RecordType {
   IconData get icon => Icons.receipt;
 
   @override
-  Color get color => const Color(0xFF8E8E93); // Grey
+  Color get color => AppTheme.systemGray;
 
   @override
   String get typeName => 'other';
@@ -232,21 +263,25 @@ class VehicleRecord {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
-  late String recordId;
+  String recordId = '';
+
+  /// 所屬車輛 ID（用於備份還原時重建關聯）
+  @Index()
+  String vehicleId = '';
 
   /// 記錄類型名稱（fuel, maintenance, other）
   @Index()
-  late String typeName;
+  String typeName = '';
 
-  late String title;
-
-  @Index()
-  late DateTime date;
-
-  late double cost;
+  String title = '';
 
   @Index()
-  late int km;
+  DateTime date = DateTime.now();
+
+  double cost = 0;
+
+  @Index()
+  int km = 0;
 
   String? notes;
 
@@ -264,16 +299,19 @@ class VehicleRecord {
   /// 取得 RecordType sealed class
   @ignore
   RecordType get type => RecordType.fromTypeName(
-        typeName,
-        fuelData: fuelData,
-        maintenanceData: maintenanceData,
-        otherData: otherData,
-      );
+    typeName,
+    recordDate: date,
+    odometer: km,
+    fuelData: fuelData,
+    maintenanceData: maintenanceData,
+    otherData: otherData,
+  );
 
   /// Factory constructor 用於創建 VehicleRecord
   /// 如果不提供 recordId，會自動生成 UUID
   factory VehicleRecord.create({
     String? recordId,
+    required String vehicleId,
     required RecordType type,
     required String title,
     required DateTime date,
@@ -283,6 +321,7 @@ class VehicleRecord {
   }) {
     final record = VehicleRecord()
       ..recordId = recordId ?? _uuid.v4()
+      ..vehicleId = vehicleId
       ..typeName = type.typeName
       ..title = title
       ..date = date
