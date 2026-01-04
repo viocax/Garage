@@ -31,8 +31,6 @@ class SpeedDetectionSettingsBloc
         await _onToggleVoiceAlert(emit);
       case ChangeVoiceVolume():
         _onChangeVoiceVolume(event, emit);
-      case PlayTestVoice():
-        await _onPlayTestVoice(emit);
       case ChangeAlertDistance():
         _onChangeAlertDistance(event, emit);
       case CheckLocationPermission():
@@ -130,17 +128,6 @@ class SpeedDetectionSettingsBloc
     }
   }
 
-
-  Future<void> _onPlayTestVoice(
-    Emitter<SpeedDetectionSettingsState> emit,
-  ) async {
-    final currentState = state;
-    if (currentState is SpeedDetectionSettingsLoaded) {
-      // TODO: 实现语音播放功能
-      // 这里需要调用 TTS 服务播放测试音频
-      // 可以播放类似 "测速提示测试" 的文本
-    }
-  }
 
 
   void _onChangeAlertDistance(

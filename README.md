@@ -208,7 +208,6 @@ lib/core/
 - [x] 分類統計圖表
 - [x] 背景執行支援
 - [ ] 區間測速偵測
-- [ ] 導航整合
 - [x] 雲端同步 (iOS: iCloud / Android: Google Drive)
   - [x] CloudSyncRepository 抽象介面與 Repository 模式
     - Service 為 Singleton（保持登入狀態）
@@ -231,8 +230,6 @@ lib/core/
     - 還原時重建 IsarLinks 關聯
 - [ ] 錯誤處理
 - [x] localizeString
-- [ ] model 授權
-- [ ] OpenMap 授權
 - [ ] 訂閱制
 - [x] 廣告 (Google AdMob)
   - [x] 基礎配置 (iOS/Android App ID, SDK Init)
