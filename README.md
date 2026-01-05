@@ -280,7 +280,7 @@ lib/core/
 ## 聯絡與反饋
 
 如果您在使用過程中有任何問題或建議，歡迎透過以下方式與我聯絡：
-- **電子郵件**: [drake.garage.app@gmail.com](mailto:drake.garage.app@gmail.com)
+- **電子郵件**: [garagesup812860@gmail.com](mailto:garagesup812860@gmail.com)
 
 ## 授權
 

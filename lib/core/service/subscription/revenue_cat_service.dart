@@ -21,11 +21,11 @@ class RevenueCatService extends SubscriptionService {
     PurchasesConfiguration? configuration;
 
     if (Platform.isAndroid) {
-      // TODO: Add Android API Key
-      configuration = PurchasesConfiguration("goog_placeholder_key");
+      // Android API Key (using test key for now)
+      configuration = PurchasesConfiguration("test_xsUQybYjMRCqWILCMtBsvakyQyS");
     } else if (Platform.isIOS) {
-      // TODO: Add iOS API Key
-      configuration = PurchasesConfiguration("appl_placeholder_key");
+      // iOS API Key (using test key for now)
+      configuration = PurchasesConfiguration("test_xsUQybYjMRCqWILCMtBsvakyQyS");
     }
 
     if (configuration != null) {

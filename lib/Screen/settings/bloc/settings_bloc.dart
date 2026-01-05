@@ -101,7 +101,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   Future<void> _onSendFeedback(Emitter<SettingsState> emit) async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'drake.garage.app@gmail.com',
+      path: 'garagesup812860@gmail.com',
       query: _encodeQueryParameters(<String, String>{
         'subject': 'Garage App Feedback',
       }),
