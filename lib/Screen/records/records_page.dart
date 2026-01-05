@@ -151,7 +151,7 @@ class RecordsPage extends StatelessWidget {
   }
 
   Future<void> _navigateToAddVehicle(BuildContext context) async {
-    final vehicle = await context.goPathWithResult<Vehicle>(AppPath.addVehicle);
+    final vehicle = await context.pushPathWithResult<Vehicle>(AppPath.addVehicle);
     if (vehicle != null && context.mounted) {
       context.read<RecordsBloc>().add(
         LoadVehicleRecord(vehicleId: vehicle.vehicleId),
@@ -163,7 +163,7 @@ class RecordsPage extends StatelessWidget {
     BuildContext context,
     Vehicle vehicle,
   ) async {
-    final record = await context.goPathWithResult<VehicleRecord>(
+    final record = await context.pushPathWithResult<VehicleRecord>(
       AppPath.addRecord,
       extra: vehicle,
     );
@@ -173,6 +173,7 @@ class RecordsPage extends StatelessWidget {
   }
 
   Future<void> _navigateToEditVehicle(BuildContext context) async {
+    // TODO: implement this
     // await context.goPathWithResult(AppPath.vehicleManagement);
     // if (context.mounted) {
     //   // Reload vehicle data after returning from vehicle management
@@ -589,7 +590,7 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
             if (_sortedRecords.isNotEmpty)
               GestureDetector(
                 onTap: () {
-                  context.goPathWithResult(
+                  context.pushPathWithResult(
                     AppPath.allRecords,
                     extra: widget.vehicle,
                   );

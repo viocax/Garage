@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/screen/settings/widgets/settings_section_header.dart';
 import 'package:garage/theme/theme.dart';
+import 'package:garage/router/app_router.dart';
 import 'bloc/cloud_sync_bloc.dart';
 import 'bloc/cloud_sync_event.dart';
 import 'bloc/cloud_sync_state.dart';
@@ -110,7 +111,7 @@ class _CloudSyncBody extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.safePop(),
             icon: Icon(Icons.arrow_back_ios, color: theme.colorScheme.primary),
           ),
           Text(

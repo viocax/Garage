@@ -35,7 +35,7 @@ class SettingsPage extends StatelessWidget {
           case SettingsAction.none:
             break;
           case SettingsAction.goToSpeedSetting:
-            context.goPath(AppPath.speedDetectionSettings);
+            context.pushPathWithResult(AppPath.speedDetectionSettings);
             context.read<SettingsBloc>().add(const ResetSettingsAction());
             break;
           case SettingsAction.showStopTrackingAlert:
@@ -71,7 +71,7 @@ class SettingsPage extends StatelessWidget {
                           title: 'settings.vehicleManagement'.tr(),
                           icon: Icons.directions_car_outlined,
                           onTap: () {
-                            context.goPath(AppPath.vehicleManagement);
+                            context.pushPathWithResult(AppPath.vehicleManagement);
                           },
                         ),
                         SettingsItem(
@@ -101,7 +101,7 @@ class SettingsPage extends StatelessWidget {
                             title: 'settings.cloudSync'.tr(),
                             icon: Icons.cloud_sync_outlined,
                             onTap: () {
-                              context.goPath(AppPath.cloudSync);
+                              context.pushPathWithResult(AppPath.cloudSync);
                             },
                           )
                         else
@@ -110,7 +110,7 @@ class SettingsPage extends StatelessWidget {
                             icon: Icons.star_outline,
                             subtitle: 'settings.proUnlockDesc'.tr(),
                             onTap: () {
-                              context.goPath(AppPath.premium);
+                              context.pushPathWithResult(AppPath.premium);
                             },
                           ),
 
@@ -129,21 +129,21 @@ class SettingsPage extends StatelessWidget {
                           title: 'settings.termsOfService'.tr(),
                           icon: Icons.description_outlined,
                           onTap: () {
-                            context.goPath(AppPath.termsOfService);
+                            context.pushPathWithResult(AppPath.termsOfService);
                           },
                         ),
                         SettingsItem(
                           title: 'settings.privacyPolicy'.tr(),
                           icon: Icons.privacy_tip_outlined,
                           onTap: () {
-                            context.goPath(AppPath.privacyPolicy);
+                            context.pushPathWithResult(AppPath.privacyPolicy);
                           },
                         ),
                         SettingsItem(
                           title: 'settings.openSourceLicenses'.tr(),
                           icon: Icons.source_outlined,
                           onTap: () {
-                            context.goPath(AppPath.openSourceLicenses);
+                            context.pushPathWithResult(AppPath.openSourceLicenses);
                           },
                         ),
                         SettingsItem(

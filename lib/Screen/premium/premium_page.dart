@@ -6,6 +6,7 @@ import 'package:garage/core/core.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:garage/router/app_router.dart';
+import 'package:go_router/go_router.dart';
 import 'bloc/premium_bloc.dart';
 import 'bloc/premium_event.dart';
 import 'bloc/premium_state.dart';
@@ -148,7 +149,7 @@ class _PremiumAppBar extends StatelessWidget {
       systemOverlayStyle: SystemUiOverlayStyle.light,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => context.safePop(),
       ),
       pinned: true,
     );
@@ -535,7 +536,7 @@ class _LegalLinks extends StatelessWidget {
 
   Widget _linkButton(BuildContext context, String text, AppPath path) {
     return TextButton(
-      onPressed: () => context.goPath(path),
+      onPressed: () => context.pushPathWithResult(path),
       child: Text(
         text,
         style: const TextStyle(

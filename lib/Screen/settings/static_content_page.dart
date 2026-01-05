@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:garage/theme/themed_status_bar.dart';
+import 'package:garage/router/app_router.dart';
 
 class StaticContentPage extends StatelessWidget {
   final String title;
@@ -27,7 +28,7 @@ class StaticContentPage extends StatelessWidget {
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.safePop(),
           ),
           elevation: 0,
           backgroundColor: Colors.transparent,

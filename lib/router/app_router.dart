@@ -52,7 +52,12 @@ class AppPath {
 
   static final cloudSync = AppPath(name: 'cloudSync', previous: settings);
 
-  static final premium = AppPath(name: 'premium', previous: settings);
+  static final premium = AppPath(name: 'premiumSettings', previous: settings);
+
+  static final premiumRecords = AppPath(
+    name: 'premiumRecords',
+    previous: allRecords,
+  );
 
   static final termsOfService = AppPath(
     name: 'termsOfService',
@@ -160,6 +165,14 @@ class AppRouter {
                         final vehicle = state.extra as Vehicle;
                         return AllRecordsPage(vehicle: vehicle);
                       },
+                      routes: [
+                        GoRoute(
+                          path: AppPath.premiumRecords.path,
+                          name: AppPath.premiumRecords.name,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) => const PremiumPage(),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -242,9 +255,22 @@ extension AppRouterExtension on BuildContext {
   void goPath(AppPath path, {Object? extra}) {
     GoRouter.of(this).goNamed(path.name, extra: extra);
   }
-
-  /// 导航到指定路径并等待返回结果
-  Future<T?> goPathWithResult<T>(AppPath path, {Object? extra}) async {
+  /// Push 到指定路径并等待返回结果
+  Future<T?> pushPathWithResult<T>(AppPath path, {Object? extra}) async {
     return await GoRouter.of(this).pushNamed<T>(path.name, extra: extra);
+  }
+
+  /// 安全的 pop，如果无法 pop 则显示提示
+  void safePop() {
+    if (canPop()) {
+      GoRouter.of(this).pop();
+    } else {
+      ScaffoldMessenger.of(this).showSnackBar(
+        SnackBar(
+          content: Text('common.error'.tr()),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }
