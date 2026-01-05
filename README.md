@@ -42,8 +42,10 @@
 | 狀態管理 | BLoC |
 | 路由 | GoRouter |
 | 依賴注入 | GetIt |
-| 本地資料庫 | Isar |
+| 本地資料庫 | Isar (Binary storage) |
 | 設定儲存 | SharedPreferences |
+| 設計語意 | Glassmorphism, Dark Theme |
+| 自動化部署 | Fastlane |
 | 地圖 | flutter_map (OpenStreetMap) |
 | 圖表 | fl_chart |
 | 語音 | flutter_tts |
@@ -207,6 +209,7 @@ lib/core/
 | 多語系 | easy_localization |
 | Google 登入 | google_sign_in, googleapis |
 | iCloud 儲存 | icloud_storage |
+| 自動化執行 | fastlane |
 
 ## 開發進度
 
@@ -218,6 +221,8 @@ lib/core/
 - [x] 進階統計圖表 (分類花費、油耗趨勢、年度對比)
 - [x] 背景執行支援
 - [ ] 區間測速偵測
+- [ ] 編輯車輛資訊功能 (_navigateToEditVehicle)
+- [ ] 自動保養週期預算與提醒
 - [x] 雲端同步 (iOS: iCloud / Android: Google Drive)
   - [x] CloudSyncRepository 抽象介面與 Repository 模式
     - Service 為 Singleton（保持登入狀態）
@@ -237,8 +242,8 @@ lib/core/
     - 至 Google Cloud Console 建立 Android OAuth 憑證
   - [x] Isar 資料庫匯出/匯入邏輯
     - 匯出所有 Vehicle 與 VehicleRecord 為 JSON
-    - 還原時重建 IsarLinks 關聯
-- [ ] 錯誤處理
+    - 還原時重建 IsarLinks 關聯（確保一對多關係正確恢復）
+- [ ] 全域集中式錯誤處理與 Toast 提示 (WIP: Settings Page)
 - [x] 全面本地化 (包含圖表、錯誤訊息與資料模型)
 - [x] 訂閱制 (Garage Pro)
   - [x] RevenueCat 整合 (`purchases_flutter`)
@@ -246,8 +251,10 @@ lib/core/
   - [x] 功能權限控管 (Feature Gating)
     - Pro 用戶自動移除所有廣告
     - 雲端同步功能 Pro 鎖定介面
-    - 進階統計數據解鎖
+    - 進階統計數據解鎖 (含年度花費柱狀圖)
+  - [x] PremiumPage 實體功能視覺預覽 (Carousel Showcase)
   - [x] 訂閱狀態跨頁面即時同步
+- [ ] 擴展更多 Pro 專屬圖表 (如：每公里成本分析、油價走勢分析)
 - [x] 廣告 (Google AdMob)
   - [x] 基礎配置 (iOS/Android App ID, SDK Init)
   - [x] Banner 廣告 (Settings, Vehicle Management)

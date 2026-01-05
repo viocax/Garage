@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/theme/grid_background_painter.dart';
-import 'package:go_router/go_router.dart';
 
 import 'bloc/all_records_bloc.dart';
 import 'bloc/all_records_event.dart';
@@ -297,14 +296,16 @@ class _ChartsSection extends StatelessWidget {
                 // Fuel Efficiency Trend
                 ProFeatureOverlay(
                   isPro: state.isPro,
-                  onUpgrade: () => context.pushPathWithResult(AppPath.premiumRecords),
+                  onUpgrade: () =>
+                      context.pushPathWithResult(AppPath.premiumRecords),
                   child: FuelEfficiencyChart(data: state.fuelEfficiencyData),
                 ),
                 const SizedBox(height: 12),
                 // Annual Expense Comparison
                 ProFeatureOverlay(
                   isPro: state.isPro,
-                  onUpgrade: () => context.pushPathWithResult(AppPath.premiumRecords),
+                  onUpgrade: () =>
+                      context.pushPathWithResult(AppPath.premiumRecords),
                   child: AnnualExpenseComparison(data: state.annualExpenseData),
                 ),
               ],

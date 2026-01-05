@@ -6,7 +6,9 @@ import 'package:garage/core/core.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:garage/router/app_router.dart';
-import 'package:go_router/go_router.dart';
+import 'package:garage/screen/records/all_records/widgets/fuel_efficiency_chart.dart';
+import 'package:garage/screen/records/all_records/widgets/annual_expense_comparison.dart';
+import 'package:garage/screen/records/all_records/bloc/all_records_state.dart';
 import 'bloc/premium_bloc.dart';
 import 'bloc/premium_event.dart';
 import 'bloc/premium_state.dart';
@@ -102,6 +104,8 @@ class PremiumView extends StatelessWidget {
                         const _PremiumHeader(),
                         const SizedBox(height: 32),
                         const _FeatureList(),
+                        const SizedBox(height: 32),
+                        const _ProVisualPreview(),
                         const SizedBox(height: 40),
                         const _OfferingsSection(),
                         const SizedBox(height: 24),
@@ -487,6 +491,119 @@ class _PackageCard extends StatelessWidget {
       default:
         return '';
     }
+  }
+}
+
+class _ProVisualPreview extends StatelessWidget {
+  const _ProVisualPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'premium.visualPreviewTitle'.tr(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 180,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _PreviewCard(
+                title: 'records.fuelEfficiencyTrend'.tr(),
+                child: FuelEfficiencyChart(
+                  data: [
+                    FuelEfficiencyData(
+                      date: DateTime(2023, 10, 1),
+                      kmPerLiter: 12.5,
+                    ),
+                    FuelEfficiencyData(
+                      date: DateTime(2023, 10, 5),
+                      kmPerLiter: 13.2,
+                    ),
+                    FuelEfficiencyData(
+                      date: DateTime(2023, 10, 10),
+                      kmPerLiter: 12.8,
+                    ),
+                    FuelEfficiencyData(
+                      date: DateTime(2023, 10, 15),
+                      kmPerLiter: 14.1,
+                    ),
+                    FuelEfficiencyData(
+                      date: DateTime(2023, 10, 20),
+                      kmPerLiter: 13.9,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              _PreviewCard(
+                title: 'records.annualExpenseComparison'.tr(),
+                child: AnnualExpenseComparison(
+                  data: [
+                    AnnualExpenseData(year: 2021, totalCost: 45000),
+                    AnnualExpenseData(year: 2022, totalCost: 52000),
+                    AnnualExpenseData(year: 2023, totalCost: 48000),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PreviewCard extends StatelessWidget {
+  final String title;
+  final Widget child;
+  const _PreviewCard({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        color: AppTheme.whiteTransparent05,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.whiteTransparent10),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            AbsorbPointer(child: child),
+            Positioned(
+              top: 12,
+              right: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.dashboardAccentRed,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'premium.previewTag'.tr(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
