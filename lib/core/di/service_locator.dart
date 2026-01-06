@@ -27,9 +27,6 @@ Future<void> setupServiceLocator() async {
   // Ad Service
   getIt.registerLazySingleton<AdService>(() => MobileAdService());
 
-  // Subscription Service
-  getIt.registerLazySingleton<SubscriptionService>(() => RevenueCatService());
-
   // Repository layer
   getIt.registerLazySingleton<ISpeedCameraRepository>(
     () => LocalSpeedCameraRepository(),
@@ -44,14 +41,10 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<AppOpenAdRepository>(
     () => AppOpenAdRepository(getIt<UserSettingsRepository>()),
   );
-  getIt.registerLazySingleton<SubscriptionRepository>(
-    () => LocalSubscriptionRepository(getIt<SubscriptionService>()),
-  );
   getIt.registerLazySingleton<AdRepository>(
     () => LocalAdRepository(
       getIt<AdService>(),
       getIt<UserSettingsRepository>(),
-      getIt<SubscriptionRepository>(),
     ),
   );
 }
@@ -83,7 +76,6 @@ class ServiceScopes {
   GoogleDriveSyncService get googleDriveSync =>
       _getIt<GoogleDriveSyncService>();
   AdService get ad => _getIt<AdService>();
-  SubscriptionService get subscription => _getIt<SubscriptionService>();
 }
 
 class RepositoryScopes {
@@ -96,5 +88,4 @@ class RepositoryScopes {
   CloudSyncRepository get cloudSync => _getIt<CloudSyncRepository>();
   AppOpenAdRepository get appOpenAd => _getIt<AppOpenAdRepository>();
   AdRepository get ad => _getIt<AdRepository>();
-  SubscriptionRepository get subscription => _getIt<SubscriptionRepository>();
 }

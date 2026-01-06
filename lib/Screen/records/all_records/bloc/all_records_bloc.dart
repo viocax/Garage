@@ -3,7 +3,6 @@ import 'package:bloc/bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/models/vehicle_record.dart';
-import 'package:garage/core/repositories/subscription_repository.dart';
 import 'package:garage/theme/app_theme.dart';
 
 import 'all_records_event.dart';
@@ -11,13 +10,11 @@ import 'all_records_state.dart';
 
 class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
   final Vehicle vehicle;
-  final SubscriptionRepository _subscriptionRepository;
   StreamSubscription<bool>? _subscriptionSubscription;
 
   AllRecordsBloc({
     required this.vehicle,
-    required SubscriptionRepository subscriptionRepository,
-  }) : _subscriptionRepository = subscriptionRepository,
+  }) :
        super(const AllRecordsState()) {
     on<LoadAllRecords>(_onLoadAllRecords);
     on<SelectMonth>(_onSelectMonth);
@@ -25,12 +22,6 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
     on<ClearFilters>(_onClearFilters);
     on<UpdateProStatus>(_onUpdateProStatus);
 
-    // Listen for pro status changes
-    _subscriptionSubscription = _subscriptionRepository.isProStream.listen((
-      isPro,
-    ) {
-      add(UpdateProStatus(isPro));
-    });
 
     // Auto-load on creation
     add(const LoadAllRecords());
@@ -60,7 +51,6 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
       final fuelEfficiencyData = _calculateFuelEfficiencyData(records);
       final annualData = _calculateAnnualExpense(records);
       final totalExpense = records.fold(0.0, (sum, r) => sum + r.cost);
-      final isPro = await _subscriptionRepository.isPro();
 
       emit(
         state.copyWith(
@@ -74,7 +64,7 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
           annualExpenseData: annualData,
           totalExpense: totalExpense,
           recordCount: records.length,
-          isPro: isPro,
+          isPro: false,
         ),
       );
     } catch (e) {

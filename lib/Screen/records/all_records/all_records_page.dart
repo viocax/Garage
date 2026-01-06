@@ -14,9 +14,6 @@ import 'widgets/category_pie_chart.dart';
 import 'widgets/type_filter_chips.dart';
 import 'widgets/month_filter_sheet.dart';
 import 'widgets/all_records_list.dart';
-import 'widgets/fuel_efficiency_chart.dart';
-import 'widgets/annual_expense_comparison.dart';
-import 'package:garage/widgets/pro_feature_overlay.dart';
 import 'package:garage/router/app_router.dart';
 
 class AllRecordsPage extends StatelessWidget {
@@ -29,7 +26,6 @@ class AllRecordsPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => AllRecordsBloc(
         vehicle: vehicle,
-        subscriptionRepository: getIt.repo.subscription,
       ),
       child: const _AllRecordsContent(),
     );
@@ -292,22 +288,22 @@ class _ChartsSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                // Fuel Efficiency Trend
-                ProFeatureOverlay(
-                  isPro: state.isPro,
-                  onUpgrade: () =>
-                      context.pushPathWithResult(AppPath.premiumRecords),
-                  child: FuelEfficiencyChart(data: state.fuelEfficiencyData),
-                ),
-                const SizedBox(height: 12),
-                // Annual Expense Comparison
-                ProFeatureOverlay(
-                  isPro: state.isPro,
-                  onUpgrade: () =>
-                      context.pushPathWithResult(AppPath.premiumRecords),
-                  child: AnnualExpenseComparison(data: state.annualExpenseData),
-                ),
+                // const SizedBox(height: 12),
+                // // Fuel Efficiency Trend
+                // ProFeatureOverlay(
+                //   isPro: state.isPro,
+                //   onUpgrade: () =>
+                //       context.pushPathWithResult(AppPath.premiumRecords),
+                //   child: FuelEfficiencyChart(data: state.fuelEfficiencyData),
+                // ),
+                // const SizedBox(height: 12),
+                // // Annual Expense Comparison
+                // ProFeatureOverlay(
+                //   isPro: state.isPro,
+                //   onUpgrade: () =>
+                //       context.pushPathWithResult(AppPath.premiumRecords),
+                //   child: AnnualExpenseComparison(data: state.annualExpenseData),
+                // ),
               ],
             ),
           ),

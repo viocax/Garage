@@ -10,18 +10,8 @@ import 'package:url_launcher/url_launcher.dart';
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final ISpeedCameraRepository _speedCameraRepository = getIt.repo.speedCamera;
   final AdRepository _adRepository = getIt.repo.ad;
-  final SubscriptionRepository _subscriptionRepository =
-      getIt.repo.subscription;
-  StreamSubscription<bool>? _subscriptionSubscription;
-
   SettingsBloc() : super(const SettingsState()) {
     on<SettingsEvent>(_onEvent);
-
-    _subscriptionSubscription = _subscriptionRepository.isProStream.listen((
-      isPro,
-    ) {
-      add(const LoadSettingsStatus());
-    });
 
     add(const LoadSettingsStatus());
   }
@@ -51,8 +41,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   }
 
   Future<void> _onLoadStatus(Emitter<SettingsState> emit) async {
-    final isPro = await _subscriptionRepository.isPro();
-    emit(state.copyWith(isPro: isPro));
+    emit(state.copyWith(isPro: false));
   }
 
   Future<void> _onStopTracking(Emitter<SettingsState> emit) async {
@@ -127,9 +116,4 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         .join('&');
   }
 
-  @override
-  Future<void> close() {
-    _subscriptionSubscription?.cancel();
-    return super.close();
-  }
 }

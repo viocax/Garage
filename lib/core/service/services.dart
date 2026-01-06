@@ -12,5 +12,3 @@ export 'shared_preferences/shared_preferences_interface.dart';
 export 'cloud_sync/cloud_sync.dart';
 export 'ad/ad_service.dart';
 export 'ad/mobile_ad_service.dart';
-export 'subscription/subscription_service.dart';
-export 'subscription/revenue_cat_service.dart';

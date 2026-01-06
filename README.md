@@ -245,16 +245,7 @@ lib/core/
     - 還原時重建 IsarLinks 關聯（確保一對多關係正確恢復）
 - [ ] 全域集中式錯誤處理與 Toast 提示 (WIP: Settings Page)
 - [x] 全面本地化 (包含圖表、錯誤訊息與資料模型)
-- [x] 訂閱制 (Garage Pro)
-  - [x] RevenueCat 整合 (`purchases_flutter`)
-  - [x] PremiumPage 訂閱介面與功能
-  - [x] 功能權限控管 (Feature Gating)
-    - Pro 用戶自動移除所有廣告
-    - 雲端同步功能 Pro 鎖定介面
-    - 進階統計數據解鎖 (含年度花費柱狀圖)
-  - [x] PremiumPage 實體功能視覺預覽 (Carousel Showcase)
-  - [x] 訂閱狀態跨頁面即時同步
-- [ ] 擴展更多 Pro 專屬圖表 (如：每公里成本分析、油價走勢分析)
+- [ ] 擴展更多統計圖表 (如：每公里成本分析、油價走勢分析)
 - [x] 廣告 (Google AdMob)
   - [x] 基礎配置 (iOS/Android App ID, SDK Init)
   - [x] Banner 廣告 (Settings, Vehicle Management)
@@ -263,27 +254,6 @@ lib/core/
   - [x] 獎勵廣告 (Rewarded Ads)
     - [x] 廣告票券 (Ad Tickets) - 跳過插頁廣告
     - [x] 移除橫幅 (Remove Banner) - 12小時限時移除
-    - [x] Pro 用戶移除全站廣告 (Ad-free for Pro)
-## 訂閱服務配置 (RevenueCat)
-
-本專案使用 RevenueCat 管理訂閱權限。若要正式啟用功能，請遵循以下步驟：
-
-1. **取得 API 金鑰**：
-   - 登入 [RevenueCat Dashboard](https://app.revenuecat.com/)。
-   - 建立 iOS 與 Android App，並取得對應的 **Public API Key**。
-
-2. **更換實體金鑰**：
-   - 開啟 `lib/core/service/subscription/revenue_cat_service.dart`。
-   - 將 `goog_placeholder_key` 替換為您的 Android API Key。
-   - 將 `appl_placeholder_key` 替換為您的 iOS API Key。
-
-3. **設定權限 ID (Entitlement)**：
-   - 在 RevenueCat 後台建立一個 ID 為 `pro` 的 Entitlement。
-   - 若您的 ID 名稱不同，請同步修改 `RevenueCatService` 中偵測權限的 `"pro"` 字串。
-
-4. **設定產品 (Products/Offerings)**：
-   - 在後台將 `monthly` 與 `annual` 的 Package 加入到目前的 Offering 中。
-
 ## 聯絡與反饋
 
 如果您在使用過程中有任何問題或建議，歡迎透過以下方式與我聯絡：

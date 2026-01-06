@@ -71,7 +71,9 @@ class SettingsPage extends StatelessWidget {
                           title: 'settings.vehicleManagement'.tr(),
                           icon: Icons.directions_car_outlined,
                           onTap: () {
-                            context.pushPathWithResult(AppPath.vehicleManagement);
+                            context.pushPathWithResult(
+                              AppPath.vehicleManagement,
+                            );
                           },
                         ),
                         SettingsItem(
@@ -96,23 +98,13 @@ class SettingsPage extends StatelessWidget {
 
                         // 資料管理
                         SettingsSectionHeader(title: 'settings.data'.tr()),
-                        if (state.isPro)
-                          SettingsItem(
-                            title: 'settings.cloudSync'.tr(),
-                            icon: Icons.cloud_sync_outlined,
-                            onTap: () {
-                              context.pushPathWithResult(AppPath.cloudSync);
-                            },
-                          )
-                        else
-                          SettingsItem(
-                            title: 'settings.garagePro'.tr(),
-                            icon: Icons.star_outline,
-                            subtitle: 'settings.proUnlockDesc'.tr(),
-                            onTap: () {
-                              context.pushPathWithResult(AppPath.premium);
-                            },
-                          ),
+                        SettingsItem(
+                          title: 'settings.cloudSync'.tr(),
+                          icon: Icons.cloud_sync_outlined,
+                          onTap: () {
+                            context.pushPathWithResult(AppPath.cloudSync);
+                          },
+                        ),
 
                         SettingsItem(
                           title: 'settings.clearData'.tr(),
@@ -143,7 +135,9 @@ class SettingsPage extends StatelessWidget {
                           title: 'settings.openSourceLicenses'.tr(),
                           icon: Icons.source_outlined,
                           onTap: () {
-                            context.pushPathWithResult(AppPath.openSourceLicenses);
+                            context.pushPathWithResult(
+                              AppPath.openSourceLicenses,
+                            );
                           },
                         ),
                         SettingsItem(

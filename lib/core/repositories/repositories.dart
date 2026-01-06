@@ -4,8 +4,6 @@ export 'user_settings_repository.dart';
 export 'local_user_settings_repository.dart';
 export 'vehicle_repository.dart';
 export 'local_vehicle_repository.dart';
-export 'subscription_repository.dart';
-export 'local_subscription_repository.dart';
 export 'cloud_sync_repository.dart';
 export 'local_cloud_sync_repository.dart';
 export 'app_open_ad_repository.dart';
