@@ -106,15 +106,6 @@ class SettingsPage extends StatelessWidget {
                           },
                         ),
 
-                        SettingsItem(
-                          title: 'settings.clearData'.tr(),
-                          icon: Icons.delete_outline,
-                          isDestructive: true,
-                          onTap: () {
-                            context.read<SettingsBloc>().add(const ClearData());
-                          },
-                        ),
-
                         // 關於
                         SettingsSectionHeader(title: 'settings.about'.tr()),
                         SettingsItem(

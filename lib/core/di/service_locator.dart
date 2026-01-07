@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:get_it/get_it.dart';
 
 import '../repositories/repositories.dart';
@@ -19,10 +21,12 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<TtsService>(() => TtsService());
 
   // Cloud Sync Services (Singleton - 保持認證狀態)
-  getIt.registerLazySingleton<ICloudSyncService>(() => ICloudSyncService());
-  getIt.registerLazySingleton<GoogleDriveSyncService>(
-    () => GoogleDriveSyncService(),
-  );
+  getIt.registerLazySingleton<CloudSyncService>(() {
+    if (Platform.isIOS) {
+      return ICloudSyncService();
+    }
+    return GoogleDriveSyncService();
+  });
 
   // Ad Service
   getIt.registerLazySingleton<AdService>(() => MobileAdService());
@@ -42,10 +46,8 @@ Future<void> setupServiceLocator() async {
     () => AppOpenAdRepository(getIt<UserSettingsRepository>()),
   );
   getIt.registerLazySingleton<AdRepository>(
-    () => LocalAdRepository(
-      getIt<AdService>(),
-      getIt<UserSettingsRepository>(),
-    ),
+    () =>
+        LocalAdRepository(getIt<AdService>(), getIt<UserSettingsRepository>()),
   );
 }
 
@@ -72,9 +74,7 @@ class ServiceScopes {
   SharedPreferencesService get preferences =>
       _getIt<SharedPreferencesService>();
   TtsService get tts => _getIt<TtsService>();
-  ICloudSyncService get iCloudSync => _getIt<ICloudSyncService>();
-  GoogleDriveSyncService get googleDriveSync =>
-      _getIt<GoogleDriveSyncService>();
+  CloudSyncService get cloudSync => _getIt<CloudSyncService>();
   AdService get ad => _getIt<AdService>();
 }
 

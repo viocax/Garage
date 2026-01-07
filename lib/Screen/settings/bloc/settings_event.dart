@@ -2,10 +2,6 @@ sealed class SettingsEvent {
   const SettingsEvent();
 }
 
-// Clear data
-final class ClearData extends SettingsEvent {
-  const ClearData();
-}
 
 final class ClickSpeedSetting extends SettingsEvent {
   const ClickSpeedSetting();

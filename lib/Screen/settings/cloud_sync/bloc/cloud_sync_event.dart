@@ -9,11 +9,6 @@ final class LoadCloudSyncStatus extends CloudSyncEvent {
   const LoadCloudSyncStatus();
 }
 
-/// Select a provider for sync
-final class SelectProvider extends CloudSyncEvent {
-  final CloudProvider provider;
-  const SelectProvider(this.provider);
-}
 
 /// Authenticate with selected provider
 final class AuthenticateProvider extends CloudSyncEvent {
@@ -35,4 +30,14 @@ final class UploadToCloud extends CloudSyncEvent {
 /// Download data from cloud
 final class DownloadFromCloud extends CloudSyncEvent {
   const DownloadFromCloud();
+}
+
+/// Clear all local data
+final class ClearLocalData extends CloudSyncEvent {
+  const ClearLocalData();
+}
+
+/// Delete cloud backup
+final class DeleteCloudBackup extends CloudSyncEvent {
+  const DeleteCloudBackup();
 }

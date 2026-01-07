@@ -27,16 +27,14 @@ class _CloudSyncBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
 
     return BlocConsumer<CloudSyncBloc, CloudSyncState>(
       listener: (context, state) {
-        if (state is CloudSyncLoaded && state.errorMessage != null) {
+        if (state is CloudSyncLoaded &&
+            state.toastMessage != null &&
+            !state.isSyncing) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: theme.colorScheme.error,
-            ),
+            SnackBar(content: Text(state.toastMessage!)),
           );
         }
       },
@@ -48,7 +46,7 @@ class _CloudSyncBody extends StatelessWidget {
               children: [
                 _buildContent(context, state),
                 if (state is CloudSyncLoaded && state.isSyncing)
-                  _buildLoadingOverlay(context, state.syncMessage),
+                  _buildLoadingOverlay(context, state.toastMessage),
               ],
             ),
           ),
@@ -77,24 +75,15 @@ class _CloudSyncBody extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
                 SettingsSectionHeader(
-                  title: state.providers.length == 1
-                      ? 'cloudSync.service'.tr()
-                      : 'cloudSync.selectService'.tr(),
+                  title: 'cloudSync.service'.tr(),
                 ),
-                ...state.providers.map(
-                  (status) => _buildProviderTile(
-                    context,
-                    status,
-                    isSelected:
-                        state.providers.length > 1 &&
-                        state.selectedProvider == status.provider,
-                  ),
+                _buildProviderTile(
+                  context,
+                  state.status,
                 ),
                 const SizedBox(height: 16),
-                if (state.selectedProvider != null) ...[
-                  SettingsSectionHeader(title: 'cloudSync.syncOperations'.tr()),
-                  _buildSyncActions(context, state),
-                ],
+                SettingsSectionHeader(title: 'cloudSync.syncOperations'.tr()),
+                _buildSyncActions(context, state),
               ],
             ),
           ),
@@ -127,9 +116,8 @@ class _CloudSyncBody extends StatelessWidget {
 
   Widget _buildProviderTile(
     BuildContext context,
-    ProviderStatus status, {
-    required bool isSelected,
-  }) {
+    ProviderStatus status, 
+  ) {
     final theme = Theme.of(context);
     final isAvailable = status.isAvailable;
 
@@ -138,9 +126,6 @@ class _CloudSyncBody extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(12),
-        border: isSelected
-            ? Border.all(color: theme.colorScheme.primary, width: 2)
-            : null,
       ),
       child: Theme(
         data: theme.copyWith(
@@ -188,7 +173,7 @@ class _CloudSyncBody extends StatelessWidget {
                     );
                   } else {
                     context.read<CloudSyncBloc>().add(
-                      SelectProvider(status.provider),
+                      SignOutProvider(status.provider),
                     );
                   }
                 }
@@ -248,6 +233,28 @@ class _CloudSyncBody extends StatelessWidget {
               _showRestoreConfirmation(context);
             },
           ),
+          const SizedBox(height: 8),
+          _buildActionTile(
+            context,
+            icon: Icons.delete_outline,
+            title: 'cloudSync.clearLocalData'.tr(),
+            subtitle: 'cloudSync.clearLocalDesc'.tr(),
+            isDestructive: true,
+            onTap: () {
+              _showClearLocalConfirmation(context);
+            },
+          ),
+          const SizedBox(height: 8),
+          _buildActionTile(
+            context,
+            icon: Icons.cloud_off_outlined,
+            title: 'cloudSync.deleteCloudBackup'.tr(),
+            subtitle: 'cloudSync.deleteCloudDesc'.tr(),
+            isDestructive: true,
+            onTap: () {
+              _showDeleteBackupConfirmation(context);
+            },
+          ),
         ],
       ),
     );
@@ -296,28 +303,46 @@ class _CloudSyncBody extends StatelessWidget {
     );
   }
 
-  void _showRestoreConfirmation(BuildContext context) {
-    showCupertinoDialog(
-      context: context,
-      builder: (dialogContext) => CupertinoAlertDialog(
-        title: Text('cloudSync.confirmRestore'.tr()),
-        content: Text('cloudSync.restoreWarning'.tr()),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text('common.cancel'.tr()),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.read<CloudSyncBloc>().add(const DownloadFromCloud());
-            },
-            child: Text('cloudSync.restore'.tr()),
-          ),
-        ],
-      ),
+  void _showRestoreConfirmation(BuildContext context) async {
+    final confirmed = await context.showAdaptiveConfirmDialog(
+      title: 'cloudSync.confirmRestore'.tr(),
+      message: 'cloudSync.restoreWarning'.tr(),
+      cancelText: 'common.cancel'.tr(),
+      confirmText: 'cloudSync.restore'.tr(),
+      isDestructiveAction: true,
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<CloudSyncBloc>().add(const DownloadFromCloud());
+    }
+  }
+
+  void _showClearLocalConfirmation(BuildContext context) async {
+    final confirmed = await context.showAdaptiveConfirmDialog(
+      title: 'cloudSync.confirmClear'.tr(),
+      message: 'cloudSync.clearLocalWarning'.tr(),
+      cancelText: 'common.cancel'.tr(),
+      confirmText: 'cloudSync.clear'.tr(),
+      isDestructiveAction: true,
+    );
+
+    if (confirmed == true && context.mounted) {
+      context.read<CloudSyncBloc>().add(const ClearLocalData());
+    }
+  }
+
+  void _showDeleteBackupConfirmation(BuildContext context) async {
+    final confirmed = await context.showAdaptiveConfirmDialog(
+      title: 'cloudSync.confirmDeleteBackup'.tr(),
+      message: 'cloudSync.deleteBackupWarning'.tr(),
+      cancelText: 'common.cancel'.tr(),
+      confirmText: 'cloudSync.delete'.tr(),
+      isDestructiveAction: true,
+    );
+
+    if (confirmed == true && context.mounted) {
+      context.read<CloudSyncBloc>().add(const DeleteCloudBackup());
+    }
   }
 
   Widget _buildLoadingOverlay(BuildContext context, String? message) {

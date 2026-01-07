@@ -4,12 +4,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/core/core.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
-import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final ISpeedCameraRepository _speedCameraRepository = getIt.repo.speedCamera;
   final AdRepository _adRepository = getIt.repo.ad;
+
   SettingsBloc() : super(const SettingsState()) {
     on<SettingsEvent>(_onEvent);
 
@@ -21,8 +21,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) async {
     switch (event) {
-      case ClearData():
-        _onClearData(emit);
       case ClickSpeedSetting():
         _onClickSpeedSetting(emit);
       case StopTracking():
@@ -36,7 +34,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       case LoadSettingsStatus():
         await _onLoadStatus(emit);
       case ResetSettingsAction():
-        emit(state.copyWith(clearAction: true));
+        emit(state.copyWith(action: SettingsAction.none));
     }
   }
 
@@ -61,9 +59,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     }
   }
 
-  void _onClearData(Emitter<SettingsState> emit) {
-    debugPrint('Clear Data Triggered');
-  }
+
 
   Future<void> _onWatchAdForTicket(Emitter<SettingsState> emit) async {
     if (_adRepository.isAdFree) return;
@@ -115,5 +111,4 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         )
         .join('&');
   }
-
 }

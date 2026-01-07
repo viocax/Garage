@@ -1,6 +1,10 @@
 import 'package:equatable/equatable.dart';
 
-enum SettingsAction { none, goToSpeedSetting, showStopTrackingAlert }
+enum SettingsAction {
+  none,
+  goToSpeedSetting,
+  showStopTrackingAlert,
+}
 
 class SettingsState extends Equatable {
   final bool isPro;
@@ -20,12 +24,11 @@ class SettingsState extends Equatable {
     bool? isPro,
     SettingsAction? action,
     String? errorMessage,
-    bool clearAction = false,
     bool clearError = false,
   }) {
     return SettingsState(
       isPro: isPro ?? this.isPro,
-      action: clearAction ? SettingsAction.none : (action ?? this.action),
+      action: action ?? this.action,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }

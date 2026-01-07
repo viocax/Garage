@@ -38,51 +38,37 @@ final class CloudSyncInitial extends CloudSyncState {
 
 /// Loaded state with provider information
 final class CloudSyncLoaded extends CloudSyncState {
-  final List<ProviderStatus> providers;
-  final CloudProvider? selectedProvider;
+  final ProviderStatus status;
   final bool isSyncing;
-  final String? syncMessage;
-  final String? errorMessage;
+  final String? toastMessage;
   final bool isPro;
 
   const CloudSyncLoaded({
-    required this.providers,
-    this.selectedProvider,
+    required this.status,
     this.isSyncing = false,
-    this.syncMessage,
-    this.errorMessage,
+    this.toastMessage,
     this.isPro = false,
   });
 
   @override
   List<Object?> get props => [
-    providers,
-    selectedProvider,
+    status,
     isSyncing,
-    syncMessage,
-    errorMessage,
+    toastMessage,
     isPro,
   ];
 
   CloudSyncLoaded copyWith({
-    List<ProviderStatus>? providers,
-    CloudProvider? selectedProvider,
+    ProviderStatus? status,
     bool? isSyncing,
-    String? syncMessage,
-    String? errorMessage,
-    bool clearError = false,
-    bool clearSelected = false,
-    bool clearSyncMessage = false,
+    String? toastMessage,
+    bool clearToast = false,
     bool? isPro,
   }) {
     return CloudSyncLoaded(
-      providers: providers ?? this.providers,
-      selectedProvider: clearSelected
-          ? null
-          : (selectedProvider ?? this.selectedProvider),
+      status: status ?? this.status,
       isSyncing: isSyncing ?? this.isSyncing,
-      syncMessage: clearSyncMessage ? null : (syncMessage ?? this.syncMessage),
-      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      toastMessage: clearToast ? null : (toastMessage ?? this.toastMessage),
       isPro: isPro ?? this.isPro,
     );
   }

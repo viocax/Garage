@@ -183,10 +183,10 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   ),
                 ),
 
-                // 2. Speed Limit Overlay (Top Left - over map)
+                // 2. Speed Limit Overlay (Top Right - over map)
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 16,
-                  left: 16,
+                  right: 16,
                   child: BlocBuilder<SpeedBloc, SpeedState>(
                     builder: (context, state) {
                       return switch (state) {
@@ -196,10 +196,10 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   ),
                 ),
 
-                // 3. Map Zoom Controls (Top Right)
+                // 3. Map Zoom Controls (Top Left)
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 16,
-                  right: 16,
+                  left: 16,
                   child: BlocBuilder<SpeedBloc, SpeedState>(
                     builder: (context, state) {
                       return switch (state) {
@@ -333,7 +333,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
         : defaultLocation;
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
@@ -550,18 +550,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                 }),
               ],
             ),
-            RichAttributionWidget(
-              attributions: [
-                TextSourceAttribution(
-                  'OpenStreetMap contributors',
-                  onTap: () => launchUrl(
-                    Uri.parse('https://openstreetmap.org/copyright'),
-                  ),
-                ),
-              ],
-            ),
           ],
-        ),
+        ), // End of FlutterMap
         if (location == null) ...[
           IgnorePointer(child: Container(color: AppTheme.blackTransparent75)),
           IgnorePointer(
@@ -615,6 +605,25 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   ],
                   stops: const [0.0, 0.6, 0.85, 1.0],
                 ),
+              ),
+            ),
+          ),
+        ),
+        // Custom Attribution aligned to center right
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: GestureDetector(
+            onTap: () =>
+                launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.blackTransparent50,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                '© OpenStreetMap contributors',
+                style: TextStyle(color: Colors.white70, fontSize: 10),
               ),
             ),
           ),

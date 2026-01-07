@@ -210,4 +210,21 @@ class LocalVehicleRepository implements VehicleRepository {
     _invalidateCache();
     return true;
   }
+
+  @override
+  Future<bool> removeAll() async {
+    try {
+      final db = await isarService.isar;
+
+      await db.writeTxn(() async {
+        await db.vehicleRecords.clear();
+        await db.vehicles.clear();
+      });
+
+      _invalidateCache();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

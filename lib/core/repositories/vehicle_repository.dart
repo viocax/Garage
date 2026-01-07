@@ -26,4 +26,7 @@ abstract class VehicleRepository {
 
   /// 儲存編輯（批次保存所有變更）
   Future<bool> saveEdit();
+
+  /// 移除所有車輛及其記錄
+  Future<bool> removeAll();
 }

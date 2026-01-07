@@ -3,7 +3,7 @@ import 'package:garage/core/service/cloud_sync/cloud_sync_service.dart';
 /// 雲端同步儲存庫介面
 abstract class CloudSyncRepository {
   /// 取得當前平台可用的雲端服務提供者
-  List<CloudProvider> getAvailableProviders();
+  CloudProvider getAvailableProvider();
 
   /// 檢查指定提供者是否可用
   Future<bool> isAvailable(CloudProvider provider);
@@ -25,4 +25,7 @@ abstract class CloudSyncRepository {
 
   /// 取得上次同步時間
   Future<DateTime?> getLastSyncTime(CloudProvider provider);
+
+  /// 刪除雲端備份資料
+  Future<CloudSyncResult> deleteBackup(CloudProvider provider);
 }

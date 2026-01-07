@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/service/cloud_sync/cloud_sync_service.dart';
 
@@ -9,22 +8,12 @@ import 'cloud_sync_repository.dart';
 class LocalCloudSyncRepository implements CloudSyncRepository {
   /// 取得指定提供者的服務實例（從 GetIt）
   CloudSyncService _getService(CloudProvider provider) {
-    switch (provider) {
-      case CloudProvider.iCloud:
-        return getIt.service.iCloudSync;
-      case CloudProvider.googleDrive:
-        return getIt.service.googleDriveSync;
-    }
+    return getIt.service.cloudSync;
   }
 
   @override
-  List<CloudProvider> getAvailableProviders() {
-    if (Platform.isIOS) {
-      return [CloudProvider.iCloud];
-    } else if (Platform.isAndroid) {
-      return [CloudProvider.googleDrive];
-    }
-    return [];
+  CloudProvider getAvailableProvider() {
+    return getIt.service.cloudSync.provider;
   }
 
   @override
@@ -60,5 +49,10 @@ class LocalCloudSyncRepository implements CloudSyncRepository {
   @override
   Future<DateTime?> getLastSyncTime(CloudProvider provider) {
     return _getService(provider).getLastSyncTime();
+  }
+
+  @override
+  Future<CloudSyncResult> deleteBackup(CloudProvider provider) {
+    return _getService(provider).deleteBackup();
   }
 }
