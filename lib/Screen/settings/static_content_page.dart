@@ -31,6 +31,7 @@ class StaticContentPage extends StatelessWidget {
             onPressed: () => context.safePop(),
           ),
           elevation: 0,
+          scrolledUnderElevation: 0,
           backgroundColor: Colors.transparent,
         ),
         body: Markdown(

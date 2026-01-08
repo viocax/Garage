@@ -93,6 +93,7 @@ dependencies:
   easy_localization: ^3.0.7
   google_mobile_ads: ^7.0.0
   flutter_markdown: ^0.7.4
+  in_app_review: ^2.0.11
 
 dev_dependencies:
   flutter_test:

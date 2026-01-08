@@ -254,6 +254,47 @@ lib/core/
   - [x] 獎勵廣告 (Rewarded Ads)
     - [x] 廣告票券 (Ad Tickets) - 跳過插頁廣告
     - [x] 移除橫幅 (Remove Banner) - 12小時限時移除
+  - [x] 需至 AdMob 後台設定相對應的廣告單元 ID (Banner, Interstitial, Native, Rewarded)
+  - [x] 正式上架前需更新 `Info.plist` (iOS) 與 `AndroidManifest.xml` (Android) 中的 AdMob App ID
+- [x] 應用程式評分 (Rate App)
+  - 使用 `in_app_review` 套件
+  - 注意：`openStoreListing` 功能需要在 App 上架 (或 TestFlight/Internal Testing) 後才能正常運作，且需確認 App Store Connect / Google Play Console 已建立應用程式頁面。
+
+## 廣告配置 (Ad Configuration)
+
+本專案使用 Google Mobile Ads (AdMob)。在開發模式下，使用 Google 提供的測試 ID。
+
+### iOS 設定
+檔案位置：`ios/Runner/Info.plist`
+```xml
+<key>GADApplicationIdentifier</key>
+<string>ca-app-pub-3940256099942544~1458002511</string>
+```
+**注意：** 正式發布時，請將上述 ID 替換為您的 AdMob 正式 App ID。
+
+### Android 設定
+檔案位置：`android/app/src/main/AndroidManifest.xml`
+```xml
+<meta-data
+    android:name="com.google.android.gms.ads.APPLICATION_ID"
+    android:value="ca-app-pub-3940256099942544~3347511713"/>
+```
+**注意：** 正式發布時，請將上述 ID 替換為您的 AdMob 正式 App ID。
+
+### 廣告單元 ID (Ad Unit IDs)
+在 `lib/core/service/ad/mobile_ad_service.dart` (或其他管理 Ad ID 的檔案) 中，預設使用測試廣告 ID。正式發布時需替換為真實廣告單元 ID。
+
+## 商店評分設定 (Store Rating Setup)
+
+APP 內的「給予評分」功能使用 `in_app_review` 套件。
+
+- **iOS**: 需要在 App Store Connect 建立應用程式，且該 Bundle ID 已有對應的 App ID。`openStoreListing` 依賴於 iOS 系統能否找到該應用程式的商店頁面。
+- **Android**: 需要在 Google Play Console 建立應用程式。
+
+**測試注意事項：**
+- 模擬器上可能無法開啟商店頁面。
+- iOS Simulator 執行 `openStoreListing` 可能無反應或報錯。
+- 建議使用實機測試，且最好是透過 TestFlight (iOS) 或 Internal Testing (Android) 安裝的版本，以確保連結能正確導向商店。
 ## 聯絡與反饋
 
 如果您在使用過程中有任何問題或建議，歡迎透過以下方式與我聯絡：

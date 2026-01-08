@@ -143,6 +143,9 @@ class SettingsPage extends StatelessWidget {
                         SettingsItem(
                           title: 'settings.rateApp'.tr(),
                           icon: Icons.star_outline,
+                          onTap: () {
+                            context.read<SettingsBloc>().add(const RateApp());
+                          },
                         ),
 
                         const SizedBox(height: 40),

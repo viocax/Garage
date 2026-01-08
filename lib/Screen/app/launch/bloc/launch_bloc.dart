@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/material.dart';
 import 'launch_event.dart';
 import 'launch_state.dart';
-import 'package:flutter/material.dart';
-import '../../../../core/core.dart';
 
 class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
   final TickerProvider vsync;
@@ -25,22 +25,8 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
     Emitter<LaunchState> emit,
   ) async {
     try {
-      debugPrint('LaunchBloc: 開始初始化...');
-
-      // 稍微延遲以避開系統啟動時的資源競爭（如 iOS 的 Indexing）
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // 取得 SpeedCamera Repository
-      final speedCameraRepo = getIt.repo.speedCamera;
-
-      final count = await speedCameraRepo.getCount();
-      debugPrint('LaunchBloc: 測速照相資料載入完成，共 $count 筆');
-
       // 等待動畫完成
-      await Future.delayed(const Duration(seconds: 4));
-
-      // 初始化完成
-      debugPrint('LaunchBloc: 初始化完成');
+      await animationHolder.animationCompleted;
       emit(const LaunchCompleted());
     } catch (e, stackTrace) {
       debugPrint('LaunchBloc: 初始化失敗 - $e');
@@ -52,6 +38,10 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
 
 class LaunchAnimationHolder {
   final TickerProvider vsync;
+
+  // 動畫完成通知
+  final Completer<void> _animationCompleter = Completer<void>();
+  Future<void> get animationCompleted => _animationCompleter.future;
 
   // 各種動畫控制器
   late AnimationController _gridController;
@@ -217,6 +207,14 @@ class LaunchAnimationHolder {
 
     await Future.delayed(const Duration(milliseconds: 300));
     _taglineController.forward();
+
+    // 等待最後一個動畫完成後通知
+    _taglineController.addStatusListener((status) {
+      if (status == AnimationStatus.completed &&
+          !_animationCompleter.isCompleted) {
+        _animationCompleter.complete();
+      }
+    });
   }
 
   void dispose() {

@@ -40,14 +40,20 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
 
   @override
   void onAppResumed() {
-    debugPrint('SpeedBloc: App 回到前景，使用高精度定位');
-    repository.setLocationPolicyBest();
+    final currentState = state;
+    if (currentState is SpeedData && currentState.isDetecting) {
+      debugPrint('SpeedBloc: App 回到前景，使用高精度定位');
+      repository.setLocationPolicyBest();
+    }
   }
 
   @override
   void onAppPaused() {
-    debugPrint('SpeedBloc: App 進入背景，切換至平衡定位模式');
-    repository.setLocationPolicyBackground();
+    final currentState = state;
+    if (currentState is SpeedData && currentState.isDetecting) {
+      debugPrint('SpeedBloc: App 進入背景，切換至平衡定位模式');
+      repository.setLocationPolicyBackground();
+    }
   }
 
   Future<void> _onSpeedLoading(
@@ -57,7 +63,15 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     final currentState = state;
     if (currentState is! SpeedData) return;
     try {
+      await repository.syncFromRemote();
+    } catch (e) {
+      debugPrint('SpeedBloc: 載入測速照相資料失敗 - $e');
+      emit(currentState.copyWith(errorMessage: '載入測速照相資料失敗'));
+      rethrow;
+    }
+    try {
       final settings = await userSettingsRepository.loadSettings();
+
       emit(
         currentState.copyWith(
           unit: settings.speedUnit,
@@ -96,6 +110,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
 
     try {
       await _onSpeedLoading(const SpeedLoading(), emit);
+
       await repository.startLocationTracking((speedCameraModel) {
         if (speedCameraModel != null) {
           add(UpdateSpeed(speedCameraModel));
@@ -119,7 +134,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
         emit(
           currentState.copyWith(isDetecting: false, showPermissionAlert: true),
         );
-      } else {
+      } else { 
         emit(currentState.copyWith(isDetecting: false));
       }
     }

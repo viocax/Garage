@@ -4,11 +4,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/core/core.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final ISpeedCameraRepository _speedCameraRepository = getIt.repo.speedCamera;
   final AdRepository _adRepository = getIt.repo.ad;
+  final InAppReview _inAppReview = InAppReview.instance;
 
   SettingsBloc() : super(const SettingsState()) {
     on<SettingsEvent>(_onEvent);
@@ -31,6 +33,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         await _onWatchAdForBannerRemoval(emit);
       case SendFeedback():
         await _onSendFeedback(emit);
+      case RateApp():
+        await _onRateApp(emit);
       case LoadSettingsStatus():
         await _onLoadStatus(emit);
       case ResetSettingsAction():
@@ -58,8 +62,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       emit(state.copyWith(action: SettingsAction.goToSpeedSetting));
     }
   }
-
-
 
   Future<void> _onWatchAdForTicket(Emitter<SettingsState> emit) async {
     if (_adRepository.isAdFree) return;
@@ -110,5 +112,19 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
               '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
         )
         .join('&');
+  }
+
+  Future<void> _onRateApp(Emitter<SettingsState> emit) async {
+    try {
+      if (await _inAppReview.isAvailable()) {
+        // Open store listing is more appropriate for a manual "Rate App" button
+        // as it guarantees the user can write a review.
+        await _inAppReview.openStoreListing();
+      } else {
+        emit(state.copyWith(errorMessage: '無法開啟應用程式商店'));
+      }
+    } catch (e) {
+      emit(state.copyWith(errorMessage: '發生錯誤：$e'));
+    }
   }
 }

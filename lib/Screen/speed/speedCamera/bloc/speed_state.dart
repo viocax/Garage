@@ -21,6 +21,7 @@ final class SpeedData extends SpeedState {
   final int alertDistance; // 警告距離
   final bool isDetecting; // 是否正在偵測
   final bool showPermissionAlert; // 是否顯示權限警示
+  final String? errorMessage; // 錯誤訊息（用於顯示 Toast）
 
   // Getter
   LocationData? get currentLocation =>
@@ -48,6 +49,7 @@ final class SpeedData extends SpeedState {
     this.upperSpeed,
     this.isDetecting = false,
     this.showPermissionAlert = false,
+    this.errorMessage,
   });
 
   SpeedData copyWith({
@@ -59,6 +61,7 @@ final class SpeedData extends SpeedState {
     String? upperSpeed,
     bool? isDetecting,
     bool? showPermissionAlert,
+    String? errorMessage,
   }) {
     return SpeedData(
       model: model ?? this.model,
@@ -69,6 +72,7 @@ final class SpeedData extends SpeedState {
       upperSpeed: upperSpeed ?? this.upperSpeed,
       isDetecting: isDetecting ?? this.isDetecting,
       showPermissionAlert: showPermissionAlert ?? this.showPermissionAlert,
+      errorMessage: errorMessage,
     );
   }
 

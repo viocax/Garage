@@ -120,6 +120,17 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                     },
                   );
                 }
+
+                // 顯示錯誤訊息
+                if (state.errorMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.errorMessage!),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: AppTheme.dashboardAccentRed,
+                    ),
+                  );
+                }
               }
 
               switch (state) {

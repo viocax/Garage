@@ -2,7 +2,6 @@ sealed class SettingsEvent {
   const SettingsEvent();
 }
 
-
 final class ClickSpeedSetting extends SettingsEvent {
   const ClickSpeedSetting();
 }
@@ -24,6 +23,11 @@ final class WatchAdForBannerRemoval extends SettingsEvent {
 // Send feedback
 final class SendFeedback extends SettingsEvent {
   const SendFeedback();
+}
+
+// Rate App
+final class RateApp extends SettingsEvent {
+  const RateApp();
 }
 
 final class LoadSettingsStatus extends SettingsEvent {
