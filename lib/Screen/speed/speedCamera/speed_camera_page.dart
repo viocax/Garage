@@ -417,8 +417,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               context.read<SpeedBloc>().add(const StartDetection());
             }
           },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+          child: ClipOval(
             child: BackdropFilter(
               filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
@@ -428,7 +427,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   color: isDetecting
                       ? AppTheme.systemRed.withValues(alpha: 0.8)
                       : AppTheme.systemGreen.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(12),
+                  shape: BoxShape.circle,
                   border: Border.all(
                     color: AppTheme.whiteTransparent20,
                     width: 1,
@@ -481,6 +480,66 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     return _baseLatitudeOffset * pow(2, _baseZoom - zoom);
   }
 
+  // 計算扇形的頂點（用於 PolygonLayer）
+  // center: 中心點
+  // radiusInMeters: 半徑（公尺）
+  // heading: 扇形中心朝向（度數，0=北）
+  // sweepAngle: 扇形角度（度數）
+  List<LatLng> _calculateSectorPoints(
+    LatLng center,
+    double radiusInMeters,
+    double heading,
+    double sweepAngle,
+  ) {
+    const int segments = 30; // 弧線段數
+    final points = <LatLng>[];
+
+    // 起始角度和結束角度（以 heading 為中心）
+    final startAngle = heading - sweepAngle / 2;
+    final endAngle = heading + sweepAngle / 2;
+    final angleStep = sweepAngle / segments;
+
+    // 添加中心點
+    points.add(center);
+
+    // 計算弧線上的點
+    for (int i = 0; i <= segments; i++) {
+      final angle = startAngle + (angleStep * i);
+      final point = _calculateDestinationPoint(center, radiusInMeters, angle);
+      points.add(point);
+    }
+
+    // 閉合回中心點
+    points.add(center);
+
+    return points;
+  }
+
+  // 根據起點、距離和方位角計算目標點
+  LatLng _calculateDestinationPoint(
+    LatLng start,
+    double distanceInMeters,
+    double bearingDegrees,
+  ) {
+    const double earthRadius = 6371000; // 地球半徑（公尺）
+    final double bearing = bearingDegrees * (pi / 180); // 轉換為弧度
+    final double lat1 = start.latitude * (pi / 180);
+    final double lon1 = start.longitude * (pi / 180);
+    final double angularDistance = distanceInMeters / earthRadius;
+
+    final double lat2 = asin(
+      sin(lat1) * cos(angularDistance) +
+          cos(lat1) * sin(angularDistance) * cos(bearing),
+    );
+    final double lon2 = lon1 +
+        atan2(
+          sin(bearing) * sin(angularDistance) * cos(lat1),
+          cos(angularDistance) - sin(lat1) * sin(lat2),
+        );
+
+    return LatLng(lat2 * (180 / pi), lon2 * (180 / pi));
+  }
+
   Widget _buildFullScreenMap(SpeedData data) {
     final location = data.currentLocation;
     final defaultLocation = LatLng(25.0330, 121.5654);
@@ -512,15 +571,19 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               userAgentPackageName: 'com.example.garage',
               retinaMode: true,
             ),
-            CircleLayer(
-              circles: [
-                CircleMarker(
-                  point: currentLatLng,
-                  radius: data.alertDistance.toDouble(),
-                  useRadiusInMeter: true,
+            PolygonLayer(
+              polygons: [
+                Polygon(
+                  points: _calculateSectorPoints(
+                    currentLatLng,
+                    data.alertDistance.toDouble(),
+                    data.model.heading,
+                    60, // 60 度扇形
+                  ),
                   color: data.isOverSpeed
                       ? AppTheme.redTransparent30
                       : AppTheme.greenTransparent30,
+                  isFilled: true,
                 ),
               ],
             ),
