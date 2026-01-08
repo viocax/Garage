@@ -1,4 +1,6 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter/material.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:uuid/uuid.dart';
 import 'add_record_event.dart';
@@ -9,18 +11,22 @@ import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
+import 'package:garage/core/repositories/user_settings_repository.dart';
 
 class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
   final Vehicle vehicle;
   final VehicleRepository _repository;
   final AdRepository _adRepository;
+  final UserSettingsRepository _userSettingsRepository;
 
   AddRecordBloc({
     required this.vehicle,
     VehicleRepository? repository,
     AdRepository? adRepository,
+    UserSettingsRepository? userSettingsRepository,
   }) : _repository = repository ?? getIt.repo.vehicle,
        _adRepository = adRepository ?? getIt.repo.ad,
+       _userSettingsRepository = userSettingsRepository ?? getIt.repo.userSettings,
        super(
          AddRecordState(
            // 預設為加油類型，帶入當前日期和車輛里程
@@ -46,6 +52,11 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     on<FuelAmountChanged>(_onFuelAmountChanged);
     on<PricePerLiterChanged>(_onPricePerLiterChanged);
     on<RemainingFuelChanged>(_onRemainingFuelChanged);
+    // 使用者設定
+    on<LoadUserSettings>(_onLoadUserSettings);
+
+    // 立即載入使用者設定
+    add(const LoadUserSettings());
   }
 
   void _onRecordTypeChanged(
@@ -266,6 +277,20 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
           errorMessage: e.toString(),
         ),
       );
+    }
+  }
+
+  /// 載入使用者設定
+  Future<void> _onLoadUserSettings(
+    LoadUserSettings event,
+    Emitter<AddRecordState> emit,
+  ) async {
+    try {
+      final userSettings = await _userSettingsRepository.loadSettings();
+      emit(state.copyWith(speedUnit: userSettings.speedUnit));
+    } catch (e) {
+      debugPrint('Failed to load user settings: $e');
+      emit(state.copyWith(speedUnit: SpeedUnit.kmh));
     }
   }
 

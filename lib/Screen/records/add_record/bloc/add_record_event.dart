@@ -126,3 +126,8 @@ class RemainingFuelChanged extends AddRecordEvent {
 class SubmitRecord extends AddRecordEvent {
   const SubmitRecord();
 }
+
+/// 載入使用者設定事件
+class LoadUserSettings extends AddRecordEvent {
+  const LoadUserSettings();
+}

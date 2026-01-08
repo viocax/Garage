@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/widgets/primary_action_button.dart';
 
@@ -500,53 +501,60 @@ class _MaintenanceIntervalInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'addVehicle.maintenanceInterval'.tr(),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.dashboardTextPrimary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'addVehicle.maintenanceIntervalDesc'.tr(),
-          style: TextStyle(
-            fontSize: 13,
-            color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.7),
-          ),
-        ),
-        const SizedBox(height: 14),
-        _StyledTextField(
-          hintText: 'addVehicle.maintenanceIntervalPlaceholder'.tr(),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          suffix: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppTheme.whiteTransparent08,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Text(
-              'km',
-              style: TextStyle(
-                fontSize: 14,
+    return BlocBuilder<AddVehicleBloc, AddVehicleState>(
+      buildWhen: (previous, current) => previous.speedUnit != current.speedUnit,
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'addVehicle.maintenanceInterval'.tr(),
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.dashboardTextSecondary,
+                color: AppTheme.dashboardTextPrimary,
               ),
             ),
-          ),
-          onChanged: (value) {
-            final interval = int.tryParse(value) ?? 0;
-            context.read<AddVehicleBloc>().add(
-              MaintenanceIntervalChanged(interval),
-            );
-          },
-        ),
-      ],
+            const SizedBox(height: 4),
+            Text(
+              'addVehicle.maintenanceIntervalDesc'.tr(),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 14),
+            _StyledTextField(
+              hintText: 'addVehicle.maintenanceIntervalPlaceholder'.tr(),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              suffix: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppTheme.whiteTransparent08,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  state.speedUnit == SpeedUnit.kmh
+                      ? 'common.unitKm'.tr()
+                      : 'common.unitMi'.tr(),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.dashboardTextSecondary,
+                  ),
+                ),
+              ),
+              onChanged: (value) {
+                final interval = int.tryParse(value) ?? 0;
+                context.read<AddVehicleBloc>().add(
+                  MaintenanceIntervalChanged(interval),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 
 enum AddRecordStatus { initial, valid, submitting, success, failure }
@@ -15,12 +16,16 @@ class AddRecordState extends Equatable {
   /// 加油專用：追蹤金額是否被手動編輯
   final bool isAmountManuallyEdited;
 
+  /// 使用者設定的速度單位
+  final SpeedUnit speedUnit;
+
   const AddRecordState({
     required this.recordType,
     this.status = AddRecordStatus.initial,
     this.errorMessage,
     this.createdRecord,
     this.isAmountManuallyEdited = false,
+    this.speedUnit = SpeedUnit.kmh,
   });
 
   // ============ 共用欄位 Getter（從 RecordType 取得）============
@@ -74,6 +79,7 @@ class AddRecordState extends Equatable {
     String? errorMessage,
     VehicleRecord? createdRecord,
     bool? isAmountManuallyEdited,
+    SpeedUnit? speedUnit,
   }) {
     return AddRecordState(
       recordType: recordType ?? this.recordType,
@@ -82,6 +88,7 @@ class AddRecordState extends Equatable {
       createdRecord: createdRecord ?? this.createdRecord,
       isAmountManuallyEdited:
           isAmountManuallyEdited ?? this.isAmountManuallyEdited,
+      speedUnit: speedUnit ?? this.speedUnit,
     );
   }
 
@@ -163,5 +170,6 @@ class AddRecordState extends Equatable {
     errorMessage,
     createdRecord,
     isAmountManuallyEdited,
+    speedUnit,
   ];
 }

@@ -648,7 +648,7 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
               icon: record.type.icon,
               iconColor: record.type.color,
               title: record.title,
-              date: '${record.date.month}月${record.date.day}日',
+              date: DateFormat.MMMd().format(record.date),
               cost: record.formattedCost,
               accentRed: widget.accentRed,
               textSecondary: widget.textSecondary,
