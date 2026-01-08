@@ -23,9 +23,13 @@ final class SpeedData extends SpeedState {
   final bool showPermissionAlert; // 是否顯示權限警示
   final String? errorMessage; // 錯誤訊息（用於顯示 Toast）
 
-  // Getter
-  LocationData? get currentLocation =>
-      LocationData(latitude: model.latitude, longitude: model.longitude);
+  // Getter - 當 lat/lng 都是 0.0 時表示還沒有取得位置
+  LocationData? get currentLocation {
+    if (model.latitude == 0.0 && model.longitude == 0.0) {
+      return null;
+    }
+    return LocationData(latitude: model.latitude, longitude: model.longitude);
+  }
   bool get isOverSpeed => model.isOverSpeed;
   bool get isStartAnimation => model.currentSpeed > 0;
   String get displaySpeed {

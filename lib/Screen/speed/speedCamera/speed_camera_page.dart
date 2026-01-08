@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_map/flutter_map.dart';
-import 'package:garage/theme/grid_background_painter.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -563,39 +562,30 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             ),
           ],
         ), // End of FlutterMap
-        if (location == null) ...[
-          IgnorePointer(child: Container(color: AppTheme.blackTransparent75)),
-          IgnorePointer(
-            child: CustomPaint(
-              painter: GridBackgroundPainter(),
-              size: Size.infinite,
-            ),
-          ),
-        ] else ...[
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).size.height * 0.25,
-            child: IgnorePointer(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppTheme.darkSurface,
-                      AppTheme.darkSurface.withValues(alpha: 0.9),
-                      AppTheme.darkSurface.withValues(alpha: 0.7),
-                      AppTheme.darkSurface.withValues(alpha: 0),
-                    ],
-                    stops: const [0.0, 0.2, 0.45, 1.0],
-                  ),
+        // 頂部漸層遮罩
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: MediaQuery.of(context).size.height * 0.25,
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppTheme.darkSurface,
+                    AppTheme.darkSurface.withValues(alpha: 0.9),
+                    AppTheme.darkSurface.withValues(alpha: 0.7),
+                    AppTheme.darkSurface.withValues(alpha: 0),
+                  ],
+                  stops: const [0.0, 0.2, 0.45, 1.0],
                 ),
               ),
             ),
           ),
-        ],
+        ),
         // 中間漸層遮罩（讓速度表清楚顯示，但保留底部道路區域）
         Positioned(
           bottom: 0,
