@@ -108,6 +108,15 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
         SpeedUnit.mph => '${km.toDouble().mile}',
       };
 
+      // 計算當前車輛的油耗
+      final vehicle = vehicles.isEmpty
+          ? Vehicle.empty()
+          : vehicles.firstWhere(
+              (v) => v.vehicleId == currentVehicleId,
+              orElse: () => vehicles.first,
+            );
+      final fuelEfficiency = _calculateLatestFuelEfficiency(vehicle);
+
       emit(
         RecordsState(
           vehicles: vehicles,
@@ -115,6 +124,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
           userSettings: userSettings,
           odometerString: odometerString,
           unitString: unitString,
+          fuelEfficiency: fuelEfficiency,
           isLoading: false,
         ),
       );
@@ -149,11 +159,20 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
       SpeedUnit.mph => '${km.toDouble().mile}',
     };
 
+    // 計算切換後車輛的油耗
+    final fuelEfficiency = _calculateLatestFuelEfficiency(vehicle);
+
     emit(
       state.copyWith(
         currentVehicleId: event.vehicleId,
         odometerString: odometerString,
+        fuelEfficiency: fuelEfficiency,
       ),
     );
+  }
+
+  /// 計算最近一次的油耗
+  FuelEfficiencyDisplay _calculateLatestFuelEfficiency(Vehicle vehicle) {
+    return FuelEfficiencyDisplay.calculateFromVehicle(vehicle);
   }
 }

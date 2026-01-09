@@ -12,6 +12,7 @@ import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
 import 'package:garage/screen/app/home/bloc/garage_home_state.dart';
 import 'package:garage/core/models/tabbar_type.dart';
 import 'package:garage/widgets/primary_action_button.dart';
+import 'package:garage/widgets/banner_ad_widget.dart';
 
 class RecordsPage extends StatelessWidget {
   const RecordsPage({super.key});
@@ -131,18 +132,27 @@ class RecordsPage extends StatelessWidget {
           ),
           bottomNavigationBar: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: state.vehicles.isNotEmpty
-                  ? PrimaryActionButton(
-                      onPressed: () =>
-                          _navigateToAddRecord(context, state.currentVehicle),
-                      text: 'records.addRecord'.tr(),
-                      icon: Icons.add,
-                    )
-                  : PrimaryActionButton(
-                      onPressed: () => _navigateToAddVehicle(context),
-                      text: 'records.addVehicle'.tr(),
-                    ),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  state.vehicles.isNotEmpty
+                      ? PrimaryActionButton(
+                          onPressed: () => _navigateToAddRecord(
+                            context,
+                            state.currentVehicle,
+                          ),
+                          text: 'records.addRecord'.tr(),
+                          icon: Icons.add,
+                        )
+                      : PrimaryActionButton(
+                          onPressed: () => _navigateToAddVehicle(context),
+                          text: 'records.addVehicle'.tr(),
+                        ),
+                  const SizedBox(height: 12),
+                  const BannerAdWidget(),
+                ],
+              ),
             ),
           ),
         ),
@@ -151,7 +161,9 @@ class RecordsPage extends StatelessWidget {
   }
 
   Future<void> _navigateToAddVehicle(BuildContext context) async {
-    final vehicle = await context.pushPathWithResult<Vehicle>(AppPath.addVehicle);
+    final vehicle = await context.pushPathWithResult<Vehicle>(
+      AppPath.addVehicle,
+    );
     if (vehicle != null && context.mounted) {
       context.read<RecordsBloc>().add(
         LoadVehicleRecord(vehicleId: vehicle.vehicleId),
@@ -204,6 +216,7 @@ class _RecordsContent extends StatefulWidget {
 class _RecordsContentState extends State<_RecordsContent> {
   late PageController _pageController;
   int _currentPage = 0;
+  final NumberFormat _odometerFormat = NumberFormat('#,###');
 
   @override
   void initState() {
@@ -272,8 +285,12 @@ class _RecordsContentState extends State<_RecordsContent> {
             },
             itemBuilder: (context, index) {
               final vehicle = widget.vehicles[index];
-              final odometerString = vehicle.currentKm.toString();
-              final unitString = 'common.unitKm'.tr();
+              final odometerString = _odometerFormat.format(vehicle.currentKm);
+              final unitString =
+                  widget.unitString; // ✅ Fix: Use unit from widget
+              final fuelEfficiency = FuelEfficiencyDisplay.calculateFromVehicle(
+                vehicle,
+              );
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -310,6 +327,7 @@ class _RecordsContentState extends State<_RecordsContent> {
                         vehicle: vehicle,
                         odometerString: odometerString,
                         unitString: unitString,
+                        fuelEfficiency: fuelEfficiency,
                       ),
 
                       const SizedBox(height: 16),
@@ -348,6 +366,7 @@ class _HeroSection extends StatelessWidget {
   final Vehicle vehicle;
   final String odometerString;
   final String unitString;
+  final FuelEfficiencyDisplay fuelEfficiency;
 
   const _HeroSection({
     required this.textSecondary,
@@ -355,6 +374,7 @@ class _HeroSection extends StatelessWidget {
     required this.vehicle,
     required this.odometerString,
     required this.unitString,
+    required this.fuelEfficiency,
   });
 
   @override
@@ -477,7 +497,7 @@ class _HeroSection extends StatelessWidget {
             _StatChip(
               icon: Icons.local_gas_station_outlined,
               label: 'records.fuelEfficiency'.tr(),
-              value: '9.2 L',
+              value: fuelEfficiency.format(),
               textSecondary: textSecondary,
               textPrimary: textPrimary,
             ),
@@ -551,17 +571,28 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
   static const double _cardHeight = 70.0;
 
   late FixedExtentScrollController _wheelController;
-
-  List<VehicleRecord> get _sortedRecords {
-    final sorted = List<VehicleRecord>.from(widget.records)
-      ..sort((a, b) => b.date.compareTo(a.date));
-    return sorted.take(_maxDisplayCount).toList();
-  }
+  late List<VehicleRecord> _sortedRecords;
 
   @override
   void initState() {
     super.initState();
     _wheelController = FixedExtentScrollController();
+    _updateSortedRecords();
+  }
+
+  @override
+  void didUpdateWidget(_RecentActivitySection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.records != oldWidget.records) {
+      _updateSortedRecords();
+    }
+  }
+
+  void _updateSortedRecords() {
+    // ✅ Optimization: Sort records only when list changes
+    final sorted = List<VehicleRecord>.from(widget.records)
+      ..sort((a, b) => b.date.compareTo(a.date));
+    _sortedRecords = sorted.take(_maxDisplayCount).toList();
   }
 
   @override
