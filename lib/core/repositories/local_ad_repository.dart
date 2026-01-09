@@ -7,14 +7,10 @@ class LocalAdRepository implements AdRepository {
   final AdService _adService;
   final UserSettingsRepository _userSettings;
 
-  LocalAdRepository(
-    this._adService,
-    this._userSettings,
-  );
+  LocalAdRepository(this._adService, this._userSettings);
 
   @override
-  bool get isAdFree =>
-      _userSettings.currentSettings.isAdFree;
+  bool get isAdFree => _userSettings.currentSettings.isAdFree;
 
   @override
   bool get isBannerAdFree {
@@ -44,12 +40,6 @@ class LocalAdRepository implements AdRepository {
     }
 
     await _adService.showInterstitialAd(onComplete: onComplete);
-  }
-
-  @override
-  Future<void> loadNativeAd() async {
-    if (isAdFree) return;
-    await _adService.loadNativeAd();
   }
 
   @override

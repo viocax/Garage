@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/widgets.dart';
+import 'package:garage/core/config/ad_config.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -16,15 +15,8 @@ class AppOpenAdRepository {
   /// 廣告快取時效 (4小時)
   static const Duration maxCacheDuration = Duration(hours: 4);
 
-  /// 廣告測試 ID
-  String get _adUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/3419835294';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/5662855259';
-    }
-    throw UnsupportedError('Unsupported platform');
-  }
+  /// 廣告 ID
+  String get _adUnitId => AdConfig.appOpenAdUnitId;
 
   /// 載入廣告
   void loadAd() {

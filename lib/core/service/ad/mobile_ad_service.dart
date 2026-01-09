@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/widgets.dart';
+import 'package:garage/core/config/ad_config.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ad_service.dart';
 
@@ -11,44 +10,16 @@ class MobileAdService extends AdService {
   RewardedAd? _rewardedAd;
 
   @override
-  String get bannerAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/2934735716';
-    }
-    throw UnsupportedError('Unsupported platform');
-  }
+  String get bannerAdUnitId => AdConfig.bannerAdUnitId;
 
   @override
-  String get interstitialAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/1033173712';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/4411468910';
-    }
-    throw UnsupportedError('Unsupported platform');
-  }
+  String get interstitialAdUnitId => AdConfig.interstitialAdUnitId;
 
   @override
-  String get rewardedAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/5224354917'; // Test ID
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/1712485313'; // Test ID
-    }
-    return '';
-  }
+  String get rewardedAdUnitId => AdConfig.rewardedAdUnitId;
 
   @override
-  String get nativeAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/2247696110'; // Test ID
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/3986624511'; // Test ID
-    }
-    return '';
-  }
+  String get nativeAdUnitId => AdConfig.nativeAdUnitId;
 
   @override
   Future<void> initialize() async {
@@ -57,12 +28,16 @@ class MobileAdService extends AdService {
     _loadRewardedAd();
   }
 
-  void _loadInterstitialAd() {
+  /// 重試延遲時間（秒）：2s, 4s, 8s
+  static const List<int> _retryDelays = [2, 4, 8];
+
+  void _loadInterstitialAd([int retryCount = 0]) {
     InterstitialAd.load(
       adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          debugPrint('InterstitialAd loaded successfully');
           _interstitialAd = ad;
           _interstitialAd!.fullScreenContentCallback =
               FullScreenContentCallback(
@@ -71,13 +46,24 @@ class MobileAdService extends AdService {
                   _loadInterstitialAd(); // Preload next ad
                 },
                 onAdFailedToShowFullScreenContent: (ad, error) {
+                  debugPrint('InterstitialAd failed to show: $error');
                   ad.dispose();
                   _loadInterstitialAd();
                 },
               );
         },
         onAdFailedToLoad: (error) {
-          debugPrint('InterstitialAd failed to load: $error');
+          debugPrint('InterstitialAd failed to load (attempt ${retryCount + 1}): $error');
+          // 指數退避重試：2s, 4s, 8s
+          if (retryCount < _retryDelays.length) {
+            final delay = Duration(seconds: _retryDelays[retryCount]);
+            debugPrint('Retrying in ${delay.inSeconds}s...');
+            Future.delayed(delay, () {
+              _loadInterstitialAd(retryCount + 1);
+            });
+          } else {
+            debugPrint('InterstitialAd: Max retry attempts reached');
+          }
         },
       ),
     );
@@ -92,23 +78,28 @@ class MobileAdService extends AdService {
     if (_lastInterstitialShowTime != null &&
         DateTime.now().difference(_lastInterstitialShowTime!) <
             _interstitialCooldown) {
+      debugPrint('InterstitialAd: Skipping due to cooldown period');
       onComplete();
       return;
     }
 
     if (_interstitialAd == null) {
+      debugPrint('InterstitialAd: Ad not ready, attempting to reload...');
+      _loadInterstitialAd();
       onComplete();
       return;
     }
 
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        debugPrint('InterstitialAd: User dismissed ad');
         ad.dispose();
         _loadInterstitialAd();
         _lastInterstitialShowTime = DateTime.now();
         onComplete();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
+        debugPrint('InterstitialAd: Failed to show: $error');
         ad.dispose();
         _loadInterstitialAd();
         onComplete();
@@ -122,16 +113,27 @@ class MobileAdService extends AdService {
     _interstitialAd = null;
   }
 
-  void _loadRewardedAd() {
+  void _loadRewardedAd([int retryCount = 0]) {
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          debugPrint('RewardedAd loaded successfully');
           _rewardedAd = ad;
         },
         onAdFailedToLoad: (error) {
-          debugPrint('RewardedAd failed to load: $error');
+          debugPrint('RewardedAd failed to load (attempt ${retryCount + 1}): $error');
+          // 指數退避重試：2s, 4s, 8s
+          if (retryCount < _retryDelays.length) {
+            final delay = Duration(seconds: _retryDelays[retryCount]);
+            debugPrint('Retrying in ${delay.inSeconds}s...');
+            Future.delayed(delay, () {
+              _loadRewardedAd(retryCount + 1);
+            });
+          } else {
+            debugPrint('RewardedAd: Max retry attempts reached');
+          }
         },
       ),
     );
@@ -142,18 +144,19 @@ class MobileAdService extends AdService {
     required Function(RewardItem) onUserEarnedReward,
   }) async {
     if (_rewardedAd == null) {
-      debugPrint(
-        'Warning: Attempted to show rewarded ad before it was loaded.',
-      );
+      debugPrint('RewardedAd: Ad not ready, attempting to reload...');
+      _loadRewardedAd();
       return;
     }
 
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        debugPrint('RewardedAd: User dismissed ad');
         ad.dispose();
         _loadRewardedAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
+        debugPrint('RewardedAd: Failed to show: $error');
         ad.dispose();
         _loadRewardedAd();
       },
@@ -163,15 +166,11 @@ class MobileAdService extends AdService {
     if (ad != null) {
       await ad.show(
         onUserEarnedReward: (ad, reward) {
+          debugPrint('RewardedAd: User earned reward: ${reward.amount} ${reward.type}');
           onUserEarnedReward(reward);
         },
       );
     }
     _rewardedAd = null;
-  }
-
-  @override
-  Future<void> loadNativeAd() async {
-    // Implement native ad loading when needed
   }
 }
