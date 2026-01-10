@@ -2,28 +2,23 @@ part of 'records_bloc.dart';
 
 /// 油耗顯示數據
 class FuelEfficiencyDisplay {
-  final double kmPerLiter;       // km/L 值
-  final double litersPer100Km;   // L/100km 值
+  final double kmPerLiter; // km/L 值
 
-  const FuelEfficiencyDisplay({
-    required this.kmPerLiter,
-    required this.litersPer100Km,
-  });
+  const FuelEfficiencyDisplay({required this.kmPerLiter});
 
   /// 空數據（無油耗記錄）
   static const FuelEfficiencyDisplay empty = FuelEfficiencyDisplay(
     kmPerLiter: 0.0,
-    litersPer100Km: 0.0,
   );
 
   /// 是否有有效數據
   bool get hasData => kmPerLiter > 0.0;
 
   /// 格式化顯示字串
-  /// 返回格式：10.5 km/L (9.5 L/100km) 或 N/A
+  /// 返回格式：10.5 km/L 或 N/A
   String format() {
     if (!hasData) return 'N/A';
-    return '${kmPerLiter.toStringAsFixed(1)} km/L (${litersPer100Km.toStringAsFixed(1)} L/100km)';
+    return '${kmPerLiter.toStringAsFixed(1)} km/L';
   }
 
   /// 計算車輛的最新油耗
@@ -34,10 +29,9 @@ class FuelEfficiencyDisplay {
   /// 3. 多筆記錄：使用最近兩筆記錄計算
   static FuelEfficiencyDisplay calculateFromVehicle(Vehicle vehicle) {
     // 取得所有加油記錄，按日期排序（最新的在前）
-    final fuelRecords = vehicle.records
-        .where((r) => r.typeName == 'fuel')
-        .toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+    final fuelRecords =
+        vehicle.records.where((r) => r.typeName == 'fuel').toList()
+          ..sort((a, b) => b.date.compareTo(a.date));
 
     // 情況 1：沒有任何加油記錄
     if (fuelRecords.isEmpty) {
@@ -53,12 +47,7 @@ class FuelEfficiencyDisplay {
         return FuelEfficiencyDisplay.empty;
       }
 
-      // 計算 L/100km = 100 / (km/L)
-      final litersPer100Km = 100.0 / efficiency;
-      return FuelEfficiencyDisplay(
-        kmPerLiter: efficiency,
-        litersPer100Km: litersPer100Km,
-      );
+      return FuelEfficiencyDisplay(kmPerLiter: efficiency);
     }
 
     // 情況 3：多筆記錄 - 使用最近兩筆
@@ -71,11 +60,7 @@ class FuelEfficiencyDisplay {
       return FuelEfficiencyDisplay.empty;
     }
 
-    final litersPer100Km = 100.0 / efficiency;
-    return FuelEfficiencyDisplay(
-      kmPerLiter: efficiency,
-      litersPer100Km: litersPer100Km,
-    );
+    return FuelEfficiencyDisplay(kmPerLiter: efficiency);
   }
 }
 
@@ -111,11 +96,10 @@ class RecordsState extends Equatable {
   bool get isEmpty => vehicles.isEmpty;
 
   // Helper to get the current vehicle
-  Vehicle get currentVehicle =>
-      vehicles.firstWhere(
-        (v) => v.vehicleId == currentVehicleId,
-        orElse: () => Vehicle.empty(),
-      );
+  Vehicle get currentVehicle => vehicles.firstWhere(
+    (v) => v.vehicleId == currentVehicleId,
+    orElse: () => Vehicle.empty(),
+  );
 
   @override
   List<Object?> get props => [

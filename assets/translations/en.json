@@ -24,7 +24,8 @@
     "goToSettings": "Go to Settings",
     "unitKm": "km",
     "unitMi": "mi",
-    "unitPricePerLiter": "$/L"
+    "unitPricePerLiter": "$/L",
+    "edit": "Edit"
   },
   "records": {
     "title": "My Garage",
@@ -221,7 +222,9 @@
     "editLaterHint": "You can edit vehicle info in settings later",
     "errorOccurred": "An error occurred",
     "fillAllFields": "Please fill in all required fields",
-    "addVehicleFailed": "Failed to add vehicle"
+    "addVehicleFailed": "Failed to add vehicle",
+    "editTitle": "Edit Vehicle Info",
+    "updateVehicleFailed": "Failed to update vehicle"
   },
   "premium": {
     "successTitle": "Congratulations!",

@@ -24,7 +24,8 @@
     "goToSettings": "前往設定",
     "unitKm": "km",
     "unitMi": "mi",
-    "unitPricePerLiter": "元/L"
+    "unitPricePerLiter": "元/L",
+    "edit": "編輯"
   },
   "records": {
     "title": "我的車庫",
@@ -221,7 +222,9 @@
     "editLaterHint": "之後可以在設定中編輯車輛資訊",
     "errorOccurred": "發生錯誤",
     "fillAllFields": "請填寫完整",
-    "addVehicleFailed": "新增車輛失敗"
+    "addVehicleFailed": "新增車輛失敗",
+    "editTitle": "編輯車輛資訊",
+    "updateVehicleFailed": "更新車輛失敗"
   },
   "premium": {
     "successTitle": "恭喜！",

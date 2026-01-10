@@ -185,12 +185,25 @@ class RecordsPage extends StatelessWidget {
   }
 
   Future<void> _navigateToEditVehicle(BuildContext context) async {
-    // TODO: implement this
-    // await context.goPathWithResult(AppPath.vehicleManagement);
-    // if (context.mounted) {
-    //   // Reload vehicle data after returning from vehicle management
-    //   context.read<RecordsBloc>().add(const LoadVehicleRecord());
-    // }
+    final state = context.read<RecordsBloc>().state;
+    if (state.vehicles.isEmpty) return;
+
+    // Use centralized getter instead of duplicating lookup logic
+    final currentVehicle = state.currentVehicle;
+    if (currentVehicle.vehicleId.isEmpty) return;
+
+    // Navigate with result
+    final updatedVehicle = await context.pushPathWithResult<Vehicle>(
+      AppPath.addVehicle,
+      extra: currentVehicle,
+    );
+
+    if (updatedVehicle != null && context.mounted) {
+      // Reload is sufficient as it fetches fresh data
+      context.read<RecordsBloc>().add(
+        LoadVehicleRecord(vehicleId: updatedVehicle.vehicleId),
+      );
+    }
   }
 }
 
@@ -399,7 +412,19 @@ class _HeroSection extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 4),
+            IconButton(
+              onPressed: () {
+                context.read<RecordsBloc>().add(const ClickEditVehicleButton());
+              },
+              icon: Icon(Icons.edit_outlined, size: 18, color: textSecondary),
+              tooltip: 'common.edit'.tr(),
+              style: IconButton.styleFrom(
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(

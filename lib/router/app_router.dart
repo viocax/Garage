@@ -51,7 +51,6 @@ class AppPath {
 
   static final cloudSync = AppPath(name: 'cloudSync', previous: settings);
 
-
   static final termsOfService = AppPath(
     name: 'termsOfService',
     previous: settings,
@@ -128,9 +127,10 @@ class AppRouter {
                       name: AppPath.addVehicle.name,
                       parentNavigatorKey: _rootNavigatorKey,
                       pageBuilder: (context, state) {
+                        final vehicle = state.extra as Vehicle?;
                         return CustomTransitionPage(
                           key: state.pageKey,
-                          child: const AddVehiclePage(),
+                          child: AddVehiclePage(vehicle: vehicle),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                                 return SlideTransition(
@@ -234,6 +234,7 @@ extension AppRouterExtension on BuildContext {
   void goPath(AppPath path, {Object? extra}) {
     GoRouter.of(this).goNamed(path.name, extra: extra);
   }
+
   /// Push 到指定路径并等待返回结果
   Future<T?> pushPathWithResult<T>(AppPath path, {Object? extra}) async {
     return await GoRouter.of(this).pushNamed<T>(path.name, extra: extra);
