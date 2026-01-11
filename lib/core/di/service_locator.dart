@@ -31,6 +31,9 @@ Future<void> setupServiceLocator() async {
   // Ad Service
   getIt.registerLazySingleton<AdService>(() => MobileAdService());
 
+  // Crashlytics Service
+  getIt.registerLazySingleton<CrashlyticsService>(() => CrashlyticsService());
+
   // Repository layer
   getIt.registerLazySingleton<ISpeedCameraRepository>(
     () => LocalSpeedCameraRepository(),
@@ -56,8 +59,7 @@ Future<void> resetServiceLocator() async {
   await getIt.reset();
 }
 
-// MARK: 目前沒有類似像Swift可以做到scope內部在宣告其他Type(inner class ..)
-// 暫時這樣先處理
+// MARK: - Extension to access scopes via getIt.service or getIt.repo
 extension GetItExtensions on GetIt {
   // BlocScopes get bloc => BlocScopes(this);
   ServiceScopes get service => ServiceScopes(this);
@@ -76,6 +78,7 @@ class ServiceScopes {
   TtsService get tts => _getIt<TtsService>();
   CloudSyncService get cloudSync => _getIt<CloudSyncService>();
   AdService get ad => _getIt<AdService>();
+  CrashlyticsService get crashlytics => _getIt<CrashlyticsService>();
 }
 
 class RepositoryScopes {

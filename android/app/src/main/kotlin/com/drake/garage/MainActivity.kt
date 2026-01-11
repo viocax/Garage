@@ -1,8 +1,7 @@
-package com.example.garage
+package com.drake.garage
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
 import android.view.LayoutInflater
