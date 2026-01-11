@@ -24,18 +24,17 @@ class AdConfig {
   };
 
   /// 生產環境廣告 ID
-  /// TODO: 將測試 ID 替換為實際的 AdMob 生產 ID
   static const _prodIds = {
-    'banner_android': 'ca-app-pub-3940256099942544/6300978111',
-    'banner_ios': 'ca-app-pub-3940256099942544/2934735716',
-    'interstitial_android': 'ca-app-pub-3940256099942544/1033173712',
-    'interstitial_ios': 'ca-app-pub-3940256099942544/4411468910',
-    'rewarded_android': 'ca-app-pub-3940256099942544/5224354917',
-    'rewarded_ios': 'ca-app-pub-3940256099942544/1712485313',
-    'native_android': 'ca-app-pub-3940256099942544/2247696110',
-    'native_ios': 'ca-app-pub-3940256099942544/3986624511',
-    'app_open_android': 'ca-app-pub-3940256099942544/3419835294',
-    'app_open_ios': 'ca-app-pub-3940256099942544/5662855259',
+    'banner_android': 'ca-app-pub-8569390201968394/5200817139',
+    'banner_ios': 'ca-app-pub-8569390201968394/5416261945',
+    'interstitial_android': 'ca-app-pub-8569390201968394/9411347278',
+    'interstitial_ios': 'ca-app-pub-8569390201968394/4987202322',
+    'rewarded_android': 'ca-app-pub-8569390201968394/6785183937',
+    'rewarded_ios': 'ca-app-pub-8569390201968394/3751826485',
+    'native_android': 'ca-app-pub-8569390201968394/6112581733',
+    'native_ios': 'ca-app-pub-8569390201968394/6432145933',
+    'app_open_android': 'ca-app-pub-8569390201968394/1457013246',
+    'app_open_ios': 'ca-app-pub-8569390201968394/1477016930',
   };
 
   /// 根據廣告類型和平台獲取對應的廣告 ID

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:garage/core/config/ad_config.dart';
+import 'package:garage/core/config/ad_constants.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ad_service.dart';
 
@@ -23,13 +25,35 @@ class MobileAdService extends AdService {
 
   @override
   Future<void> initialize() async {
+    // 配置測試設備（僅在開發階段）
+    if (!kReleaseMode) {
+      // 🔍 如何獲取設備 ID：
+      // 1. 運行應用並觸發任何廣告
+      // 2. 查看 Console/Logcat 輸出
+      // 3. 找到類似這樣的訊息：
+      //    "To get test ads on this device, set: GADMobileAds.sharedInstance.requestConfiguration.testDeviceIdentifiers = @[ @"33BE2250B43518CCDA7DE426D04EE231" ];"
+      // 4. 將設備 ID 添加到下面的列表中
+
+      final List<String> testDeviceIds = [
+        // 'YOUR_ANDROID_DEVICE_ID',  // 例如: '33BE2250B43518CCDA7DE426D04EE231'
+        // 'YOUR_IOS_DEVICE_ID',      // 例如: 'F5C84E9E-5F3A-4B5D-9D8A-8F9E3D2C1B0A'
+      ];
+
+      if (testDeviceIds.isNotEmpty) {
+        final configuration = RequestConfiguration(
+          testDeviceIds: testDeviceIds,
+        );
+        MobileAds.instance.updateRequestConfiguration(configuration);
+        debugPrint('✅ AdMob 測試設備已配置: $testDeviceIds');
+      } else {
+        debugPrint('⚠️ 尚未配置測試設備 ID，廣告將使用正式模式（請小心不要點擊！）');
+      }
+    }
+
     await MobileAds.instance.initialize();
     _loadInterstitialAd();
     _loadRewardedAd();
   }
-
-  /// 重試延遲時間（秒）：2s, 4s, 8s
-  static const List<int> _retryDelays = [2, 4, 8];
 
   void _loadInterstitialAd([int retryCount = 0]) {
     InterstitialAd.load(
@@ -54,9 +78,9 @@ class MobileAdService extends AdService {
         },
         onAdFailedToLoad: (error) {
           debugPrint('InterstitialAd failed to load (attempt ${retryCount + 1}): $error');
-          // 指數退避重試：2s, 4s, 8s
-          if (retryCount < _retryDelays.length) {
-            final delay = Duration(seconds: _retryDelays[retryCount]);
+          // 指數退避重試
+          if (retryCount < AdConstants.interstitialRetryDelays.length) {
+            final delay = AdConstants.interstitialRetryDelays[retryCount];
             debugPrint('Retrying in ${delay.inSeconds}s...');
             Future.delayed(delay, () {
               _loadInterstitialAd(retryCount + 1);
@@ -70,14 +94,13 @@ class MobileAdService extends AdService {
   }
 
   DateTime? _lastInterstitialShowTime;
-  static const Duration _interstitialCooldown = Duration(minutes: 5);
 
   @override
   Future<void> showInterstitialAd({required VoidCallback onComplete}) async {
     // 檢查冷卻時間
     if (_lastInterstitialShowTime != null &&
         DateTime.now().difference(_lastInterstitialShowTime!) <
-            _interstitialCooldown) {
+            AdConstants.interstitialCooldown) {
       debugPrint('InterstitialAd: Skipping due to cooldown period');
       onComplete();
       return;
@@ -124,9 +147,9 @@ class MobileAdService extends AdService {
         },
         onAdFailedToLoad: (error) {
           debugPrint('RewardedAd failed to load (attempt ${retryCount + 1}): $error');
-          // 指數退避重試：2s, 4s, 8s
-          if (retryCount < _retryDelays.length) {
-            final delay = Duration(seconds: _retryDelays[retryCount]);
+          // 指數退避重試
+          if (retryCount < AdConstants.interstitialRetryDelays.length) {
+            final delay = AdConstants.interstitialRetryDelays[retryCount];
             debugPrint('Retrying in ${delay.inSeconds}s...');
             Future.delayed(delay, () {
               _loadRewardedAd(retryCount + 1);

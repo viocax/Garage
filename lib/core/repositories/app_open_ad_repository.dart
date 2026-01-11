@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:garage/core/config/ad_config.dart';
+import 'package:garage/core/config/ad_constants.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -11,9 +12,6 @@ class AppOpenAdRepository {
   AppOpenAd? _appOpenAd;
   bool _isShowingAd = false;
   DateTime? _appOpenLoadTime;
-
-  /// 廣告快取時效 (4小時)
-  static const Duration maxCacheDuration = Duration(hours: 4);
 
   /// 廣告 ID
   String get _adUnitId => AdConfig.appOpenAdUnitId;
@@ -46,7 +44,8 @@ class AppOpenAdRepository {
   /// 檢查廣告是否過期
   bool get _isAdValid {
     if (_appOpenLoadTime == null) return false;
-    return DateTime.now().difference(_appOpenLoadTime!) < maxCacheDuration;
+    return DateTime.now().difference(_appOpenLoadTime!) <
+        AdConstants.appOpenCacheDuration;
   }
 
   /// 顯示廣告

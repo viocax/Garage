@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:garage/core/config/ad_constants.dart';
 import 'package:garage/core/core.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
@@ -79,7 +80,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
     await _adRepository.showRewardedAd(
       onReward: () async {
-        await _adRepository.grantBannerAdFree(const Duration(hours: 12));
+        await _adRepository.grantBannerAdFree(AdConstants.bannerAdFreeDuration);
         emit(state.copyWith(errorMessage: 'settings.removeBannerSuccess'.tr()));
       },
     );
