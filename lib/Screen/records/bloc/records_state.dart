@@ -28,10 +28,14 @@ class FuelEfficiencyDisplay {
   /// 2. 只有一筆記錄：返回 empty（需要至少兩筆記錄才能計算）
   /// 3. 多筆記錄：使用最近兩筆記錄計算
   static FuelEfficiencyDisplay calculateFromVehicle(Vehicle vehicle) {
+    return calculate(vehicle.records.toList());
+  }
+
+  /// 根據記錄列表計算油耗（方便測試）
+  static FuelEfficiencyDisplay calculate(List<VehicleRecord> records) {
     // 取得所有加油記錄，按日期排序（最新的在前）
-    final fuelRecords =
-        vehicle.records.where((r) => r.typeName == 'fuel').toList()
-          ..sort((a, b) => b.date.compareTo(a.date));
+    final fuelRecords = records.where((r) => r.typeName == 'fuel').toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
 
     // 情況 1：沒有任何加油記錄
     if (fuelRecords.isEmpty) {

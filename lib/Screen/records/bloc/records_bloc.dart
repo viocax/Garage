@@ -12,10 +12,16 @@ part 'records_event.dart';
 part 'records_state.dart';
 
 class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
-  final VehicleRepository vehicleRepository = getIt.repo.vehicle;
-  final UserSettingsRepository userSettingsRepository = getIt.repo.userSettings;
+  final VehicleRepository vehicleRepository;
+  final UserSettingsRepository userSettingsRepository;
 
-  RecordsBloc() : super(const RecordsState(isLoading: true)) {
+  RecordsBloc({
+    VehicleRepository? vehicleRepository,
+    UserSettingsRepository? userSettingsRepository,
+  }) : vehicleRepository = vehicleRepository ?? getIt.repo.vehicle,
+       userSettingsRepository =
+           userSettingsRepository ?? getIt.repo.userSettings,
+       super(const RecordsState(isLoading: true)) {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
     on<SwitchVehicle>(_onSwitchVehicle);
     on<ClickAddVehicleButton>(_onClickAddVehicleButton);

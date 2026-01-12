@@ -26,7 +26,8 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     UserSettingsRepository? userSettingsRepository,
   }) : _repository = repository ?? getIt.repo.vehicle,
        _adRepository = adRepository ?? getIt.repo.ad,
-       _userSettingsRepository = userSettingsRepository ?? getIt.repo.userSettings,
+       _userSettingsRepository =
+           userSettingsRepository ?? getIt.repo.userSettings,
        super(
          AddRecordState(
            // 預設為加油類型，帶入當前日期和車輛里程
@@ -97,7 +98,7 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     emit(
       state.copyWith(
         recordType: newType,
-        errorMessage: null,
+        clearError: true,
         isAmountManuallyEdited: false,
       ),
     );

@@ -80,11 +80,12 @@ class AddRecordState extends Equatable {
     VehicleRecord? createdRecord,
     bool? isAmountManuallyEdited,
     SpeedUnit? speedUnit,
+    bool clearError = false,
   }) {
     return AddRecordState(
       recordType: recordType ?? this.recordType,
-      status: status ?? AddRecordStatus.valid,
-      errorMessage: errorMessage,
+      status: status ?? this.status,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       createdRecord: createdRecord ?? this.createdRecord,
       isAmountManuallyEdited:
           isAmountManuallyEdited ?? this.isAmountManuallyEdited,
