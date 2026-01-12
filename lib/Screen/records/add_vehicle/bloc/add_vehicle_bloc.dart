@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle.dart';

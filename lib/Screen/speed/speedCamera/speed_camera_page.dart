@@ -494,9 +494,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     const int segments = 30; // 弧線段數
     final points = <LatLng>[];
 
-    // 起始角度和結束角度（以 heading 為中心）
+    // 起始角度（以 heading 為中心）
     final startAngle = heading - sweepAngle / 2;
-    final endAngle = heading + sweepAngle / 2;
     final angleStep = sweepAngle / segments;
 
     // 添加中心點

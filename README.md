@@ -50,6 +50,61 @@
 | 圖表 | fl_chart |
 | 語音 | flutter_tts |
 | 多語系 | easy_localization |
+| 廣告平台 | Google AdMob |
+| 錯誤追蹤 | Firebase Crashlytics |
+| 日誌管理 | logger |
+
+### 日誌管理 (Logging)
+
+專案使用集中式的 `Log` 工具進行日誌管理，基於 [logger](https://pub.dev/packages/logger) 套件。
+
+#### 使用方式
+
+```dart
+import 'package:garage/core/core.dart';
+
+// 追蹤級別（最詳細）
+Log.t('Trace message');
+
+// 除錯級別
+Log.d('Debug message: $variable');
+
+// 資訊級別
+Log.i('Operation completed successfully');
+
+// 警告級別
+Log.w('Warning: potential issue detected');
+
+// 錯誤級別
+Log.e('Error occurred', error, stackTrace);
+
+// 嚴重錯誤級別
+Log.f('Fatal error', error, stackTrace);
+```
+
+#### 日誌等級行為
+
+- **開發模式 (Debug)**: 顯示所有等級日誌 (trace 到 fatal)
+- **生產模式 (Release)**: 僅顯示 warning 以上等級
+- 自動包含時間戳記、方法呼叫堆疊 (2層)
+- 錯誤自動格式化堆疊追蹤 (8層)
+
+#### 最佳實踐
+
+使用 barrel export 統一匯出，避免重複引入：
+
+```dart
+// ✅ 推薦：使用 barrel export
+import 'package:garage/core/core.dart';
+
+// ❌ 避免：直接引入
+import 'package:garage/core/utils/log.dart';
+```
+
+**相關資源**：
+- **實作位置**：`lib/core/utils/log.dart`
+- **匯出位置**：`lib/core/utils/utils.dart`
+- **Crashlytics 整合**：參考 [CRASHLYTICS_SETUP.md](CRASHLYTICS_SETUP.md)
 
 ## 專案結構
 
@@ -220,8 +275,9 @@ lib/core/
 - [x] TTS 語音播報
 - [x] 進階統計圖表 (分類花費、油耗趨勢、年度對比)
 - [x] 背景執行支援
+- [x] 編輯車輛資訊功能
+- [x] 全面本地化 (繁體中文、英文)
 - [ ] 區間測速偵測
-- [ ] 編輯車輛資訊功能 (_navigateToEditVehicle)
 - [ ] 自動保養週期預算與提醒
 - [x] 雲端同步 (iOS: iCloud / Android: Google Drive)
   - [x] CloudSyncRepository 抽象介面與 Repository 模式
@@ -243,10 +299,7 @@ lib/core/
   - [x] Isar 資料庫匯出/匯入邏輯
     - 匯出所有 Vehicle 與 VehicleRecord 為 JSON
     - 還原時重建 IsarLinks 關聯（確保一對多關係正確恢復）
-- [ ] 全域集中式錯誤處理與 Toast 提示 (WIP: Settings Page)
-- [x] 全面本地化 (包含圖表、錯誤訊息與資料模型)
-- [ ] 擴展更多統計圖表 (如：每公里成本分析、油價走勢分析)
-- [x] 廣告 (Google AdMob)
+- [x] 廣告 (Google AdMob) - 完整實現
   - [x] 基礎配置 (iOS/Android App ID, SDK Init)
   - [x] Banner 廣告 (Settings, Vehicle Management)
   - [x] 插頁式廣告 (Add Record/Add Vehicle 成功後)
@@ -254,11 +307,23 @@ lib/core/
   - [x] 獎勵廣告 (Rewarded Ads)
     - [x] 廣告票券 (Ad Tickets) - 跳過插頁廣告
     - [x] 移除橫幅 (Remove Banner) - 12小時限時移除
-  - [x] 需至 AdMob 後台設定相對應的廣告單元 ID (Banner, Interstitial, Native, Rewarded)
-  - [x] 正式上架前需更新 `Info.plist` (iOS) 與 `AndroidManifest.xml` (Android) 中的 AdMob App ID
-- [x] 應用程式評分 (Rate App)
-  - 使用 `in_app_review` 套件
-  - 注意：`openStoreListing` 功能需要在 App 上架 (或 TestFlight/Internal Testing) 後才能正常運作，且需確認 App Store Connect / Google Play Console 已建立應用程式頁面。
+  - [x] App Open 廣告 (應用恢復時顯示)
+  - 詳細設定請參考 [ADMOB_SETUP.md](ADMOB_SETUP.md)
+
+### 品質保證
+- [x] 應用程式評分 (Rate App using in_app_review)
+- [x] 集中式日誌管理 (Log utility using logger package)
+- [x] 錯誤追蹤與崩潰報告 (Firebase Crashlytics)
+- [x] 單元測試覆蓋率 (Models, Services, Repositories)
+- [x] BLoC 架構模式
+- [x] 依賴注入 (GetIt)
+
+### 待開發功能
+- [ ] 區間測速偵測
+- [ ] 自動保養週期預算與提醒
+- [ ] 全域集中式錯誤處理與 Toast 提示
+- [ ] 擴展更多統計圖表 (如：每公里成本分析、油價走勢分析)
+- [ ] Android 平台支援
 
 ## 廣告配置 (Ad Configuration)
 
@@ -295,6 +360,39 @@ APP 內的「給予評分」功能使用 `in_app_review` 套件。
 - 模擬器上可能無法開啟商店頁面。
 - iOS Simulator 執行 `openStoreListing` 可能無反應或報錯。
 - 建議使用實機測試，且最好是透過 TestFlight (iOS) 或 Internal Testing (Android) 安裝的版本，以確保連結能正確導向商店。
+
+## 錯誤追蹤與日誌管理
+
+### Firebase Crashlytics
+應用程式使用 Firebase Crashlytics 進行崩潰追蹤和錯誤報告，協助快速定位和修復生產環境問題。
+
+**主要功能**：
+- ✅ 自動捕獲 Flutter 和平台層錯誤
+- ✅ 非致命錯誤記錄
+- ✅ 用戶追蹤與自定義日誌
+- ✅ Debug 模式自動停用
+
+**相關資源**：
+- **詳細配置指南**：[CRASHLYTICS_SETUP.md](CRASHLYTICS_SETUP.md)
+- **服務實作**：`lib/core/service/crashlytics_service.dart`
+- **初始化**：`lib/main.dart`
+
+### Log 工具
+所有日誌統一使用 `Log` 工具記錄，提供一致的日誌管理體驗。
+
+**使用範例**：
+```dart
+import 'package:garage/core/core.dart';
+
+Log.i('應用程式啟動成功');
+Log.w('發現潛在問題');
+Log.e('錯誤發生', error, stackTrace);
+```
+
+**相關資源**：
+- **使用說明**：參考上方 [日誌管理](#日誌管理-logging) 章節
+- **實作位置**：`lib/core/utils/log.dart`
+
 ## 聯絡與反饋
 
 如果您在使用過程中有任何問題或建議，歡迎透過以下方式與我聯絡：

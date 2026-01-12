@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
-import 'package:garage/core/utils/log.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
 
