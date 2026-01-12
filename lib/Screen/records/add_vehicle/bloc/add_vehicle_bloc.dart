@@ -8,6 +8,7 @@ import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
+import 'package:garage/core/utils/log.dart';
 
 part 'add_vehicle_event.dart';
 part 'add_vehicle_state.dart';
@@ -58,7 +59,7 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
       // The stored values are usually raw (e.g. km).
       emit(state.copyWith(speedUnit: userSettings.speedUnit));
     } catch (e) {
-      debugPrint(e.toString());
+      Log.e('AddVehicleBloc: Failed to load user settings', e);
     }
   }
 

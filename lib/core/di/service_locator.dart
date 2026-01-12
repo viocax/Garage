@@ -34,6 +34,8 @@ Future<void> setupServiceLocator() async {
   // Crashlytics Service
   getIt.registerLazySingleton<CrashlyticsService>(() => CrashlyticsService());
 
+  // Logger Service
+
   // Repository layer
   getIt.registerLazySingleton<ISpeedCameraRepository>(
     () => LocalSpeedCameraRepository(),

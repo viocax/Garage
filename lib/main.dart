@@ -18,7 +18,7 @@ void main() async {
   try {
     await Firebase.initializeApp();
   } catch (e) {
-    debugPrint('Firebase initialization failed: $e');
+    Log.e('Firebase initialization failed: $e', e);
   }
 
   // 初始化依賴注入

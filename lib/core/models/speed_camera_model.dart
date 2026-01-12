@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garage/core/utils/log.dart';
 
 class SpeedCameraModel {
   int speedLimit;
@@ -75,7 +76,7 @@ class SpeedCameraModel {
     final double finalDuration =
         minDuration + (speedRatio * durationDifference);
 
-    debugPrint('SpeedBloc: finalDuration=$finalDuration');
+    Log.d('SpeedBloc: finalDuration=$finalDuration');
 
     return Duration(milliseconds: finalDuration.toInt());
   }

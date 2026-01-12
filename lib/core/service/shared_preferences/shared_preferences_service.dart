@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:garage/core/service/shared_preferences/shared_preferences_interface.dart';
+import 'package:garage/core/utils/log.dart';
 
 /// SharedPreferences 服務
 class SharedPreferencesService {
@@ -13,7 +14,7 @@ class SharedPreferencesService {
   /// 儲存字串
   Future<bool> setString(String key, String value) async {
     final result = await preferences.setString(key, value);
-    debugPrint('SharedPreferencesService: 儲存字串 $key = $value');
+    Log.d('SharedPreferencesService: 儲存字串 $key = $value');
     return result;
   }
 
@@ -27,7 +28,7 @@ class SharedPreferencesService {
   /// 儲存整數
   Future<bool> setInt(String key, int value) async {
     final result = await preferences.setInt(key, value);
-    debugPrint('SharedPreferencesService: 儲存整數 $key = $value');
+    Log.d('SharedPreferencesService: 儲存整數 $key = $value');
     return result;
   }
 
@@ -41,7 +42,7 @@ class SharedPreferencesService {
   /// 儲存浮點數
   Future<bool> setDouble(String key, double value) async {
     final result = await preferences.setDouble(key, value);
-    debugPrint('SharedPreferencesService: 儲存浮點數 $key = $value');
+    Log.d('SharedPreferencesService: 儲存浮點數 $key = $value');
     return result;
   }
 
@@ -55,7 +56,7 @@ class SharedPreferencesService {
   /// 儲存布林值
   Future<bool> setBool(String key, bool value) async {
     final result = await preferences.setBool(key, value);
-    debugPrint('SharedPreferencesService: 儲存布林值 $key = $value');
+    Log.d('SharedPreferencesService: 儲存布林值 $key = $value');
     return result;
   }
 
@@ -69,7 +70,7 @@ class SharedPreferencesService {
   /// 儲存字串列表
   Future<bool> setStringList(String key, List<String> value) async {
     final result = await preferences.setStringList(key, value);
-    debugPrint('SharedPreferencesService: 儲存字串列表 $key = $value');
+    Log.d('SharedPreferencesService: 儲存字串列表 $key = $value');
     return result;
   }
 
@@ -88,14 +89,14 @@ class SharedPreferencesService {
   /// 移除指定 key 的值
   Future<bool> remove(String key) async {
     final result = await preferences.remove(key);
-    debugPrint('SharedPreferencesService: 移除 $key');
+    Log.d('SharedPreferencesService: 移除 $key');
     return result;
   }
 
   /// 清空所有資料
   Future<bool> clear() async {
     final result = await preferences.clear();
-    debugPrint('SharedPreferencesService: 清空所有資料');
+    Log.d('SharedPreferencesService: 清空所有資料');
     return result;
   }
 
@@ -107,7 +108,7 @@ class SharedPreferencesService {
   /// 重新載入資料（從持久化儲存重新讀取）
   Future<void> reload() async {
     await preferences.reload();
-    debugPrint('SharedPreferencesService: 重新載入資料');
+    Log.d('SharedPreferencesService: 重新載入資料');
   }
 
   /// 取得所有儲存的資料統計

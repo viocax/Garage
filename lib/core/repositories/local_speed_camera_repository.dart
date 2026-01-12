@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart';
 import 'package:garage/core/di/service_locator.dart';
+import 'package:garage/core/utils/log.dart';
 import 'package:garage/core/models/tts_speaking_token.dart';
 import 'package:garage/core/service/location/location_service.dart';
 import 'package:garage/core/service/tts/tts_service.dart';
@@ -57,43 +58,42 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   }
 
   Future<List<Camera>> _performLoad() async {
-    debugPrint('LocalSpeedCameraRepository: 從 assets 載入資料...');
+    Log.d('LocalSpeedCameraRepository: 從 assets 載入資料...');
 
     try {
       // 讀取 JSON 檔案
-      debugPrint('LocalSpeedCameraRepository: 開始讀取 JSON 檔案...');
+      Log.d('LocalSpeedCameraRepository: 開始讀取 JSON 檔案...');
       // 使用 rootBundle.loadString讀取
       final String jsonString = await rootBundle.loadString(
         'assets/models/speedCameras.json',
       );
-      debugPrint(
+      Log.d(
         'LocalSpeedCameraRepository: JSON 檔案讀取完成，長度: ${jsonString.length}',
       );
 
       // 解析 JSON - 使用 compute 避免阻塞主執行緒
-      debugPrint('LocalSpeedCameraRepository: 開始解析 JSON...');
+      Log.d('LocalSpeedCameraRepository: 開始解析 JSON...');
       final List<dynamic> jsonData = await compute(_decodeJson, jsonString);
-      debugPrint(
+      Log.d(
         'LocalSpeedCameraRepository: JSON 解析完成，共 ${jsonData.length} 筆',
       );
 
-      debugPrint('LocalSpeedCameraRepository: 開始轉換為 Camera 物件...');
+      Log.d('LocalSpeedCameraRepository: 開始轉換為 Camera 物件...');
       // 轉換物件也使用 compute 處理以防萬一資料量大
       _cachedCameras = await compute(_parseCameras, jsonData);
-      debugPrint('LocalSpeedCameraRepository: Camera 物件轉換完成');
+      Log.d('LocalSpeedCameraRepository: Camera 物件轉換完成');
 
       _loadedAt = DateTime.now();
       _buildQuadTree();
 
-      debugPrint(
+      Log.d(
         'LocalSpeedCameraRepository: 載入完成，共 ${_cachedCameras.length} 筆資料',
       );
 
       return _cachedCameras;
     } catch (e, stackTrace) {
       _loadFuture = null; // 失敗時重設 Future 以便下次重試
-      debugPrint('LocalSpeedCameraRepository: 載入失敗 - $e');
-      debugPrint('StackTrace: $stackTrace');
+      Log.e('LocalSpeedCameraRepository: 載入失敗 - $e', e, stackTrace);
       rethrow;
     }
   }
@@ -114,7 +114,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   @override
   Future<void> syncFromRemote({bool force = false}) async {
     // 本地資料不需要同步，直接載入即可
-    debugPrint(
+    Log.d(
       'LocalSpeedCameraRepository: syncFromRemote called (force: $force)',
     );
     if (force) {
@@ -144,7 +144,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
   @override
   Future<void> clearAll() async {
-    debugPrint('LocalSpeedCameraRepository: 清除快取');
+    Log.d('LocalSpeedCameraRepository: 清除快取');
     _cachedCameras = [];
     _loadedAt = null;
   }
@@ -166,7 +166,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     try {
       final hasPermission = await requestPermission(background: true);
       if (!hasPermission) {
-        debugPrint('LocalSpeedCameraRepository: No location permission');
+        Log.d('LocalSpeedCameraRepository: No location permission');
         throw Exception('Location permission denied');
       }
       _speedSubscription = _locationService.getPositionStream().listen(
@@ -175,7 +175,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
           callback(speedCameraModel);
         },
         onError: (error) {
-          debugPrint('LocalSpeedCameraRepository: Error: $error');
+          Log.e('LocalSpeedCameraRepository: Error: $error', error);
           callback(null);
         },
       );
@@ -242,7 +242,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       }
       if (_currentCamera != null) {
         _alertedThresholds = {}; // 新相機，重置已播報閾值
-        debugPrint(
+        Log.d(
           'SpeedCamera: 開始追蹤相機 ${_currentCamera!.id}, 限速 ${_currentCamera!.speedLimit}',
         );
       }
@@ -274,7 +274,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
           ),
         );
         _alertedThresholds.add(threshold);
-        debugPrint(
+        Log.d(
           'SpeedCamera: 播報閾值 ${threshold}m, 實際距離 ${distance.toStringAsFixed(0)}m',
         );
         break; // 每次只播報一個閾值
@@ -284,7 +284,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     // 5. Reset 條件：0m 已播報 或 超過 alertDistance
     final hasAlerted0m = _alertedThresholds.contains(0);
     if (hasAlerted0m || distance > alertDistance) {
-      debugPrint(
+      Log.d(
         'SpeedCamera: Reset (0m已播報: $hasAlerted0m, 距離超出: ${distance > alertDistance})',
       );
       _resetAlertState();
@@ -325,7 +325,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       );
     }
 
-    debugPrint(
+    Log.d(
       'LocalSpeedCameraRepository: QuadTree 建立完成，共 ${_cachedCameras.length} 個點',
     );
   }

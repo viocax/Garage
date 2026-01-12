@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:garage/core/config/ad_config.dart';
 import 'package:garage/core/config/ad_constants.dart';
+import 'package:garage/core/utils/log.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ad_service.dart';
 
@@ -44,9 +45,9 @@ class MobileAdService extends AdService {
           testDeviceIds: testDeviceIds,
         );
         MobileAds.instance.updateRequestConfiguration(configuration);
-        debugPrint('✅ AdMob 測試設備已配置: $testDeviceIds');
+        Log.i('✅ AdMob 測試設備已配置: $testDeviceIds');
       } else {
-        debugPrint('⚠️ 尚未配置測試設備 ID，廣告將使用正式模式（請小心不要點擊！）');
+        Log.d('⚠️ 尚未配置測試設備 ID，廣告將使用正式模式（請小心不要點擊！）');
       }
     }
 
@@ -61,7 +62,7 @@ class MobileAdService extends AdService {
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
-          debugPrint('InterstitialAd loaded successfully');
+          Log.d('InterstitialAd loaded successfully');
           _interstitialAd = ad;
           _interstitialAd!.fullScreenContentCallback =
               FullScreenContentCallback(
@@ -70,23 +71,23 @@ class MobileAdService extends AdService {
                   _loadInterstitialAd(); // Preload next ad
                 },
                 onAdFailedToShowFullScreenContent: (ad, error) {
-                  debugPrint('InterstitialAd failed to show: $error');
+                  Log.e('InterstitialAd failed to show: $error', error);
                   ad.dispose();
                   _loadInterstitialAd();
                 },
               );
         },
         onAdFailedToLoad: (error) {
-          debugPrint('InterstitialAd failed to load (attempt ${retryCount + 1}): $error');
+          Log.e('InterstitialAd failed to load (attempt ${retryCount + 1}): $error', error);
           // 指數退避重試
           if (retryCount < AdConstants.interstitialRetryDelays.length) {
             final delay = AdConstants.interstitialRetryDelays[retryCount];
-            debugPrint('Retrying in ${delay.inSeconds}s...');
+            Log.d('Retrying in ${delay.inSeconds}s...');
             Future.delayed(delay, () {
               _loadInterstitialAd(retryCount + 1);
             });
           } else {
-            debugPrint('InterstitialAd: Max retry attempts reached');
+            Log.e('InterstitialAd: Max retry attempts reached');
           }
         },
       ),
@@ -101,13 +102,13 @@ class MobileAdService extends AdService {
     if (_lastInterstitialShowTime != null &&
         DateTime.now().difference(_lastInterstitialShowTime!) <
             AdConstants.interstitialCooldown) {
-      debugPrint('InterstitialAd: Skipping due to cooldown period');
+      Log.d('InterstitialAd: Skipping due to cooldown period');
       onComplete();
       return;
     }
 
     if (_interstitialAd == null) {
-      debugPrint('InterstitialAd: Ad not ready, attempting to reload...');
+      Log.d('InterstitialAd: Ad not ready, attempting to reload...');
       _loadInterstitialAd();
       onComplete();
       return;
@@ -115,14 +116,14 @@ class MobileAdService extends AdService {
 
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
-        debugPrint('InterstitialAd: User dismissed ad');
+        Log.d('InterstitialAd: User dismissed ad');
         ad.dispose();
         _loadInterstitialAd();
         _lastInterstitialShowTime = DateTime.now();
         onComplete();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
-        debugPrint('InterstitialAd: Failed to show: $error');
+        Log.e('InterstitialAd: Failed to show: $error', error);
         ad.dispose();
         _loadInterstitialAd();
         onComplete();
@@ -142,20 +143,20 @@ class MobileAdService extends AdService {
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
-          debugPrint('RewardedAd loaded successfully');
+          Log.d('RewardedAd loaded successfully');
           _rewardedAd = ad;
         },
         onAdFailedToLoad: (error) {
-          debugPrint('RewardedAd failed to load (attempt ${retryCount + 1}): $error');
+          Log.e('RewardedAd failed to load (attempt ${retryCount + 1}): $error', error);
           // 指數退避重試
           if (retryCount < AdConstants.interstitialRetryDelays.length) {
             final delay = AdConstants.interstitialRetryDelays[retryCount];
-            debugPrint('Retrying in ${delay.inSeconds}s...');
+            Log.d('Retrying in ${delay.inSeconds}s...');
             Future.delayed(delay, () {
               _loadRewardedAd(retryCount + 1);
             });
           } else {
-            debugPrint('RewardedAd: Max retry attempts reached');
+            Log.e('RewardedAd: Max retry attempts reached');
           }
         },
       ),
@@ -167,19 +168,19 @@ class MobileAdService extends AdService {
     required Function(RewardItem) onUserEarnedReward,
   }) async {
     if (_rewardedAd == null) {
-      debugPrint('RewardedAd: Ad not ready, attempting to reload...');
+      Log.d('RewardedAd: Ad not ready, attempting to reload...');
       _loadRewardedAd();
       return;
     }
 
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
-        debugPrint('RewardedAd: User dismissed ad');
+        Log.d('RewardedAd: User dismissed ad');
         ad.dispose();
         _loadRewardedAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
-        debugPrint('RewardedAd: Failed to show: $error');
+        Log.e('RewardedAd: Failed to show: $error', error);
         ad.dispose();
         _loadRewardedAd();
       },
@@ -189,7 +190,7 @@ class MobileAdService extends AdService {
     if (ad != null) {
       await ad.show(
         onUserEarnedReward: (ad, reward) {
-          debugPrint('RewardedAd: User earned reward: ${reward.amount} ${reward.type}');
+          Log.d('RewardedAd: User earned reward: ${reward.amount} ${reward.type}');
           onUserEarnedReward(reward);
         },
       );

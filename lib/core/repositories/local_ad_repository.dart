@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:garage/core/service/ad/ad_service.dart';
+import 'package:garage/core/utils/log.dart';
 
 class LocalAdRepository implements AdRepository {
   final AdService _adService;
@@ -34,7 +35,7 @@ class LocalAdRepository implements AdRepository {
     // 檢查是否有廣告票券
     if (adTicketCount > 0) {
       await consumeAdTicket();
-      debugPrint('Used 1 Ad Ticket. Remaining: $adTicketCount');
+      Log.i('Used 1 Ad Ticket. Remaining: $adTicketCount');
       onComplete();
       return;
     }

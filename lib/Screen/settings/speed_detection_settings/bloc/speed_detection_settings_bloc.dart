@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
+import 'package:garage/core/utils/log.dart';
 import 'speed_detection_settings_event.dart';
 import 'speed_detection_settings_state.dart';
 
@@ -100,7 +101,7 @@ class SpeedDetectionSettingsBloc
           settings.copyWith(isVoiceAlertEnabled: newValue)
         );
       } catch (e) {
-        debugPrint(e.toString());
+        Log.e('SpeedDetectionSettingsBloc: Error', e);
       }
 
     }
@@ -122,7 +123,7 @@ class SpeedDetectionSettingsBloc
         );
         emit(currentState.copyWith(voiceVolumePercentage: event.percentage));
       } catch (e) {
-        debugPrint(e.toString());
+        Log.e('SpeedDetectionSettingsBloc: Error', e);
       }
 
     }
@@ -197,7 +198,7 @@ class SpeedDetectionSettingsBloc
         await userSettingRepo.saveSettings(updatedSettings);
       } catch (e) {
         // 保存失败记录日志（不阻塞 close）
-        debugPrint('Failed to save settings: $e');
+        Log.e('SpeedDetectionSettingsBloc: Failed to save settings', e);
       }
     }
   }

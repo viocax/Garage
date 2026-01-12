@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:garage/core/config/ad_config.dart';
 import 'package:garage/core/config/ad_constants.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
+import 'package:garage/core/utils/log.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AppOpenAdRepository {
@@ -25,12 +26,12 @@ class AppOpenAdRepository {
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
-          debugPrint('AppOpenAd loaded');
+          Log.d('AppOpenAd loaded');
           _appOpenAd = ad;
           _appOpenLoadTime = DateTime.now();
         },
         onAdFailedToLoad: (error) {
-          debugPrint('AppOpenAd failed to load: $error');
+          Log.e('AppOpenAd failed to load: $error', error);
         },
       ),
     );
@@ -53,13 +54,13 @@ class AppOpenAdRepository {
     if (_userSettingsRepository.currentSettings.isAdFree) return;
 
     if (!isAdAvailable) {
-      debugPrint('Tried to show ad before available.');
+      Log.d('Tried to show ad before available.');
       loadAd();
       return;
     }
 
     if (_isShowingAd) {
-      debugPrint('Tried to show ad while already showing an ad.');
+      Log.d('Tried to show ad while already showing an ad.');
       return;
     }
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:garage/core/core.dart';
+import 'package:garage/core/utils/log.dart';
 import 'package:isar_community/isar.dart';
 
 /// Cloud sync result with status and optional error
@@ -86,7 +87,7 @@ mixin CloudSyncDataMixin {
       // 取得所有記錄
       final records = await isar.vehicleRecords.where().findAll();
 
-      debugPrint(
+      Log.d(
           'CloudSync: 匯出 ${vehicles.length} 輛車, ${records.length} 筆記錄');
 
       final exportData = {
@@ -98,7 +99,7 @@ mixin CloudSyncDataMixin {
 
       return jsonEncode(exportData);
     } catch (e) {
-      debugPrint('CloudSync: 匯出失敗 - $e');
+      Log.e('CloudSync: 匯出失敗 - $e', e);
       return null;
     }
   }
@@ -111,7 +112,7 @@ mixin CloudSyncDataMixin {
       // 驗證版本
       final version = data['version'] as int?;
       if (version == null || version > 1) {
-        debugPrint('CloudSync: 不支援的備份版本 $version');
+        Log.e('CloudSync: 不支援的備份版本 $version');
         return false;
       }
 
@@ -121,7 +122,7 @@ mixin CloudSyncDataMixin {
       final vehiclesJson = data['vehicles'] as List<dynamic>? ?? [];
       final recordsJson = data['records'] as List<dynamic>? ?? [];
 
-      debugPrint(
+      Log.d(
           'CloudSync: 還原 ${vehiclesJson.length} 輛車, ${recordsJson.length} 筆記錄');
 
       await isar.writeTxn(() async {
@@ -147,7 +148,7 @@ mixin CloudSyncDataMixin {
       final vehicles = await isar.vehicles.where().findAll();
       final records = await isar.vehicleRecords.where().findAll();
 
-      debugPrint(
+      Log.d(
           'CloudSync: 查詢到 ${vehicles.length} 輛車, ${records.length} 筆記錄');
 
       await isar.writeTxn(() async {
@@ -159,10 +160,10 @@ mixin CloudSyncDataMixin {
         }
       });
 
-      debugPrint('CloudSync: 還原完成，已建立 ${vehicles.length} 輛車的關聯');
+      Log.d('CloudSync: 還原完成，已建立 ${vehicles.length} 輛車的關聯');
       return true;
     } catch (e) {
-      debugPrint('CloudSync: 還原失敗 - $e');
+      Log.e('CloudSync: 還原失敗 - $e', e);
       return false;
     }
   }
@@ -246,10 +247,10 @@ mixin CloudSyncDataMixin {
         await isar.vehicleRecords.clear();
       });
 
-      debugPrint('CloudSync: 已清除本地所有資料');
+      Log.d('CloudSync: 已清除本地所有資料');
       return true;
     } catch (e) {
-      debugPrint('CloudSync: 清除本地資料失敗 - $e');
+      Log.e('CloudSync: 清除本地資料失敗 - $e', e);
       return false;
     }
   }

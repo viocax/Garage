@@ -31,7 +31,7 @@ class BannerAdCubit extends Cubit<BannerAdState> {
           emit(BannerAdLoaded(ad as BannerAd));
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('BannerAd failed to load: $error');
+          Log.e('BannerAd failed to load: $error');
           ad.dispose();
           if (!isClosed) {
             emit(BannerAdLoadError(error.message));

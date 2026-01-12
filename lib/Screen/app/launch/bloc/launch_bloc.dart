@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:garage/core/utils/log.dart';
 import 'launch_event.dart';
 import 'launch_state.dart';
 
@@ -29,8 +30,7 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
       await animationHolder.animationCompleted;
       emit(const LaunchCompleted());
     } catch (e, stackTrace) {
-      debugPrint('LaunchBloc: 初始化失敗 - $e');
-      debugPrint('StackTrace: $stackTrace');
+      Log.e('LaunchBloc: 初始化失敗', e, stackTrace);
       emit(LaunchError('初始化失敗: $e'));
     }
   }

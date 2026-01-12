@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:garage/core/service/location/geolocator_interface.dart';
+import 'package:garage/core/utils/log.dart';
 
 /// 經緯度資料類別
 class LatLng {
@@ -44,7 +45,7 @@ class LocationService {
   void updatePolicy(LocationPolicy policy) {
     if (_currentPolicy != policy) {
       _currentPolicy = policy;
-      debugPrint('LocationService: 切換策略至 $policy');
+      Log.d('LocationService: 切換策略至 $policy');
       _recreateGeolocatorStream();
     }
   }
@@ -116,7 +117,7 @@ class LocationService {
     if (newFilter != _currentDistanceFilter) {
       final oldFilter = _currentDistanceFilter;
       _currentDistanceFilter = newFilter;
-      debugPrint(
+      Log.d(
         'LocationService: 速度 ${speedKmh.toStringAsFixed(1)} km/h，'
         'distanceFilter 從 ${oldFilter}m 調整為 ${newFilter}m',
       );

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:garage/core/models/tts_speaking_token.dart';
 import 'package:garage/core/utils/auto_release_queue.dart';
+import 'package:garage/core/utils/log.dart';
 import 'tts_interface.dart';
 
 /// TTS (Text-to-Speech) 服務
@@ -50,9 +51,9 @@ class TtsService {
       }
 
       _isInitialized = true;
-      debugPrint('TtsService: 初始化成功');
+      Log.i('TtsService: 初始化成功');
     } catch (e) {
-      debugPrint('TtsService: 初始化失敗 - $e');
+      Log.e('TtsService: 初始化失敗', e);
       rethrow;
     }
   }
@@ -66,10 +67,10 @@ class TtsService {
     }
 
     try {
-      debugPrint('TtsService: 播報 - $text');
+      Log.d('TtsService: 播報 - $text');
       await tts.speak(text);
     } catch (e) {
-      debugPrint('TtsService: 播報失敗 - $e');
+      Log.e('TtsService: 播報失敗', e);
     }
   }
 
@@ -85,10 +86,10 @@ class TtsService {
         }
 
         try {
-          debugPrint('TtsService: 播報超速警告 - ${t.toString()}');
+          Log.d('TtsService: 播報超速警告 - ${t.toString()}');
           await tts.speak(t.toString());
         } catch (e) {
-          debugPrint('TtsService: 播報超速警告失敗 - $e');
+          Log.e('TtsService: 播報超速警告失敗', e);
         }
       },
     );
@@ -102,9 +103,9 @@ class TtsService {
     try {
       await tts.stop();
       _speakQueue.cancelAll();
-      debugPrint('TtsService: 停止播報');
+      Log.d('TtsService: 停止播報');
     } catch (e) {
-      debugPrint('TtsService: 停止失敗 - $e');
+      Log.e('TtsService: 停止失敗', e);
     }
   }
 
@@ -112,9 +113,9 @@ class TtsService {
   Future<void> pause() async {
     try {
       await tts.pause();
-      debugPrint('TtsService: 暫停播報');
+      Log.d('TtsService: 暫停播報');
     } catch (e) {
-      debugPrint('TtsService: 暫停失敗 - $e');
+      Log.e('TtsService: 暫停失敗', e);
     }
   }
 
@@ -124,9 +125,9 @@ class TtsService {
   Future<void> setVolume(double volume) async {
     try {
       await tts.setVolume(volume.clamp(0.0, 1.0));
-      debugPrint('TtsService: 設置音量 - $volume');
+      Log.d('TtsService: 設置音量 - $volume');
     } catch (e) {
-      debugPrint('TtsService: 設置音量失敗 - $e');
+      Log.e('TtsService: 設置音量失敗', e);
     }
   }
 
@@ -135,9 +136,9 @@ class TtsService {
     try {
       await tts.stop();
       _isInitialized = false;
-      debugPrint('TtsService: 資源已釋放');
+      Log.d('TtsService: 資源已釋放');
     } catch (e) {
-      debugPrint('TtsService: 釋放資源失敗 - $e');
+      Log.e('TtsService: 釋放資源失敗', e);
     }
   }
 }

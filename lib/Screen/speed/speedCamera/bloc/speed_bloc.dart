@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
+import 'package:garage/core/utils/log.dart';
 import 'speed_event.dart';
 import 'speed_state.dart';
 
@@ -42,7 +43,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
   void onAppResumed() {
     final currentState = state;
     if (currentState is SpeedData && currentState.isDetecting) {
-      debugPrint('SpeedBloc: App 回到前景，使用高精度定位');
+      Log.d('SpeedBloc: App 回到前景，使用高精度定位');
       repository.setLocationPolicyBest();
     }
   }
@@ -51,7 +52,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
   void onAppPaused() {
     final currentState = state;
     if (currentState is SpeedData && currentState.isDetecting) {
-      debugPrint('SpeedBloc: App 進入背景，切換至平衡定位模式');
+      Log.d('SpeedBloc: App 進入背景，切換至平衡定位模式');
       repository.setLocationPolicyBackground();
     }
   }
@@ -65,7 +66,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     try {
       await repository.syncFromRemote();
     } catch (e) {
-      debugPrint('SpeedBloc: 載入測速照相資料失敗 - $e');
+      Log.e('SpeedBloc: 載入測速照相資料失敗', e);
       emit(currentState.copyWith(errorMessage: '載入測速照相資料失敗'));
       rethrow;
     }
@@ -129,12 +130,12 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
       );
     } catch (e) {
       // 3. 處理錯誤
-      debugPrint('SpeedBloc: 啟動偵測失敗 - $e');
+      Log.e('SpeedBloc: 啟動偵測失敗', e);
       if (e.toString().contains('Location permission denied')) {
         emit(
           currentState.copyWith(isDetecting: false, showPermissionAlert: true),
         );
-      } else { 
+      } else {
         emit(currentState.copyWith(isDetecting: false));
       }
     }
@@ -147,7 +148,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     final currentState = state;
     if (currentState is! SpeedData) return;
 
-    debugPrint('SpeedBloc: 停止偵測');
+    Log.d('SpeedBloc: 停止偵測');
 
     try {
       await repository.stopLocationTracking();
@@ -161,7 +162,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
         ),
       );
     } catch (e) {
-      debugPrint('SpeedBloc: 停止定位失敗 - $e');
+      Log.e('SpeedBloc: 停止定位失敗', e);
     }
   }
 

@@ -12,6 +12,7 @@ import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
+import 'package:garage/core/utils/log.dart';
 
 class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
   final Vehicle vehicle;
@@ -289,7 +290,7 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
       final userSettings = await _userSettingsRepository.loadSettings();
       emit(state.copyWith(speedUnit: userSettings.speedUnit));
     } catch (e) {
-      debugPrint('Failed to load user settings: $e');
+      Log.e('AddRecordBloc: Failed to load user settings', e);
       emit(state.copyWith(speedUnit: SpeedUnit.kmh));
     }
   }

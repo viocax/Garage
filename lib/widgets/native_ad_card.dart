@@ -44,7 +44,7 @@ class _NativeAdCardState extends State<NativeAdCard>
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          debugPrint('NativeAd failed to load: $error');
+          Log.e('NativeAd failed to load: $error');
           if (mounted) {
             setState(() {
               _isLoaded = false;
