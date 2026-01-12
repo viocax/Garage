@@ -15,9 +15,9 @@ class FuelEfficiencyDisplay {
   bool get hasData => kmPerLiter > 0.0;
 
   /// 格式化顯示字串
-  /// 返回格式：10.5 km/L 或 N/A
+  /// 返回格式：10.5 km/L 或空字串（當數據不足時）
   String format() {
-    if (!hasData) return 'N/A';
+    if (!hasData) return '';
     return '${kmPerLiter.toStringAsFixed(1)} km/L';
   }
 
@@ -25,7 +25,7 @@ class FuelEfficiencyDisplay {
   ///
   /// 處理三種情況：
   /// 1. 無加油記錄：返回 empty（顯示 N/A）
-  /// 2. 只有一筆記錄：使用車輛初始里程計算
+  /// 2. 只有一筆記錄：返回 empty（需要至少兩筆記錄才能計算）
   /// 3. 多筆記錄：使用最近兩筆記錄計算
   static FuelEfficiencyDisplay calculateFromVehicle(Vehicle vehicle) {
     // 取得所有加油記錄，按日期排序（最新的在前）
@@ -38,16 +38,9 @@ class FuelEfficiencyDisplay {
       return FuelEfficiencyDisplay.empty;
     }
 
-    // 情況 2：只有一筆加油記錄 - 使用車輛初始里程
+    // 情況 2：只有一筆加油記錄 - 無法計算油耗，需要至少兩筆記錄
     if (fuelRecords.length == 1) {
-      final record = fuelRecords[0];
-      final efficiency = record.calculateFuelEfficiency(vehicle.currentKm);
-
-      if (efficiency <= 0) {
-        return FuelEfficiencyDisplay.empty;
-      }
-
-      return FuelEfficiencyDisplay(kmPerLiter: efficiency);
+      return FuelEfficiencyDisplay.empty;
     }
 
     // 情況 3：多筆記錄 - 使用最近兩筆
