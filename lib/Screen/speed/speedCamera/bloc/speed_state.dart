@@ -1,16 +1,23 @@
+import 'package:equatable/equatable.dart';
 import 'package:garage/core/models/speed_camera_model.dart';
 import 'package:garage/core/models/speed_unit.dart';
 
-sealed class SpeedState {
+sealed class SpeedState extends Equatable {
   const SpeedState();
+
+  @override
+  List<Object?> get props => [];
 }
 
 // 位置數據
-class LocationData {
+class LocationData extends Equatable {
   final double latitude;
   final double longitude;
 
   const LocationData({required this.latitude, required this.longitude});
+
+  @override
+  List<Object?> get props => [latitude, longitude];
 }
 
 // 速度數據狀態
@@ -30,6 +37,7 @@ final class SpeedData extends SpeedState {
     }
     return LocationData(latitude: model.latitude, longitude: model.longitude);
   }
+
   bool get isOverSpeed => model.isOverSpeed;
   bool get isStartAnimation => model.currentSpeed > 0;
   String get displaySpeed {
@@ -104,4 +112,17 @@ final class SpeedData extends SpeedState {
       isDetecting: isDetecting ?? this.isDetecting,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    unit,
+    lowerSpeed,
+    upperSpeed,
+    alertDistance,
+    isDetecting,
+    showPermissionAlert,
+    errorMessage,
+    model,
+    cameraLocations,
+  ];
 }

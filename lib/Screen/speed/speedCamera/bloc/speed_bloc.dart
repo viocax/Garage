@@ -6,25 +6,29 @@ import 'speed_state.dart';
 
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     with AppLifecycleMixin<SpeedEvent, SpeedState> {
-  final ISpeedCameraRepository repository = getIt.repo.speedCamera;
-  final UserSettingsRepository userSettingsRepository = getIt.repo.userSettings;
+  final ISpeedCameraRepository repository;
+  final UserSettingsRepository userSettingsRepository;
 
-  SpeedBloc()
-    : super(
-        SpeedData(
-          model: SpeedCameraModel(
-            speedLimit: 0,
-            currentSpeed: 0.0,
-            distance: 500.0,
-            isOverSpeed: false,
-            latitude: 0.0,
-            longitude: 0.0,
-            heading: 0.0,
-          ),
-          unit: SpeedUnit.kmh,
-          alertDistance: 0,
-        ),
-      ) {
+  SpeedBloc({
+    ISpeedCameraRepository? speedCameraRepository,
+    UserSettingsRepository? userSettingsRepo,
+  }) : repository = speedCameraRepository ?? getIt.repo.speedCamera,
+       userSettingsRepository = userSettingsRepo ?? getIt.repo.userSettings,
+       super(
+         SpeedData(
+           model: SpeedCameraModel(
+             speedLimit: 0,
+             currentSpeed: 0.0,
+             distance: 500.0,
+             isOverSpeed: false,
+             latitude: 0.0,
+             longitude: 0.0,
+             heading: 0.0,
+           ),
+           unit: SpeedUnit.kmh,
+           alertDistance: 0,
+         ),
+       ) {
     on<UpdateSpeed>(_onUpdateSpeed);
     on<StartDetection>(_onStartDetection);
     on<StopDetection>(_onStopDetection);
