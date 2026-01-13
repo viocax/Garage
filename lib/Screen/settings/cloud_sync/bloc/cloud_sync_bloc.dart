@@ -9,10 +9,15 @@ import 'cloud_sync_state.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
 
 class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
-  final CloudSyncRepository _cloudSyncRepository = getIt.repo.cloudSync;
-  final VehicleRepository _vehicleRepository = getIt.repo.vehicle;
+  final CloudSyncRepository _cloudSyncRepository;
+  final VehicleRepository _vehicleRepository;
 
-  CloudSyncBloc() : super(const CloudSyncInitial()) {
+  CloudSyncBloc({
+    CloudSyncRepository? cloudSyncRepository,
+    VehicleRepository? vehicleRepository,
+  }) : _cloudSyncRepository = cloudSyncRepository ?? getIt.repo.cloudSync,
+       _vehicleRepository = vehicleRepository ?? getIt.repo.vehicle,
+       super(const CloudSyncInitial()) {
     on<CloudSyncEvent>(_onEvent);
     add(const LoadCloudSyncStatus());
   }
@@ -41,7 +46,6 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
 
   Future<void> _onLoadStatus(Emitter<CloudSyncState> emit) async {
     final provider = _cloudSyncRepository.getAvailableProvider();
-    
 
     final isAvailable = await _cloudSyncRepository.isAvailable(provider);
     final isAuthenticated = isAvailable
@@ -52,21 +56,14 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
         : null;
 
     final providerStatuses = ProviderStatus(
-        provider: provider,
-        isAvailable: isAvailable,
-        isAuthenticated: isAuthenticated,
-        lastSyncTime: lastSync,
-      );
-
-
-    emit(
-      CloudSyncLoaded(
-        status: providerStatuses,
-        isPro: false,
-      ),
+      provider: provider,
+      isAvailable: isAvailable,
+      isAuthenticated: isAuthenticated,
+      lastSyncTime: lastSync,
     );
-  }
 
+    emit(CloudSyncLoaded(status: providerStatuses, isPro: false));
+  }
 
   Future<void> _onAuthenticate(
     CloudProvider provider,
@@ -116,7 +113,9 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
       ),
     );
 
-    final result = await _cloudSyncRepository.uploadData(currentState.status.provider);
+    final result = await _cloudSyncRepository.uploadData(
+      currentState.status.provider,
+    );
 
     if (result.success) {
       emit(
