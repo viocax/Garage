@@ -5,9 +5,12 @@ import 'vehicle_management_state.dart';
 
 class VehicleManagementBloc
     extends Bloc<VehicleManagementEvent, VehicleManagementState> {
-  final VehicleRepository vehicleRepository = getIt.repo.vehicle;
+  final VehicleRepository vehicleRepository;
 
-  VehicleManagementBloc() : super(const VehicleManagementState()) {
+  VehicleManagementBloc({
+    VehicleRepository? vehicleRepository,
+  })  : vehicleRepository = vehicleRepository ?? getIt.repo.vehicle,
+        super(const VehicleManagementState()) {
     on<LoadVehicles>(_onLoadVehicles);
     on<ReorderVehicles>(_onReorderVehicles);
     on<DeleteVehicle>(_onDeleteVehicle);
