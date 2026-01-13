@@ -5,13 +5,20 @@ import 'speed_detection_settings_state.dart';
 
 class SpeedDetectionSettingsBloc
     extends Bloc<SpeedDetectionSettingsEvent, SpeedDetectionSettingsState>
-    with AppLifecycleMixin<SpeedDetectionSettingsEvent, SpeedDetectionSettingsState> {
+    with
+        AppLifecycleMixin<
+          SpeedDetectionSettingsEvent,
+          SpeedDetectionSettingsState
+        > {
+  final UserSettingsRepository userSettingRepo;
+  final ISpeedCameraRepository repository;
 
-  final UserSettingsRepository userSettingRepo = getIt.repo.userSettings;
-  final ISpeedCameraRepository repository = getIt.repo.speedCamera;
-
-
-  SpeedDetectionSettingsBloc() : super(const SpeedDetectionSettingsInitial()) {
+  SpeedDetectionSettingsBloc({
+    UserSettingsRepository? userSettingsRepository,
+    ISpeedCameraRepository? speedCameraRepository,
+  }) : userSettingRepo = userSettingsRepository ?? getIt.repo.userSettings,
+       repository = speedCameraRepository ?? getIt.repo.speedCamera,
+       super(const SpeedDetectionSettingsInitial()) {
     on<SpeedDetectionSettingsEvent>(_onEvent);
     initLifecycleObserver(); // 初始化生命週期監聽
     add(const LoadSpeedDetectionSettings());
@@ -39,11 +46,15 @@ class SpeedDetectionSettingsBloc
     }
   }
 
-  Future<void> _onLoadSettings(Emitter<SpeedDetectionSettingsState> emit) async {
+  Future<void> _onLoadSettings(
+    Emitter<SpeedDetectionSettingsState> emit,
+  ) async {
     try {
       final settings = await userSettingRepo.loadSettings();
       // 权限检查失败时当作没有权限
-      final hasPermission = await repository.checkPermission().catchError((_) => false);
+      final hasPermission = await repository.checkPermission().catchError(
+        (_) => false,
+      );
 
       emit(
         SpeedDetectionSettingsLoaded(
@@ -77,31 +88,28 @@ class SpeedDetectionSettingsBloc
       emit(currentState.copyWith(speedUnit: event.unit));
 
       // 异步更新缓存
-      _updateRepositoryCache((settings) =>
-        settings.copyWith(speedUnit: event.unit)
+      _updateRepositoryCache(
+        (settings) => settings.copyWith(speedUnit: event.unit),
       );
     }
   }
 
-  Future<void> _onToggleVoiceAlert(Emitter<SpeedDetectionSettingsState> emit) async {
+  Future<void> _onToggleVoiceAlert(
+    Emitter<SpeedDetectionSettingsState> emit,
+  ) async {
     final currentState = state;
     if (currentState is SpeedDetectionSettingsLoaded) {
       final newValue = !currentState.isVoiceAlertEnabled;
-      emit(
-        currentState.copyWith(
-          isVoiceAlertEnabled: newValue,
-        ),
-      );
+      emit(currentState.copyWith(isVoiceAlertEnabled: newValue));
       try {
         await repository.stopLocationTracking();
         // 异步更新缓存
-        _updateRepositoryCache((settings) =>
-          settings.copyWith(isVoiceAlertEnabled: newValue)
+        _updateRepositoryCache(
+          (settings) => settings.copyWith(isVoiceAlertEnabled: newValue),
         );
       } catch (e) {
         Log.e('SpeedDetectionSettingsBloc: Error', e);
       }
-
     }
   }
 
@@ -116,18 +124,15 @@ class SpeedDetectionSettingsBloc
       // 异步更新缓存
       try {
         await repository.updateVolume(event.percentage);
-        _updateRepositoryCache((settings) =>
-          settings.copyWith(voiceVolume: event.percentage)
+        _updateRepositoryCache(
+          (settings) => settings.copyWith(voiceVolume: event.percentage),
         );
         emit(currentState.copyWith(voiceVolumePercentage: event.percentage));
       } catch (e) {
         Log.e('SpeedDetectionSettingsBloc: Error', e);
       }
-
     }
   }
-
-
 
   void _onChangeAlertDistance(
     ChangeAlertDistance event,
@@ -135,11 +140,13 @@ class SpeedDetectionSettingsBloc
   ) {
     final currentState = state;
     if (currentState is SpeedDetectionSettingsLoaded) {
-      emit(currentState.copyWith(alertDistance: event.distance)); // State 會自動驗證範圍
+      emit(
+        currentState.copyWith(alertDistance: event.distance),
+      ); // State 會自動驗證範圍
 
       // 异步更新缓存
-      _updateRepositoryCache((settings) =>
-        settings.copyWith(alertDistance: event.distance)
+      _updateRepositoryCache(
+        (settings) => settings.copyWith(alertDistance: event.distance),
       );
     }
   }
