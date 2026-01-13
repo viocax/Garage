@@ -1,6 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:garage/Screen/records/bloc/records_bloc.dart';
+import 'package:garage/screen/records/bloc/records_bloc.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/user_settings.dart';
 import 'package:garage/core/models/vehicle.dart';

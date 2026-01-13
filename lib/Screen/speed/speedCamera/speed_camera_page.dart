@@ -530,7 +530,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
       sin(lat1) * cos(angularDistance) +
           cos(lat1) * sin(angularDistance) * cos(bearing),
     );
-    final double lon2 = lon1 +
+    final double lon2 =
+        lon1 +
         atan2(
           sin(bearing) * sin(angularDistance) * cos(lat1),
           cos(angularDistance) - sin(lat1) * sin(lat2),
@@ -582,7 +583,6 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   color: data.isOverSpeed
                       ? AppTheme.redTransparent30
                       : AppTheme.greenTransparent30,
-                  isFilled: true,
                 ),
               ],
             ),

@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:garage/Screen/speed/speedCamera/bloc/speed_bloc.dart';
-import 'package:garage/Screen/speed/speedCamera/bloc/speed_event.dart';
-import 'package:garage/Screen/speed/speedCamera/bloc/speed_state.dart';
+import 'package:garage/screen/speed/speedCamera/bloc/speed_bloc.dart';
+import 'package:garage/screen/speed/speedCamera/bloc/speed_event.dart';
+import 'package:garage/screen/speed/speedCamera/bloc/speed_state.dart';
 import 'package:garage/core/models/camera.dart';
 import 'package:garage/core/models/speed_camera_model.dart';
 import 'package:garage/core/models/speed_unit.dart';
