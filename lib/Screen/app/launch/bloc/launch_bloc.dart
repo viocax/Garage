@@ -9,9 +9,12 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
   final TickerProvider vsync;
   late final LaunchAnimationHolder animationHolder;
 
-  LaunchBloc(this.vsync) : super(const LaunchInitializing()) {
+  LaunchBloc({
+    required this.vsync,
+    LaunchAnimationHolder? animationHolder,
+  }) : super(const LaunchInitializing()) {
     on<StartInitialization>(_onStartInitialization);
-    animationHolder = LaunchAnimationHolder(vsync);
+    this.animationHolder = animationHolder ?? LaunchAnimationHolder(vsync);
     add(const StartInitialization());
   }
 
