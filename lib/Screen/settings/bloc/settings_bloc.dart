@@ -9,11 +9,19 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
-  final ISpeedCameraRepository _speedCameraRepository = getIt.repo.speedCamera;
-  final AdRepository _adRepository = getIt.repo.ad;
-  final InAppReview _inAppReview = InAppReview.instance;
+  final ISpeedCameraRepository _speedCameraRepository;
+  final AdRepository _adRepository;
+  final InAppReview _inAppReview;
 
-  SettingsBloc() : super(const SettingsState()) {
+  SettingsBloc({
+    ISpeedCameraRepository? speedCameraRepository,
+    AdRepository? adRepository,
+    InAppReview? inAppReview,
+  })  : _speedCameraRepository =
+            speedCameraRepository ?? getIt.repo.speedCamera,
+        _adRepository = adRepository ?? getIt.repo.ad,
+        _inAppReview = inAppReview ?? InAppReview.instance,
+        super(const SettingsState()) {
     on<SettingsEvent>(_onEvent);
 
     add(const LoadSettingsStatus());
