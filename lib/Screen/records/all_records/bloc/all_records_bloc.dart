@@ -7,14 +7,17 @@ import 'package:garage/theme/app_theme.dart';
 
 import 'all_records_event.dart';
 import 'all_records_state.dart';
+import 'records_provider.dart';
 
 class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
   final Vehicle vehicle;
+  final IRecordsProvider _recordsProvider;
   StreamSubscription<bool>? _subscriptionSubscription;
 
   AllRecordsBloc({
     required this.vehicle,
-  }) :
+    IRecordsProvider? recordsProvider,
+  }) : _recordsProvider = recordsProvider ?? VehicleRecordsProvider(vehicle),
        super(const AllRecordsState()) {
     on<LoadAllRecords>(_onLoadAllRecords);
     on<SelectMonth>(_onSelectMonth);
@@ -34,9 +37,8 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
     emit(state.copyWith(status: AllRecordsStatus.loading));
 
     try {
-      // Ensure records are loaded from database
-      await vehicle.records.load();
-      final records = vehicle.records.toList();
+      // Load records using the provider
+      final records = await _recordsProvider.loadRecords();
 
       // Sort by date descending
       records.sort((a, b) => b.date.compareTo(a.date));
