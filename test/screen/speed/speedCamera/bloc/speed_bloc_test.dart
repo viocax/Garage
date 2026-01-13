@@ -108,13 +108,16 @@ void main() {
       blocTest<SpeedBloc, SpeedState>(
         'should update speed model',
         build: buildBloc,
-        act: (bloc) => bloc.add(UpdateSpeed(speedModel)),
-        skip: 1, // Init settings
-        expect: () => [
-          isA<SpeedData>()
-              .having((s) => s.model.currentSpeed, 'speed', 90)
-              .having((s) => s.model.speedLimit, 'limit', 100),
-        ],
+        act: (bloc) async {
+          await bloc.stream.first; // 等待初始化完成
+          bloc.add(UpdateSpeed(speedModel));
+        },
+        wait: const Duration(milliseconds: 100),
+        verify: (bloc) {
+          final state = bloc.state as SpeedData;
+          expect(state.model.currentSpeed, 90.0);
+          expect(state.model.speedLimit, 100);
+        },
       );
 
       blocTest<SpeedBloc, SpeedState>(
@@ -125,16 +128,17 @@ void main() {
           );
           return buildBloc();
         },
-        act: (bloc) => bloc.add(UpdateSpeed(speedModel)),
-        skip: 1,
-        expect: () => [
+        act: (bloc) async {
+          await bloc.stream.first; // 等待初始化完成
+          bloc.add(UpdateSpeed(speedModel));
+        },
+        wait: const Duration(milliseconds: 100),
+        verify: (bloc) {
+          final state = bloc.state as SpeedData;
           // 90 km/h approx 55.9 mph
-          isA<SpeedData>().having(
-            (s) => s.model.currentSpeed,
-            'mph speed',
-            closeTo(55.9, 0.1),
-          ),
-        ],
+          expect(state.model.currentSpeed, closeTo(55.9, 0.1));
+          expect(state.unit, SpeedUnit.mph);
+        },
       );
     });
 
@@ -157,24 +161,23 @@ void main() {
             ),
           ]);
         },
-        act: (bloc) => bloc.add(const StartDetection()),
-        skip: 1, // Init
-        verify: (_) {
+        act: (bloc) async {
+          await bloc.stream.first; // 等待初始化完成
+          bloc.add(const StartDetection());
+        },
+        wait: const Duration(milliseconds: 100),
+        verify: (bloc) {
           verify(
             () => speedCameraRepository.syncFromRemote(),
           ).called(2); // Init + Start
           verify(
             () => speedCameraRepository.startLocationTracking(any()),
           ).called(1);
+
+          final state = bloc.state as SpeedData;
+          expect(state.isDetecting, true);
+          expect(state.cameraLocations.length, 1);
         },
-        expect: () => [
-          // It calls _onSpeedLoading again, so it emits settings state again
-          isA<SpeedData>(),
-          // Then emits detection state
-          isA<SpeedData>()
-              .having((s) => s.isDetecting, 'detecting', true)
-              .having((s) => s.cameraLocations.length, 'cameras', 1),
-        ],
       );
 
       blocTest<SpeedBloc, SpeedState>(

@@ -100,7 +100,10 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
       newSpeed = newSpeed.mile;
     }
 
-    emit(currentState.copyWith(model: event.speedCameraModel));
+    // 使用轉換後的速度更新 model
+    emit(currentState.copyWith(
+      model: event.speedCameraModel.copyWith(currentSpeed: newSpeed),
+    ));
   }
 
   Future<void> _onStartDetection(
