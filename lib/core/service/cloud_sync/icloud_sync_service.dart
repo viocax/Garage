@@ -5,10 +5,135 @@ import 'package:icloud_storage/icloud_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Interface for platform detection, allowing injection for testing.
+abstract class PlatformChecker {
+  bool get isIOS;
+  bool get isAndroid;
+}
+
+/// Default implementation using dart:io Platform.
+class DefaultPlatformChecker implements PlatformChecker {
+  const DefaultPlatformChecker();
+
+  @override
+  bool get isIOS => Platform.isIOS;
+
+  @override
+  bool get isAndroid => Platform.isAndroid;
+}
+
+/// Represents a file in iCloud (re-exported for testing).
+class ICloudFileInfo {
+  final String relativePath;
+  final int? sizeInBytes;
+
+  ICloudFileInfo({required this.relativePath, this.sizeInBytes});
+
+  factory ICloudFileInfo.fromICloudFile(ICloudFile file) {
+    return ICloudFileInfo(
+      relativePath: file.relativePath,
+      sizeInBytes: file.sizeInBytes,
+    );
+  }
+}
+
+/// Interface for iCloud storage operations, allowing injection for testing.
+abstract class ICloudStorageWrapper {
+  Future<List<ICloudFileInfo>> gather({required String containerId});
+  Future<void> upload({
+    required String containerId,
+    required String filePath,
+    required String destinationRelativePath,
+    void Function(double)? onProgress,
+  });
+  Future<void> download({
+    required String containerId,
+    required String relativePath,
+    required String destinationFilePath,
+    void Function(double)? onProgress,
+  });
+  Future<void> delete({
+    required String containerId,
+    required String relativePath,
+  });
+}
+
+/// Default implementation using actual ICloudStorage.
+class DefaultICloudStorageWrapper implements ICloudStorageWrapper {
+  const DefaultICloudStorageWrapper();
+
+  @override
+  Future<List<ICloudFileInfo>> gather({required String containerId}) async {
+    final files = await ICloudStorage.gather(containerId: containerId);
+    return files.map((f) => ICloudFileInfo.fromICloudFile(f)).toList();
+  }
+
+  @override
+  Future<void> upload({
+    required String containerId,
+    required String filePath,
+    required String destinationRelativePath,
+    void Function(double)? onProgress,
+  }) async {
+    await ICloudStorage.upload(
+      containerId: containerId,
+      filePath: filePath,
+      destinationRelativePath: destinationRelativePath,
+      onProgress: onProgress != null
+          ? (stream) => stream.listen((progress) => onProgress(progress))
+          : null,
+    );
+  }
+
+  @override
+  Future<void> download({
+    required String containerId,
+    required String relativePath,
+    required String destinationFilePath,
+    void Function(double)? onProgress,
+  }) async {
+    await ICloudStorage.download(
+      containerId: containerId,
+      relativePath: relativePath,
+      destinationFilePath: destinationFilePath,
+      onProgress: onProgress != null
+          ? (stream) => stream.listen((progress) => onProgress(progress))
+          : null,
+    );
+  }
+
+  @override
+  Future<void> delete({
+    required String containerId,
+    required String relativePath,
+  }) async {
+    await ICloudStorage.delete(
+      containerId: containerId,
+      relativePath: relativePath,
+    );
+  }
+}
+
 class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
   static const _backupFileName = 'garage_backup.json';
   static const _containerId = 'iCloud.com.drake.garage';
   static const _lastSyncKey = 'icloud_last_sync';
+
+  final PlatformChecker _platformChecker;
+  final ICloudStorageWrapper _iCloudStorage;
+  final Future<SharedPreferences> Function() _getPrefs;
+
+  /// Creates an ICloudSyncService with optional dependency injection.
+  ///
+  /// For production, use the default constructor without parameters.
+  /// For testing, inject mock implementations.
+  ICloudSyncService({
+    PlatformChecker? platformChecker,
+    ICloudStorageWrapper? iCloudStorage,
+    Future<SharedPreferences> Function()? getPrefs,
+  }) : _platformChecker = platformChecker ?? const DefaultPlatformChecker(),
+       _iCloudStorage = iCloudStorage ?? const DefaultICloudStorageWrapper(),
+       _getPrefs = getPrefs ?? SharedPreferences.getInstance;
 
   @override
   CloudProvider get provider => CloudProvider.iCloud;
@@ -16,11 +141,11 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
   @override
   Future<bool> isAvailable() async {
     // iCloud is only available on iOS
-    if (!Platform.isIOS) return false;
+    if (!_platformChecker.isIOS) return false;
 
     try {
       // Check if iCloud is available by trying to gather files
-      await ICloudStorage.gather(containerId: _containerId);
+      await _iCloudStorage.gather(containerId: _containerId);
       return true;
     } catch (e) {
       // If gather fails, iCloud is not available or not configured
@@ -37,7 +162,7 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
 
   @override
   Future<CloudSyncResult> authenticate() async {
-    if (!Platform.isIOS) {
+    if (!_platformChecker.isIOS) {
       return CloudSyncResult.failure('iCloud 僅支援 iOS');
     }
 
@@ -74,7 +199,7 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
       await tempFile.writeAsString(exportData);
 
       // Upload to iCloud
-      await ICloudStorage.upload(
+      await _iCloudStorage.upload(
         containerId: _containerId,
         filePath: tempFile.path,
         destinationRelativePath: _backupFileName,
@@ -106,7 +231,7 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
       }
 
       // Check if backup file exists in iCloud
-      final files = await ICloudStorage.gather(containerId: _containerId);
+      final files = await _iCloudStorage.gather(containerId: _containerId);
       final backupFile = files.where((f) => f.relativePath == _backupFileName);
 
       if (backupFile.isEmpty) {
@@ -117,7 +242,7 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
       final tempDir = await getTemporaryDirectory();
       final tempFilePath = '${tempDir.path}/$_backupFileName';
 
-      await ICloudStorage.download(
+      await _iCloudStorage.download(
         containerId: _containerId,
         relativePath: _backupFileName,
         destinationFilePath: tempFilePath,
@@ -154,7 +279,7 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
 
   @override
   Future<DateTime?> getLastSyncTime() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     final timestamp = prefs.getInt(_lastSyncKey);
     if (timestamp == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(timestamp);
@@ -168,7 +293,7 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
       }
 
       // Check if backup file exists in iCloud
-      final files = await ICloudStorage.gather(containerId: _containerId);
+      final files = await _iCloudStorage.gather(containerId: _containerId);
       final backupFile = files.where((f) => f.relativePath == _backupFileName);
 
       if (backupFile.isEmpty) {
@@ -176,13 +301,13 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
       }
 
       // Delete the backup file
-      await ICloudStorage.delete(
+      await _iCloudStorage.delete(
         containerId: _containerId,
         relativePath: _backupFileName,
       );
 
       // Clear local sync time record
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       await prefs.remove(_lastSyncKey);
 
       return CloudSyncResult.success();
@@ -194,7 +319,7 @@ class ICloudSyncService extends CloudSyncService with CloudSyncDataMixin {
   // Private helper methods
 
   Future<void> _saveLastSyncTime(DateTime time) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setInt(_lastSyncKey, time.millisecondsSinceEpoch);
   }
 }

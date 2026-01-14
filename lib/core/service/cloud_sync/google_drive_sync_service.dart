@@ -4,19 +4,133 @@ import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sig
 import 'package:garage/core/core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Interface for Google Sign-In operations, allowing injection for testing.
+abstract class GoogleSignInWrapper {
+  GoogleSignInAccount? get currentUser;
+  Future<bool> isSignedIn();
+  Future<GoogleSignInAccount?> signIn();
+  Future<GoogleSignInAccount?> signInSilently();
+  Future<GoogleSignInAccount?> signOut();
+  Future<http.Client?> authenticatedClient();
+}
+
+/// Default implementation using actual GoogleSignIn.
+class DefaultGoogleSignInWrapper implements GoogleSignInWrapper {
+  final GoogleSignIn _googleSignIn;
+
+  DefaultGoogleSignInWrapper()
+    : _googleSignIn = GoogleSignIn(scopes: [drive.DriveApi.driveAppdataScope]);
+
+  @override
+  GoogleSignInAccount? get currentUser => _googleSignIn.currentUser;
+
+  @override
+  Future<bool> isSignedIn() => _googleSignIn.isSignedIn();
+
+  @override
+  Future<GoogleSignInAccount?> signIn() => _googleSignIn.signIn();
+
+  @override
+  Future<GoogleSignInAccount?> signInSilently() =>
+      _googleSignIn.signInSilently();
+
+  @override
+  Future<GoogleSignInAccount?> signOut() => _googleSignIn.signOut();
+
+  @override
+  Future<http.Client?> authenticatedClient() =>
+      _googleSignIn.authenticatedClient();
+}
+
+/// Interface for Drive API operations, allowing injection for testing.
+abstract class DriveApiWrapper {
+  Future<drive.FileList> listFiles({
+    required String spaces,
+    required String q,
+    required String fields,
+  });
+  Future<drive.File> createFile(drive.File file, {drive.Media? uploadMedia});
+  Future<drive.File> updateFile(
+    drive.File file,
+    String fileId, {
+    drive.Media? uploadMedia,
+  });
+  Future<void> deleteFile(String fileId);
+  Future<drive.Media> downloadFile(String fileId);
+}
+
+/// Default implementation using actual DriveApi.
+class DefaultDriveApiWrapper implements DriveApiWrapper {
+  final drive.DriveApi _driveApi;
+
+  DefaultDriveApiWrapper(http.Client client)
+    : _driveApi = drive.DriveApi(client);
+
+  @override
+  Future<drive.FileList> listFiles({
+    required String spaces,
+    required String q,
+    required String fields,
+  }) {
+    return _driveApi.files.list(spaces: spaces, q: q, $fields: fields);
+  }
+
+  @override
+  Future<drive.File> createFile(drive.File file, {drive.Media? uploadMedia}) {
+    return _driveApi.files.create(file, uploadMedia: uploadMedia);
+  }
+
+  @override
+  Future<drive.File> updateFile(
+    drive.File file,
+    String fileId, {
+    drive.Media? uploadMedia,
+  }) {
+    return _driveApi.files.update(file, fileId, uploadMedia: uploadMedia);
+  }
+
+  @override
+  Future<void> deleteFile(String fileId) {
+    return _driveApi.files.delete(fileId);
+  }
+
+  @override
+  Future<drive.Media> downloadFile(String fileId) async {
+    return await _driveApi.files.get(
+          fileId,
+          downloadOptions: drive.DownloadOptions.fullMedia,
+        )
+        as drive.Media;
+  }
+}
 
 class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
   static const _backupFileName = 'garage_backup.json';
   static const _lastSyncKey = 'google_drive_last_sync';
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
-      drive.DriveApi.driveAppdataScope,
-    ],
-  );
+  final GoogleSignInWrapper _googleSignIn;
+  final Future<SharedPreferences> Function() _getPrefs;
+  DriveApiWrapper? _driveApi;
 
-  drive.DriveApi? _driveApi;
+  /// Creates a GoogleDriveSyncService with optional dependency injection.
+  ///
+  /// For production, use the default constructor without parameters.
+  /// For testing, inject mock implementations.
+  GoogleDriveSyncService({
+    GoogleSignInWrapper? googleSignIn,
+    Future<SharedPreferences> Function()? getPrefs,
+    DriveApiWrapper? driveApi,
+  }) : _googleSignIn = googleSignIn ?? DefaultGoogleSignInWrapper(),
+       _getPrefs = getPrefs ?? SharedPreferences.getInstance,
+       _driveApi = driveApi;
+
+  /// For testing: allows setting the DriveApi directly.
+  void setDriveApiForTesting(DriveApiWrapper api) {
+    _driveApi = api;
+  }
 
   @override
   CloudProvider get provider => CloudProvider.googleDrive;
@@ -46,7 +160,7 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
       if (httpClient == null) {
         return CloudSyncResult.failure('無法取得認證');
       }
-      _driveApi = drive.DriveApi(httpClient);
+      _driveApi = DefaultDriveApiWrapper(httpClient);
 
       return CloudSyncResult.success();
     } catch (e) {
@@ -85,7 +199,7 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
 
       if (existingFileId != null) {
         // Update existing file
-        await _driveApi!.files.update(
+        await _driveApi!.updateFile(
           drive.File(),
           existingFileId,
           uploadMedia: media,
@@ -96,10 +210,7 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
           ..name = _backupFileName
           ..parents = ['appDataFolder'];
 
-        await _driveApi!.files.create(
-          driveFile,
-          uploadMedia: media,
-        );
+        await _driveApi!.createFile(driveFile, uploadMedia: media);
       }
 
       // Save sync time
@@ -127,10 +238,7 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
       }
 
       // Download the file content
-      final response = await _driveApi!.files.get(
-        fileId,
-        downloadOptions: drive.DownloadOptions.fullMedia,
-      ) as drive.Media;
+      final response = await _driveApi!.downloadFile(fileId);
 
       final bytes = <int>[];
       await for (final chunk in response.stream) {
@@ -156,7 +264,7 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
 
   @override
   Future<DateTime?> getLastSyncTime() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     final timestamp = prefs.getInt(_lastSyncKey);
     if (timestamp == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(timestamp);
@@ -177,10 +285,10 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
       }
 
       // Delete the backup file
-      await _driveApi!.files.delete(fileId);
+      await _driveApi!.deleteFile(fileId);
 
       // Clear local sync time record
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       await prefs.remove(_lastSyncKey);
 
       return CloudSyncResult.success();
@@ -202,7 +310,7 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
       final httpClient = await _googleSignIn.authenticatedClient();
       if (httpClient == null) return false;
 
-      _driveApi = drive.DriveApi(httpClient);
+      _driveApi = DefaultDriveApiWrapper(httpClient);
       return true;
     } catch (e) {
       return false;
@@ -211,10 +319,10 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
 
   Future<String?> _findBackupFile() async {
     try {
-      final fileList = await _driveApi!.files.list(
+      final fileList = await _driveApi!.listFiles(
         spaces: 'appDataFolder',
         q: "name = '$_backupFileName'",
-        $fields: 'files(id, name)',
+        fields: 'files(id, name)',
       );
 
       if (fileList.files == null || fileList.files!.isEmpty) {
@@ -228,7 +336,7 @@ class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
   }
 
   Future<void> _saveLastSyncTime(DateTime time) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setInt(_lastSyncKey, time.millisecondsSinceEpoch);
   }
 }
