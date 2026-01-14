@@ -19,10 +19,10 @@ import 'user_settings_repository.dart';
 ///
 /// 從 assets/speedCameras.json 讀取資料，並使用記憶體快取避免重複解析
 class LocalSpeedCameraRepository implements ISpeedCameraRepository {
-  // Service
-  final LocationService _locationService = getIt.service.location;
-  final TtsService _ttsService = getIt.service.tts;
-  final UserSettingsRepository _userSettingsRepo = getIt.repo.userSettings;
+  // Services - support DI
+  final LocationService _locationService;
+  final TtsService _ttsService;
+  final UserSettingsRepository _userSettingsRepo;
 
   StreamSubscription<Position>? _speedSubscription;
 
@@ -43,6 +43,18 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
   /// QuadTree 用於快速查找附近相機
   Quadtree? _cameraQuadTree;
+
+  /// Creates a LocalSpeedCameraRepository with optional dependency injection.
+  ///
+  /// For production, use the default constructor without parameters.
+  /// For testing, inject mock services.
+  LocalSpeedCameraRepository({
+    LocationService? locationService,
+    TtsService? ttsService,
+    UserSettingsRepository? userSettingsRepo,
+  }) : _locationService = locationService ?? getIt.service.location,
+       _ttsService = ttsService ?? getIt.service.tts,
+       _userSettingsRepo = userSettingsRepo ?? getIt.repo.userSettings;
 
   @override
   bool get isTracking => _speedSubscription != null;
@@ -67,16 +79,12 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       final String jsonString = await rootBundle.loadString(
         'assets/models/speedCameras.json',
       );
-      Log.d(
-        'LocalSpeedCameraRepository: JSON 檔案讀取完成，長度: ${jsonString.length}',
-      );
+      Log.d('LocalSpeedCameraRepository: JSON 檔案讀取完成，長度: ${jsonString.length}');
 
       // 解析 JSON - 使用 compute 避免阻塞主執行緒
       Log.d('LocalSpeedCameraRepository: 開始解析 JSON...');
       final List<dynamic> jsonData = await compute(_decodeJson, jsonString);
-      Log.d(
-        'LocalSpeedCameraRepository: JSON 解析完成，共 ${jsonData.length} 筆',
-      );
+      Log.d('LocalSpeedCameraRepository: JSON 解析完成，共 ${jsonData.length} 筆');
 
       Log.d('LocalSpeedCameraRepository: 開始轉換為 Camera 物件...');
       // 轉換物件也使用 compute 處理以防萬一資料量大
@@ -86,9 +94,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       _loadedAt = DateTime.now();
       _buildQuadTree();
 
-      Log.d(
-        'LocalSpeedCameraRepository: 載入完成，共 ${_cachedCameras.length} 筆資料',
-      );
+      Log.d('LocalSpeedCameraRepository: 載入完成，共 ${_cachedCameras.length} 筆資料');
 
       return _cachedCameras;
     } catch (e, stackTrace) {
@@ -114,9 +120,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   @override
   Future<void> syncFromRemote({bool force = false}) async {
     // 本地資料不需要同步，直接載入即可
-    Log.d(
-      'LocalSpeedCameraRepository: syncFromRemote called (force: $force)',
-    );
+    Log.d('LocalSpeedCameraRepository: syncFromRemote called (force: $force)');
     if (force) {
       // 強制重新載入，清除快取
       _cachedCameras = [];
