@@ -3,7 +3,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
-import 'package:garage/screen/app/launch/bloc/launch_event.dart';
 import 'package:garage/screen/app/launch/bloc/launch_state.dart';
 import 'package:mocktail/mocktail.dart';
 

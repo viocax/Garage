@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Callback for when an ad is successfully loaded.
