@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- 廣告 ID 權限 (Android 13+ 必須聲明) -->
     <!-- 如果不聲明，Google Mobile Ads 無法獲取廣告 ID，只能顯示非個性化廣告 -->

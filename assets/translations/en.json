@@ -255,5 +255,22 @@
       "support": "Priority Customer Support",
       "supportDesc": "Our new features will be prioritized for Pro users."
     }
+  },
+  "invoiceScanner": {
+    "title": "Scan Invoice",
+    "hint": "Place the left QR code of the invoice in the frame",
+    "processing": "Processing invoice data...",
+    "retry": "Retry",
+    "result": {
+      "title": "Invoice Info",
+      "fromApi": "Full Data",
+      "fromQr": "Basic Data",
+      "number": "Invoice Number",
+      "date": "Date",
+      "amount": "Total Amount",
+      "items": "Items",
+      "rescan": "Rescan",
+      "use": "Use Invoice"
+    }
   }
 }

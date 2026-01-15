@@ -1,5 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:garage/core/utils/log.dart';
 
 /// Interface for Crashlytics operations, allowing injection for testing.
 abstract class CrashlyticsWrapper {
@@ -69,37 +71,71 @@ class DefaultCrashlyticsWrapper implements CrashlyticsWrapper {
   }
 }
 
-/// Crashlytics 服務
-/// 負責錯誤報告和崩潰追蹤
-class CrashlyticsService {
+/// Firebase 服務
+/// 負責 Firebase 初始化及相關服務（如 Crashlytics）的管理
+class FirebaseService {
   final CrashlyticsWrapper _crashlytics;
 
-  /// Creates a CrashlyticsService with optional dependency injection.
-  ///
-  /// For production, use the default constructor without parameters.
-  /// For testing, inject a mock CrashlyticsWrapper.
-  CrashlyticsService({CrashlyticsWrapper? crashlytics})
+  /// Creates a FirebaseService with optional dependency injection.
+  FirebaseService({CrashlyticsWrapper? crashlytics})
     : _crashlytics = crashlytics ?? const DefaultCrashlyticsWrapper();
 
-  /// 初始化 Crashlytics
-  /// 設置 Flutter 和 Dart 錯誤處理器
-  Future<void> initialize() async {
-    // 在 debug 模式下停用 Crashlytics
-    await _crashlytics.setCrashlyticsCollectionEnabled(!kDebugMode);
+  bool _isInitialized = false;
 
-    // 捕獲 Flutter framework 錯誤
-    final originalOnError = FlutterError.onError;
-    FlutterError.onError = (errorDetails) {
-      _crashlytics.recordFlutterFatalError(errorDetails);
-      originalOnError?.call(errorDetails);
-    };
+  /// 檢查 Firebase 是否已初始化
+  bool get isInitialized => _isInitialized;
 
-    // 捕獲平台層錯誤（Platform Dispatcher）
-    PlatformDispatcher.instance.onError = (error, stack) {
-      _crashlytics.recordError(error, stack, fatal: true);
-      return true;
-    };
+  /// For testing: manually set initialization state
+  @visibleForTesting
+  void setInitializedForTesting(bool value) {
+    _isInitialized = value;
   }
+
+  /// 初始化 Firebase 及相關服務
+  Future<void> initialize() async {
+    try {
+      await Firebase.initializeApp();
+      _isInitialized = true;
+      Log.i('Firebase initialized successfully');
+
+      // 初始化 Crashlytics
+      await _initCrashlytics();
+    } catch (e) {
+      Log.e('Firebase initialization failed: $e', e);
+      _isInitialized = false;
+    }
+  }
+
+  /// 初始化 Crashlytics
+  Future<void> _initCrashlytics() async {
+    if (!_isInitialized) return;
+
+    try {
+      // 在 debug 模式下停用 Crashlytics
+      await _crashlytics.setCrashlyticsCollectionEnabled(!kDebugMode);
+
+      // 捕獲 Flutter framework 錯誤
+      final originalOnError = FlutterError.onError;
+      FlutterError.onError = (errorDetails) {
+        if (_isInitialized) {
+          _crashlytics.recordFlutterFatalError(errorDetails);
+        }
+        originalOnError?.call(errorDetails);
+      };
+
+      // 捕獲平台層錯誤（Platform Dispatcher）
+      PlatformDispatcher.instance.onError = (error, stack) {
+        if (_isInitialized) {
+          _crashlytics.recordError(error, stack, fatal: true);
+        }
+        return true;
+      };
+    } catch (e) {
+      Log.e('Crashlytics initialization failed: $e', e);
+    }
+  }
+
+  // MARK: - Crashlytics Proxy Methods
 
   /// 記錄非致命錯誤
   Future<void> recordError(
@@ -108,31 +144,46 @@ class CrashlyticsService {
     String? reason,
     bool fatal = false,
   }) async {
-    await _crashlytics.recordError(
-      exception,
-      stack,
-      reason: reason,
-      fatal: fatal,
-    );
+    if (!_isInitialized) return;
+    try {
+      await _crashlytics.recordError(
+        exception,
+        stack,
+        reason: reason,
+        fatal: fatal,
+      );
+    } catch (_) {
+      // 忽略記錄錯誤時的錯誤
+    }
   }
 
   /// 記錄日誌（用於除錯上下文）
   Future<void> log(String message) async {
-    await _crashlytics.log(message);
+    if (!_isInitialized) return;
+    try {
+      await _crashlytics.log(message);
+    } catch (_) {}
   }
 
   /// 設置用戶識別碼
   Future<void> setUserIdentifier(String identifier) async {
-    await _crashlytics.setUserIdentifier(identifier);
+    if (!_isInitialized) return;
+    try {
+      await _crashlytics.setUserIdentifier(identifier);
+    } catch (_) {}
   }
 
   /// 設置自定義鍵值對
   Future<void> setCustomKey(String key, Object value) async {
-    await _crashlytics.setCustomKey(key, value);
+    if (!_isInitialized) return;
+    try {
+      await _crashlytics.setCustomKey(key, value);
+    } catch (_) {}
   }
 
   /// 觸發測試崩潰（僅用於測試）
   void triggerTestCrash() {
+    if (!_isInitialized) return;
     _crashlytics.crash();
   }
 }

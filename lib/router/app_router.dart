@@ -14,6 +14,7 @@ import 'package:garage/screen/app/launch/launch_page.dart';
 import 'package:garage/screen/records/add_record/add_record_page.dart';
 import 'package:garage/screen/records/add_vehicle/add_vehicle_page.dart';
 import 'package:garage/screen/records/all_records/all_records_page.dart';
+import 'package:garage/screen/invoice_scanner/invoice_scanner_page.dart';
 import 'package:garage/core/models/vehicle.dart';
 
 /// 路由路徑枚舉，統一管理所有路由的 path 和 name
@@ -36,6 +37,11 @@ class AppPath {
   static final addVehicle = AppPath(name: 'addVehicle', previous: records);
 
   static final allRecords = AppPath(name: 'allRecords', previous: records);
+
+  static final invoiceScanner = AppPath(
+    name: 'invoiceScanner',
+    previous: addRecord,
+  );
 
   static final settings = AppPath(name: 'settings', previous: home);
 
@@ -158,6 +164,12 @@ class AppRouter {
                         final vehicle = state.extra as Vehicle;
                         return AllRecordsPage(vehicle: vehicle);
                       },
+                    ),
+                    GoRoute(
+                      path: AppPath.invoiceScanner.path,
+                      name: AppPath.invoiceScanner.name,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const InvoiceScannerPage(),
                     ),
                   ],
                 ),

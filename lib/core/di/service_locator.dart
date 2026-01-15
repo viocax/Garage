@@ -31,8 +31,8 @@ Future<void> setupServiceLocator() async {
   // Ad Service
   getIt.registerLazySingleton<AdService>(() => MobileAdService());
 
-  // Crashlytics Service
-  getIt.registerLazySingleton<CrashlyticsService>(() => CrashlyticsService());
+  // Firebase Service (includes Crashlytics)
+  getIt.registerLazySingleton<FirebaseService>(() => FirebaseService());
 
   // Logger Service
 
@@ -53,6 +53,9 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<AdRepository>(
     () =>
         LocalAdRepository(getIt<AdService>(), getIt<UserSettingsRepository>()),
+  );
+  getIt.registerLazySingleton<InvoiceRepository>(
+    () => MofApiInvoiceRepository(useStub: true),
   );
 }
 
@@ -80,7 +83,7 @@ class ServiceScopes {
   TtsService get tts => _getIt<TtsService>();
   CloudSyncService get cloudSync => _getIt<CloudSyncService>();
   AdService get ad => _getIt<AdService>();
-  CrashlyticsService get crashlytics => _getIt<CrashlyticsService>();
+  FirebaseService get firebase => _getIt<FirebaseService>();
 }
 
 class RepositoryScopes {
@@ -93,4 +96,5 @@ class RepositoryScopes {
   CloudSyncRepository get cloudSync => _getIt<CloudSyncRepository>();
   AppOpenAdRepository get appOpenAd => _getIt<AppOpenAdRepository>();
   AdRepository get ad => _getIt<AdRepository>();
+  InvoiceRepository get invoice => _getIt<InvoiceRepository>();
 }

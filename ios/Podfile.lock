@@ -74,11 +74,21 @@ PODS:
   - GoogleDataTransport (10.1.0):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
+  - GoogleMLKit/BarcodeScanning (7.0.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitBarcodeScanning (~> 6.0.0)
+  - GoogleMLKit/MLKitCore (7.0.0):
+    - MLKitCommon (~> 12.0.0)
   - GoogleSignIn (8.0.0):
     - AppAuth (< 2.0, >= 1.7.3)
     - AppCheckCore (~> 11.0)
     - GTMAppAuth (< 5.0, >= 4.1.1)
     - GTMSessionFetcher/Core (~> 3.3)
+  - GoogleToolboxForMac/Defines (4.2.1)
+  - GoogleToolboxForMac/Logger (4.2.1):
+    - GoogleToolboxForMac/Defines (= 4.2.1)
+  - "GoogleToolboxForMac/NSData+zlib (4.2.1)":
+    - GoogleToolboxForMac/Defines (= 4.2.1)
   - GoogleUserMessagingPlatform (3.1.0)
   - GoogleUtilities/Environment (8.1.0):
     - GoogleUtilities/Privacy
@@ -105,6 +115,26 @@ PODS:
     - Flutter
   - isar_community_flutter_libs (1.0.0):
     - Flutter
+  - MLImage (1.0.0-beta6)
+  - MLKitBarcodeScanning (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitVision (~> 8.0)
+  - MLKitCommon (12.0.0):
+    - GoogleDataTransport (~> 10.0)
+    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
+    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
+    - GoogleUtilities/Logger (~> 8.0)
+    - GoogleUtilities/UserDefaults (~> 8.0)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+  - MLKitVision (8.0.0):
+    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
+    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+    - MLImage (= 1.0.0-beta6)
+    - MLKitCommon (~> 12.0)
+  - mobile_scanner (6.0.2):
+    - Flutter
+    - GoogleMLKit/BarcodeScanning (~> 7.0.0)
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
@@ -138,6 +168,7 @@ DEPENDENCIES:
   - icloud_storage (from `.symlinks/plugins/icloud_storage/ios`)
   - in_app_review (from `.symlinks/plugins/in_app_review/ios`)
   - isar_community_flutter_libs (from `.symlinks/plugins/isar_community_flutter_libs/ios`)
+  - mobile_scanner (from `.symlinks/plugins/mobile_scanner/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -158,11 +189,17 @@ SPEC REPOS:
     - FirebaseSessions
     - Google-Mobile-Ads-SDK
     - GoogleDataTransport
+    - GoogleMLKit
     - GoogleSignIn
+    - GoogleToolboxForMac
     - GoogleUserMessagingPlatform
     - GoogleUtilities
     - GTMAppAuth
     - GTMSessionFetcher
+    - MLImage
+    - MLKitBarcodeScanning
+    - MLKitCommon
+    - MLKitVision
     - nanopb
     - PromisesObjC
     - PromisesSwift
@@ -188,6 +225,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/in_app_review/ios"
   isar_community_flutter_libs:
     :path: ".symlinks/plugins/isar_community_flutter_libs/ios"
+  mobile_scanner:
+    :path: ".symlinks/plugins/mobile_scanner/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -219,7 +258,9 @@ SPEC CHECKSUMS:
   google_mobile_ads: df3008bafbe1f2ad6862f87334e560d2f047f902
   google_sign_in_ios: b48bb9af78576358a168361173155596c845f0b9
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleMLKit: eff9e23ec1d90ea4157a1ee2e32a4f610c5b3318
   GoogleSignIn: ce8c89bb9b37fb624b92e7514cc67335d1e277e4
+  GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
   GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
@@ -227,6 +268,11 @@ SPEC CHECKSUMS:
   icloud_storage: e55639f0c0d7cb2b0ba9c0b3d5968ccca9cd9aa2
   in_app_review: 7dd1ea365263f834b8464673f9df72c80c17c937
   isar_community_flutter_libs: bede843185a61a05ff364a05c9b23209523f7e0d
+  MLImage: 0ad1c5f50edd027672d8b26b0fee78a8b4a0fc56
+  MLKitBarcodeScanning: 0a3064da0a7f49ac24ceb3cb46a5bc67496facd2
+  MLKitCommon: 07c2c33ae5640e5380beaaa6e4b9c249a205542d
+  MLKitVision: 45e79d68845a2de77e2dd4d7f07947f0ed157b0e
+  mobile_scanner: af8f71879eaba2bbcb4d86c6a462c3c0e7f23036
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880

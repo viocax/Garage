@@ -7,3 +7,4 @@ export 'tts_speaking_token.dart';
 export 'user_settings.dart';
 export 'vehicle.dart';
 export 'vehicle_record.dart';
+export 'invoice_data.dart';

@@ -255,5 +255,22 @@
       "support": "優先客服支援",
       "supportDesc": "我們的新功能將優先提供給 Pro 用戶。"
     }
+  },
+  "invoiceScanner": {
+    "title": "掃描發票",
+    "hint": "將發票左側 QR Code 置於框內",
+    "processing": "正在處理發票資料...",
+    "retry": "重新掃描",
+    "result": {
+      "title": "發票資訊",
+      "fromApi": "完整資料",
+      "fromQr": "基本資料",
+      "number": "發票號碼",
+      "date": "交易日期",
+      "amount": "總金額",
+      "items": "消費明細",
+      "rescan": "重新掃描",
+      "use": "使用此發票"
+    }
   }
 }

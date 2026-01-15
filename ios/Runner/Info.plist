@@ -56,6 +56,8 @@
 		<string>我們會使用您的資料來提供個性化的廣告體驗，以支持應用的免費使用。</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>我們需要相機權限來掃描發票 QR Code 以新增車輛紀錄。</string>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
 		<key>UIMainStoryboardFile</key>

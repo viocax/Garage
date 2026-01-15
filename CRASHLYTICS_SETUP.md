@@ -24,7 +24,7 @@ Firebase Crashlytics 提供即時崩潰報告和錯誤追蹤，協助快速定�
 - ✅ **Debug 模式停用**：開發時自動停用數據收集，避免測試資料污染
 
 ### 實作位置
-- **服務實作**：`lib/core/service/crashlytics_service.dart`
+- **服務實作**：`lib/core/service/firebase_service.dart`
 - **初始化**：`lib/main.dart`
 - **依賴注入**：`lib/core/di/service_locator.dart`
 
@@ -80,8 +80,8 @@ void main() async {
   // 2. 初始化依賴注入容器
   await setupServiceLocator();
 
-  // 3. 初始化 Crashlytics（設置錯誤處理器）
-  await getIt.service.crashlytics.initialize();
+  // 3. 初始化 Firebase 服務 (包含 Crashlytics)
+  await getIt.service.firebase.initialize();
 
   // 4. 啟動應用程式
   runApp(const GarageApp());
@@ -90,7 +90,7 @@ void main() async {
 
 ### 4. 自動配置說明
 
-`CrashlyticsService.initialize()` 會自動完成以下配置：
+`FirebaseService.initialize()` 會自動完成以下配置：
 
 - ✅ **環境檢測**：Debug 模式下自動停用數據收集
 - ✅ **Flutter 錯誤捕獲**：設定 `FlutterError.onError` 處理器
@@ -109,7 +109,7 @@ void main() async {
 try {
   await riskyOperation();
 } catch (e, stack) {
-  await getIt.service.crashlytics.recordError(
+  await getIt.service.firebase.recordError(
     e,
     stack,
     reason: '資料同步失敗',
@@ -127,9 +127,9 @@ try {
 
 ```dart
 // 記錄用戶操作流程
-await getIt.service.crashlytics.log('用戶進入設定頁面');
-await getIt.service.crashlytics.log('開始資料同步: $vehicleCount 輛車');
-await getIt.service.crashlytics.log('同步完成: ${syncResult.success}');
+await getIt.service.firebase.log('用戶進入設定頁面');
+await getIt.service.firebase.log('開始資料同步: $vehicleCount 輛車');
+await getIt.service.firebase.log('同步完成: ${syncResult.success}');
 
 // 這些日誌會附加到接下來發生的任何崩潰報告中
 ```
@@ -140,10 +140,10 @@ await getIt.service.crashlytics.log('同步完成: ${syncResult.success}');
 
 ```dart
 // 用戶登入後設定
-await getIt.service.crashlytics.setUserIdentifier('user_12345');
+await getIt.service.firebase.setUserIdentifier('user_12345');
 
 // 用戶登出時清除
-await getIt.service.crashlytics.setUserIdentifier('');
+await getIt.service.firebase.setUserIdentifier('');
 ```
 
 ### 自定義鍵值對
@@ -152,10 +152,10 @@ await getIt.service.crashlytics.setUserIdentifier('');
 
 ```dart
 // 記錄應用程式狀態
-await getIt.service.crashlytics.setCustomKey('vehicle_count', 5);
-await getIt.service.crashlytics.setCustomKey('last_sync', DateTime.now().toString());
-await getIt.service.crashlytics.setCustomKey('app_version', '1.0.0');
-await getIt.service.crashlytics.setCustomKey('has_premium', true);
+await getIt.service.firebase.setCustomKey('vehicle_count', 5);
+await getIt.service.firebase.setCustomKey('last_sync', DateTime.now().toString());
+await getIt.service.firebase.setCustomKey('app_version', '1.0.0');
+await getIt.service.firebase.setCustomKey('has_premium', true);
 
 // 這些資訊會附加到所有後續的崩潰報告中
 ```
@@ -172,7 +172,7 @@ await getIt.service.crashlytics.setCustomKey('has_premium', true);
 
 ```dart
 // 在開發環境或 Debug 選單中觸發
-getIt.service.crashlytics.triggerTestCrash();
+getIt.service.firebase.triggerTestCrash();
 ```
 
 **注意**：此方法會導致應用程式崩潰，請謹慎使用。
@@ -184,7 +184,7 @@ getIt.service.crashlytics.triggerTestCrash();
 try {
   throw Exception('這是一個測試錯誤');
 } catch (e, stack) {
-  await getIt.service.crashlytics.recordError(
+  await getIt.service.firebase.recordError(
     e,
     stack,
     reason: 'Crashlytics 測試',
@@ -241,7 +241,7 @@ class VehicleBloc extends Bloc<VehicleEvent, VehicleState> {
     super.onError(error, stackTrace);
 
     // 自動記錄所有 BLoC 錯誤到 Crashlytics
-    getIt.service.crashlytics.recordError(
+    getIt.service.firebase.recordError(
       error,
       stackTrace,
       reason: 'VehicleBloc error: ${event.runtimeType}',
@@ -277,20 +277,20 @@ class VehicleRepository {
   Future<List<Vehicle>> getVehicles() async {
     try {
       // 記錄操作開始
-      await getIt.service.crashlytics.log('開始載入車輛清單');
+      await getIt.service.firebase.log('開始載入車輛清單');
 
       final vehicles = await _database.getAll();
 
       // 記錄成功資訊
-      await getIt.service.crashlytics.log('成功載入 ${vehicles.length} 輛車');
-      await getIt.service.crashlytics.setCustomKey('last_vehicle_count', vehicles.length);
+      await getIt.service.firebase.log('成功載入 ${vehicles.length} 輛車');
+      await getIt.service.firebase.setCustomKey('last_vehicle_count', vehicles.length);
 
       return vehicles;
     } catch (e, stack) {
       Log.e('載入車輛失敗', e, stack);
 
       // 記錄非致命錯誤
-      await getIt.service.crashlytics.recordError(
+      await getIt.service.firebase.recordError(
         e,
         stack,
         reason: 'Database query failed in VehicleRepository',
@@ -345,7 +345,7 @@ class VehicleRepository {
 Log.d('這個會在 Debug 模式顯示');
 
 // Crashlytics 日誌僅在 Release 模式有效
-await getIt.service.crashlytics.log('這個僅在 Release 模式記錄');
+await getIt.service.firebase.log('這個僅在 Release 模式記錄');
 ```
 
 ### 問題 3：Build 失敗或 Crashlytics 初始化錯誤
@@ -393,7 +393,7 @@ flutter build ios --release
 - [軟體規格書](Garage_軟體規格書_v0.1.md)
 
 ### 程式碼位置
-- **Crashlytics 服務**：`lib/core/service/crashlytics_service.dart`
+- **Firebase 服務**：`lib/core/service/firebase_service.dart`
 - **Log 工具**：`lib/core/utils/log.dart`
 - **應用程式初始化**：`lib/main.dart`
 - **服務定位器**：`lib/core/di/service_locator.dart`

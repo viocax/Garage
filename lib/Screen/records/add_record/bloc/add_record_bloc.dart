@@ -55,6 +55,8 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     on<RemainingFuelChanged>(_onRemainingFuelChanged);
     // 使用者設定
     on<LoadUserSettings>(_onLoadUserSettings);
+    // 發票掃描
+    on<InvoiceDataApplied>(_onInvoiceDataApplied);
 
     // 立即載入使用者設定
     add(const LoadUserSettings());
@@ -298,5 +300,23 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
   /// 顯示廣告邏輯（由 UI 呼叫，封裝規則）
   void showAd({required void Function() onComplete}) {
     _adRepository.showInterstitialAd(onComplete: onComplete);
+  }
+
+  /// 套用發票掃描資料
+  void _onInvoiceDataApplied(
+    InvoiceDataApplied event,
+    Emitter<AddRecordState> emit,
+  ) {
+    // 更新金額和日期
+    emit(
+      state
+          .copyWithCommonFields(date: event.date)
+          .copyWithOtherData(amount: event.amount),
+    );
+
+    // 如果是加油類型且金額有設定，標記為手動編輯
+    if (state.recordType is RecordTypeFuel && event.amount > 0) {
+      emit(state.copyWith(isAmountManuallyEdited: true));
+    }
   }
 }
