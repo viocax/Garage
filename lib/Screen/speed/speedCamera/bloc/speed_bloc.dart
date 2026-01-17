@@ -96,13 +96,19 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
 
     final unit = settings.speedUnit;
     double newSpeed = event.currentSpeed;
+    double newAvgSpeed = event.speedCameraModel.averageSpeed;
+    
     if (unit == SpeedUnit.mph) {
       newSpeed = newSpeed.mile;
+      newAvgSpeed = newAvgSpeed.mile;
     }
 
     // 使用轉換後的速度更新 model
     emit(currentState.copyWith(
-      model: event.speedCameraModel.copyWith(currentSpeed: newSpeed),
+      model: event.speedCameraModel.copyWith(
+        currentSpeed: newSpeed,
+        averageSpeed: newAvgSpeed,
+      ),
     ));
   }
 

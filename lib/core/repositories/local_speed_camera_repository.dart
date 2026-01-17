@@ -50,6 +50,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 區間測速當前總距離
   double _totalDistanceInZone = 0.0;
 
+  /// 上次區間測速語音提醒時間
+  DateTime? _lastIntervalAlertTime;
+
   /// 已播報的距離閾值集合（用於追蹤哪些閾值已經播報過）
   Set<int> _alertedThresholds = {};
 
@@ -330,6 +333,16 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
         remainingDistance: status.remainingDistance,
         isOverSpeed: status.isOverSpeed,
       );
+
+      // 檢查是否超速並播放提醒 (每 10 秒提醒一次)
+      if (status.isOverSpeed) {
+        final now = position.timestamp;
+        if (_lastIntervalAlertTime == null || 
+            now.difference(_lastIntervalAlertTime!).inSeconds >= 10) {
+          _ttsService.speak('區間平均速度過高，請減速');
+          _lastIntervalAlertTime = now;
+        }
+      }
 
       // 檢查是否到達終點 (距離終點相機 < 50m)
       final endCamera = _cachedCameras.cast<Camera?>().firstWhere(

@@ -16,6 +16,7 @@ import '../car3d/bloc/car_3d_event.dart';
 import 'bloc/speed_bloc.dart';
 import 'bloc/speed_state.dart';
 import 'bloc/speed_event.dart';
+import 'widgets/interval_info_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:geolocator/geolocator.dart';
@@ -193,15 +194,25 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   ),
                 ),
 
-                // 2. Speed Limit Overlay (Top Right - over map)
+                // 2. Speed Limit Overlay or Interval Info
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 16,
                   right: 16,
                   child: BlocBuilder<SpeedBloc, SpeedState>(
                     builder: (context, state) {
-                      return switch (state) {
-                        SpeedData() => _buildSpeedLimitOverlay(state),
-                      };
+                      if (state is SpeedData) {
+                        if (state.isInterval) {
+                          return IntervalInfoWidget(
+                            averageSpeed: state.averageSpeed,
+                            remainingDistance: state.remainingDistance,
+                            speedLimit: state.model.speedLimit,
+                            unit: state.unit,
+                            isOverSpeed: state.isOverSpeed,
+                          );
+                        }
+                        return _buildSpeedLimitOverlay(state);
+                      }
+                      return const SizedBox.shrink();
                     },
                   ),
                 ),

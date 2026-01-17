@@ -40,6 +40,10 @@ final class SpeedData extends SpeedState {
 
   bool get isOverSpeed => model.isOverSpeed;
   bool get isStartAnimation => model.currentSpeed > 0;
+  bool get isInterval => model.isInterval;
+  double get averageSpeed => model.averageSpeed;
+  double get remainingDistance => model.remainingDistance;
+
   String get displaySpeed {
     switch (unit) {
       case SpeedUnit.kmh:

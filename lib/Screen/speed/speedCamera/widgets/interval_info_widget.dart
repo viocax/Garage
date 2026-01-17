@@ -27,24 +27,24 @@ class IntervalInfoWidget extends StatelessWidget {
         : averageSpeed.round().toString(); // Bloc already converted it
 
     final distanceText = remainingDistance > 1000
-        ? '${(remainingDistance / 1000).toStringAsFixed(1)} km'
-        : '${remainingDistance.round()} m';
+        ? '${(remainingDistance / 1000).toStringAsFixed(1)}km'
+        : '${remainingDistance.round()}m';
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          width: 200,
+          constraints: const BoxConstraints(minWidth: 160, maxWidth: 220),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isOverSpeed 
-                ? AppTheme.dashboardAccentRed.withValues(alpha: 0.3)
+                ? AppTheme.dashboardAccentRed.withOpacity(0.3)
                 : AppTheme.blackTransparent30,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isOverSpeed 
-                  ? AppTheme.dashboardAccentRed.withValues(alpha: 0.5)
+                  ? AppTheme.dashboardAccentRed.withOpacity(0.5)
                   : AppTheme.whiteTransparent20,
               width: 2,
             ),
@@ -59,6 +59,7 @@ class IntervalInfoWidget extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
               Row(
@@ -88,15 +89,20 @@ class IntervalInfoWidget extends StatelessWidget {
               Divider(color: AppTheme.whiteTransparent20, height: 1),
               const SizedBox(height: 12),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildSmallInfo(
-                    'speedCamera.interval.limit'.tr(),
-                    '$speedLimit',
+                  Expanded(
+                    child: _buildSmallInfo(
+                      'speedCamera.interval.limit'.tr(),
+                      '$speedLimit',
+                    ),
                   ),
-                  _buildSmallInfo(
-                    'speedCamera.interval.remaining'.tr(),
-                    distanceText,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildSmallInfo(
+                      'speedCamera.interval.remaining'.tr(),
+                      distanceText,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                    ),
                   ),
                 ],
               ),
@@ -107,9 +113,9 @@ class IntervalInfoWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSmallInfo(String label, String value) {
+  Widget _buildSmallInfo(String label, String value, {CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start}) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: crossAxisAlignment,
       children: [
         Text(
           label,
@@ -117,6 +123,8 @@ class IntervalInfoWidget extends StatelessWidget {
             color: AppTheme.whiteTransparent70,
             fontSize: 10,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         Text(
           value,

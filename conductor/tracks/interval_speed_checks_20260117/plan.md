@@ -36,10 +36,10 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 3: UI & HUD Integration' (Protocol in workflow.md)
 
 ## Phase 4: Alerts & Testing
-- [ ] Task: Implement TTS Alerts
-    - [ ] "Entering average speed check zone. Limit 60."
-    - [ ] "Average speed too high." (if speeding)
-    - [ ] "Leaving zone."
+- [x] Task: Implement TTS Alerts
+    - [x] "Entering average speed check zone. Limit 60."
+    - [x] "Average speed too high." (if speeding)
+    - [x] "Leaving zone."
 - [ ] Task: Final Integration Test
     - [ ] Simulate a drive through the mock zone.
     - [ ] Verify UI switches modes and alerts trigger correctly.
