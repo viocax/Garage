@@ -17,11 +17,11 @@
     - [x] Implement `updatePosition(location)`: Calculate distance traveled and current average speed.
     - [x] Implement `exitZone()`: Reset state.
     - [x] Write Unit Tests for average speed calculation math.
-- [ ] Task: Integrate with Location Service
-    - [ ] Listen to location stream in `IntervalManager`.
-    - [ ] Trigger entry/exit based on geofence/distance to start/end points.
-    - [ ] Write Unit Tests for trigger logic.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Logic Engine' (Protocol in workflow.md)
+- [x] Task: Integrate with Location Service
+    - [x] Listen to location stream in `IntervalManager`.
+    - [x] Trigger entry/exit based on geofence/distance to start/end points.
+    - [x] Write Unit Tests for trigger logic.
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Logic Engine' (Protocol in workflow.md)
 
 ## Phase 3: UI & HUD Integration
 - [ ] Task: Update Speed Bloc
