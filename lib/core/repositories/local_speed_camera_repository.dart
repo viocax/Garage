@@ -7,6 +7,7 @@ import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/utils/log.dart';
 import 'package:garage/core/models/tts_speaking_token.dart';
 import 'package:garage/core/service/location/location_service.dart';
+import 'package:garage/core/service/location/interval_manager.dart';
 import 'package:garage/core/service/tts/tts_service.dart';
 import 'package:garage/core/models/camera.dart';
 import 'package:garage/core/models/interval_zone.dart';
@@ -24,6 +25,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   final LocationService _locationService;
   final TtsService _ttsService;
   final UserSettingsRepository _userSettingsRepo;
+  final IntervalManager _intervalManager;
 
   StreamSubscription<Position>? _speedSubscription;
 
@@ -42,6 +44,12 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   /// 當前追蹤的測速相機
   Camera? _currentCamera;
 
+  /// 區間測速起點位置
+  Position? _entryPosition;
+
+  /// 區間測速當前總距離
+  double _totalDistanceInZone = 0.0;
+
   /// 已播報的距離閾值集合（用於追蹤哪些閾值已經播報過）
   Set<int> _alertedThresholds = {};
 
@@ -56,9 +64,11 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     LocationService? locationService,
     TtsService? ttsService,
     UserSettingsRepository? userSettingsRepo,
+    IntervalManager? intervalManager,
   }) : _locationService = locationService ?? getIt.service.location,
        _ttsService = ttsService ?? getIt.service.tts,
-       _userSettingsRepo = userSettingsRepo ?? getIt.repo.userSettings;
+       _userSettingsRepo = userSettingsRepo ?? getIt.repo.userSettings,
+       _intervalManager = intervalManager ?? IntervalManager();
 
   @override
   bool get isTracking => _speedSubscription != null;
@@ -275,7 +285,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     // 1. 載入使用者設定
     final settings = await _userSettingsRepo.loadSettings();
     final alertDistance = settings.alertDistance.toDouble();
-    final defaultSpeedCameraModel = SpeedCameraModel(
+    
+    // 初始化回傳模型
+    var speedCameraModel = SpeedCameraModel(
       speedLimit: 0,
       currentSpeed: currentSpeed,
       distance: 0,
@@ -287,83 +299,134 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
     if (!settings.isVoiceAlertEnabled) {
       _resetAlertState();
-      return defaultSpeedCameraModel;
+      return speedCameraModel;
     }
+
+    // --- 區間測速邏輯 ---
+    if (_intervalManager.isActive) {
+      final zone = _intervalManager.currentZone!;
+      
+      // 計算從起點到現在的距離
+      if (_entryPosition != null) {
+        final double incrementalDist = Geolocator.distanceBetween(
+          _entryPosition!.latitude,
+          _entryPosition!.longitude,
+          lat,
+          lon,
+        );
+        _totalDistanceInZone = incrementalDist;
+      }
+
+      final status = _intervalManager.calculateStatus(
+        distanceTraveled: _totalDistanceInZone,
+        currentTime: position.timestamp,
+      );
+
+      // 更新回傳模型
+      speedCameraModel = speedCameraModel.copyWith(
+        isInterval: true,
+        speedLimit: zone.speedLimit,
+        averageSpeed: status.averageSpeed,
+        remainingDistance: status.remainingDistance,
+        isOverSpeed: status.isOverSpeed,
+      );
+
+      // 檢查是否到達終點 (距離終點相機 < 50m)
+      final endCamera = _cachedCameras.cast<Camera?>().firstWhere(
+        (c) => c?.id == zone.endCameraId,
+        orElse: () => null,
+      );
+      
+      if (status.remainingDistance <= 50 || 
+          (endCamera != null && endCamera.distanceTo(lat, lon) < 50)) {
+        Log.d('SpeedCamera: 離開區間測速 ${zone.id}');
+        _ttsService.speak('離開區間測速');
+        _resetAlertState();
+      }
+      
+      return speedCameraModel;
+    }
+
+    // --- 一般/區間起點 偵測邏輯 ---
 
     // 2. 如果沒有追蹤的相機，找一台新的
     if (_currentCamera == null) {
       if (isHeadingValid) {
-        // heading 有效：找在 heading ±10度內最近的相機
         _currentCamera = _findCameraInHeading(lat, lon, heading, alertDistance);
       } else {
-        // heading 無效：退回找最近的相機
         _currentCamera = _findNearestCamera(lat, lon, alertDistance);
       }
+      
       if (_currentCamera != null) {
-        _alertedThresholds = {}; // 新相機，重置已播報閾值
-        Log.d(
-          'SpeedCamera: 開始追蹤相機 ${_currentCamera!.id}, 限速 ${_currentCamera!.speedLimit}',
-        );
+        _alertedThresholds = {};
+        Log.d('SpeedCamera: 開始追蹤相機 ${_currentCamera!.id}');
       }
     }
 
-    // 如果還是沒有相機，返回預設值
     if (_currentCamera == null) {
-      return defaultSpeedCameraModel;
+      return speedCameraModel;
     }
 
-    // 3. 計算與追蹤相機的距離
     final distance = _currentCamera!.distanceTo(lat, lon);
     final speedLimit = _currentCamera!.speedLimit;
-    final isOverSpeed = currentSpeed > speedLimit + settings.speedTolerance;
+    
+    // 更新基礎資訊
+    speedCameraModel = speedCameraModel.copyWith(
+      speedLimit: speedLimit,
+      distance: distance,
+      isOverSpeed: currentSpeed > speedLimit + settings.speedTolerance,
+    );
 
-    // 4. 檢查播報閾值（從遠到近）
+    // 4. 檢查播報閾值
     final thresholds = _getAlertThresholds(settings.alertDistance);
     final now = DateTime.now();
 
     for (final threshold in thresholds) {
       if (distance <= threshold && !_alertedThresholds.contains(threshold)) {
-        // 執行播報
-        _ttsService.speakOverSpeed(
-          TTSSpeakingToken(
-            speedLimit: speedLimit.toDouble(),
-            currentSpeed: currentSpeed,
-            distance: distance,
-            lastReportTime: now,
-          ),
-        );
+        
+        // 如果是區間測速起點
+        if (_currentCamera!.isInterval && threshold == settings.alertDistance) {
+          _ttsService.speak('進入區間測速，速限 $speedLimit');
+          
+          // 正式進入區間
+          final zone = getIntervalZoneById(_currentCamera!.zoneId ?? '');
+          if (zone != null) {
+            _intervalManager.enterZone(zone, startTime: position.timestamp);
+            _entryPosition = position;
+            _totalDistanceInZone = 0.0;
+          }
+        } else {
+          // 一般相機播報
+          _ttsService.speakOverSpeed(
+            TTSSpeakingToken(
+              speedLimit: speedLimit.toDouble(),
+              currentSpeed: currentSpeed,
+              distance: distance,
+              lastReportTime: now,
+            ),
+          );
+        }
+        
         _alertedThresholds.add(threshold);
-        Log.d(
-          'SpeedCamera: 播報閾值 ${threshold}m, 實際距離 ${distance.toStringAsFixed(0)}m',
-        );
-        break; // 每次只播報一個閾值
+        break;
       }
     }
 
-    // 5. Reset 條件：0m 已播報 或 超過 alertDistance
-    final hasAlerted0m = _alertedThresholds.contains(0);
-    if (hasAlerted0m || distance > alertDistance) {
-      Log.d(
-        'SpeedCamera: Reset (0m已播報: $hasAlerted0m, 距離超出: ${distance > alertDistance})',
-      );
+    // 5. Reset 條件
+    if (_alertedThresholds.contains(0) || distance > alertDistance) {
       _resetAlertState();
     }
 
-    return SpeedCameraModel(
-      speedLimit: speedLimit,
-      currentSpeed: currentSpeed,
-      distance: distance,
-      isOverSpeed: isOverSpeed,
-      latitude: lat,
-      longitude: lon,
-      heading: heading,
-    );
+    return speedCameraModel;
   }
 
   /// 重置提醒狀態
   void _resetAlertState() {
     _currentCamera = null;
+    _entryPosition = null;
+    _totalDistanceInZone = 0.0;
     _alertedThresholds = {};
+    _intervalManager.exitZone();
   }
 
   /// 建立 QuadTree 索引

@@ -12,11 +12,11 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Data Modeling & Repository' (Protocol in workflow.md)
 
 ## Phase 2: Logic Engine (IntervalManager)
-- [ ] Task: Create `IntervalManager` Service
-    - [ ] Implement `enterZone(zone)`: Record entry time and location.
-    - [ ] Implement `updatePosition(location)`: Calculate distance traveled and current average speed.
-    - [ ] Implement `exitZone()`: Reset state.
-    - [ ] Write Unit Tests for average speed calculation math.
+- [x] Task: Create `IntervalManager` Service
+    - [x] Implement `enterZone(zone)`: Record entry time and location.
+    - [x] Implement `updatePosition(location)`: Calculate distance traveled and current average speed.
+    - [x] Implement `exitZone()`: Reset state.
+    - [x] Write Unit Tests for average speed calculation math.
 - [ ] Task: Integrate with Location Service
     - [ ] Listen to location stream in `IntervalManager`.
     - [ ] Trigger entry/exit based on geofence/distance to start/end points.

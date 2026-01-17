@@ -1,5 +1,6 @@
 export 'isar_service.dart';
 export 'location/location_service.dart';
+export 'location/interval_manager.dart';
 export 'location/geolocator_interface.dart';
 export 'network/http_service.dart';
 export 'network/api_request.dart';
