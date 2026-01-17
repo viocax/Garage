@@ -1,15 +1,15 @@
 # Implementation Plan - Interval Speed Checks
 
 ## Phase 1: Data Modeling & Repository
-- [ ] Task: Define `IntervalZone` data model
-    - [ ] Create `IntervalZone` class with `startCameraId`, `endCameraId`, `distance`, `speedLimit`.
-    - [ ] Update `SpeedCamera` model to optionally link to a zone ID or type.
-    - [ ] Write Unit Tests for model serialization.
-- [ ] Task: Update Repository
-    - [ ] Modify `SpeedCameraRepository` to fetch/store interval zones.
-    - [ ] Add mock data for an Interval Zone for testing.
-    - [ ] Write Unit Tests for repository data retrieval.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Data Modeling & Repository' (Protocol in workflow.md)
+- [x] Task: Define `IntervalZone` data model
+    - [x] Create `IntervalZone` class with `startCameraId`, `endCameraId`, `distance`, `speedLimit`.
+    - [x] Update `SpeedCamera` model to optionally link to a zone ID or type.
+    - [x] Write Unit Tests for model serialization.
+- [x] Task: Update Repository
+    - [x] Modify `SpeedCameraRepository` to fetch/store interval zones.
+    - [x] Add mock data for an Interval Zone for testing.
+    - [x] Write Unit Tests for repository data retrieval.
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Data Modeling & Repository' (Protocol in workflow.md)
 
 ## Phase 2: Logic Engine (IntervalManager)
 - [ ] Task: Create `IntervalManager` Service

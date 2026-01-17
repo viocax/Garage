@@ -24,6 +24,8 @@ void main() {
         expect(testCamera.longitude, 121.5654);
         expect(testCamera.direction, '北向南');
         expect(testCamera.description, '台北市信義區信義路四段');
+        expect(testCamera.type, 'fixed');
+        expect(testCamera.zoneId, isNull);
       });
     });
 
@@ -36,6 +38,8 @@ void main() {
           'lon': 121.5170,
           'dir': '東向西',
           'disc': '台北市中山區中山北路',
+          'type': 'interval',
+          'zone_id': 'ZONE123',
         };
 
         final camera = Camera.fromJson(json);
@@ -46,6 +50,9 @@ void main() {
         expect(camera.longitude, 121.5170);
         expect(camera.direction, '東向西');
         expect(camera.description, '台北市中山區中山北路');
+        expect(camera.type, 'interval');
+        expect(camera.zoneId, 'ZONE123');
+        expect(camera.isInterval, isTrue);
       });
 
       test('應該在缺少欄位時使用預設值', () {

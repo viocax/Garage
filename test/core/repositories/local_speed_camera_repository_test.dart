@@ -26,6 +26,8 @@ void main() {
         void verifyInterface(ISpeedCameraRepository repo) {
           repo.syncFromRemote;
           repo.getAll;
+          repo.getIntervalZones;
+          repo.getIntervalZoneById;
           repo.getCount;
           repo.getLastSyncTime;
           repo.clearAll;

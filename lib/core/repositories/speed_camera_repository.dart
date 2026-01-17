@@ -1,5 +1,6 @@
 import 'package:garage/core/models/speed_camera_model.dart';
 import '../models/camera.dart';
+import '../models/interval_zone.dart';
 
 /// 測速照相資料倉儲介面
 ///
@@ -13,6 +14,12 @@ abstract class ISpeedCameraRepository {
 
   /// 取得所有測速照相點位
   List<Camera> getAll();
+
+  /// 取得所有區間測速路段
+  List<IntervalZone> getIntervalZones();
+
+  /// 根據 ID 取得區間測速路段
+  IntervalZone? getIntervalZoneById(String id);
 
   /// 取得資料總數
   Future<int> getCount();

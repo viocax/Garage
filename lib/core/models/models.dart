@@ -1,4 +1,5 @@
 export 'camera.dart';
+export 'interval_zone.dart';
 export 'picker_option.dart';
 export 'speed_camera_model.dart';
 export 'speed_unit.dart';

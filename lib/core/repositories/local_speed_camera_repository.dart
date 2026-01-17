@@ -9,6 +9,7 @@ import 'package:garage/core/models/tts_speaking_token.dart';
 import 'package:garage/core/service/location/location_service.dart';
 import 'package:garage/core/service/tts/tts_service.dart';
 import 'package:garage/core/models/camera.dart';
+import 'package:garage/core/models/interval_zone.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:quadtree/quadtree.dart';
 import 'speed_camera_repository.dart';
@@ -28,6 +29,9 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
   /// 快取的測速照相資料
   List<Camera> _cachedCameras = [];
+
+  /// 快取的區間測速資料
+  List<IntervalZone> _cachedIntervalZones = [];
 
   /// 資料載入時間
   DateTime? _loadedAt;
@@ -91,6 +95,41 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
       _cachedCameras = await compute(_parseCameras, jsonData);
       Log.d('LocalSpeedCameraRepository: Camera 物件轉換完成');
 
+      // 暫時添加模擬的區間測速資料
+      _cachedIntervalZones = [
+        const IntervalZone(
+          id: 'MOCK_ZONE_1',
+          startCameraId: 'MOCK_START',
+          endCameraId: 'MOCK_END',
+          distance: 2000.0,
+          speedLimit: 60,
+        ),
+      ];
+
+      // 將起點和終點相機加入相機列表（如果不存在）
+      _cachedCameras.addAll([
+        const Camera(
+          id: 'MOCK_START',
+          speedLimit: 60,
+          latitude: 25.0330,
+          longitude: 121.5654,
+          direction: '測試',
+          description: '模擬區間起點',
+          type: 'interval',
+          zoneId: 'MOCK_ZONE_1',
+        ),
+        const Camera(
+          id: 'MOCK_END',
+          speedLimit: 60,
+          latitude: 25.0430,
+          longitude: 121.5654,
+          direction: '測試',
+          description: '模擬區間終點',
+          type: 'interval',
+          zoneId: 'MOCK_ZONE_1',
+        ),
+      ]);
+
       _loadedAt = DateTime.now();
       _buildQuadTree();
 
@@ -124,6 +163,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     if (force) {
       // 強制重新載入，清除快取
       _cachedCameras = [];
+      _cachedIntervalZones = [];
       _loadedAt = null;
       _loadFuture = null;
     }
@@ -133,6 +173,20 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   @override
   List<Camera> getAll() {
     return _cachedCameras;
+  }
+
+  @override
+  List<IntervalZone> getIntervalZones() {
+    return _cachedIntervalZones;
+  }
+
+  @override
+  IntervalZone? getIntervalZoneById(String id) {
+    try {
+      return _cachedIntervalZones.firstWhere((z) => z.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
@@ -150,6 +204,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
   Future<void> clearAll() async {
     Log.d('LocalSpeedCameraRepository: 清除快取');
     _cachedCameras = [];
+    _cachedIntervalZones = [];
     _loadedAt = null;
   }
 
