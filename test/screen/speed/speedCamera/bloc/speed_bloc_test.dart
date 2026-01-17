@@ -105,6 +105,18 @@ void main() {
         heading: 0,
       );
 
+      final intervalModel = SpeedCameraModel(
+        speedLimit: 60,
+        currentSpeed: 50,
+        distance: 0,
+        isOverSpeed: false,
+        latitude: 10,
+        longitude: 20,
+        isInterval: true,
+        averageSpeed: 55.0,
+        remainingDistance: 1000.0,
+      );
+
       blocTest<SpeedBloc, SpeedState>(
         'should update speed model',
         build: buildBloc,
@@ -138,6 +150,27 @@ void main() {
           // 90 km/h approx 55.9 mph
           expect(state.model.currentSpeed, closeTo(55.9, 0.1));
           expect(state.unit, SpeedUnit.mph);
+        },
+      );
+
+      blocTest<SpeedBloc, SpeedState>(
+        'should convert average speed to MPH if setting is MPH',
+        build: () {
+          when(() => userSettingsRepository.loadSettings()).thenAnswer(
+            (_) async => const UserSettings(speedUnit: SpeedUnit.mph),
+          );
+          return buildBloc();
+        },
+        act: (bloc) async {
+          await bloc.stream.first;
+          bloc.add(UpdateSpeed(intervalModel));
+        },
+        wait: const Duration(milliseconds: 100),
+        verify: (bloc) {
+          final state = bloc.state as SpeedData;
+          expect(state.model.isInterval, true);
+          // 55 km/h approx 34.17 mph
+          expect(state.model.averageSpeed, closeTo(34.17, 0.1));
         },
       );
     });

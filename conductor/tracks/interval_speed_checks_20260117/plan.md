@@ -24,16 +24,16 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Logic Engine' (Protocol in workflow.md)
 
 ## Phase 3: UI & HUD Integration
-- [ ] Task: Update Speed Bloc
-    - [ ] Add `IntervalState` to `SpeedState`.
-    - [ ] Listen to `IntervalManager` updates and emit new states.
-    - [ ] Write Bloc Tests.
-- [ ] Task: Implement Interval HUD Widget
-    - [ ] Create `IntervalInfoWidget` to display: Average Speed, Speed Limit, Remaining Distance.
-    - [ ] Visual style: Orange/Red background or border if `avgSpeed > limit`.
-    - [ ] Integrate into main `SpeedPage`.
-    - [ ] Write Widget Tests.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: UI & HUD Integration' (Protocol in workflow.md)
+- [x] Task: Update Speed Bloc
+    - [x] Add `IntervalState` to `SpeedState`.
+    - [x] Listen to `IntervalManager` updates and emit new states.
+    - [x] Write Bloc Tests.
+- [x] Task: Implement Interval HUD Widget
+    - [x] Create `IntervalInfoWidget` to display: Average Speed, Speed Limit, Remaining Distance.
+    - [x] Visual style: Orange/Red background or border if `avgSpeed > limit`.
+    - [x] Integrate into main `SpeedPage`.
+    - [x] Write Widget Tests.
+- [x] Task: Conductor - User Manual Verification 'Phase 3: UI & HUD Integration' (Protocol in workflow.md)
 
 ## Phase 4: Alerts & Testing
 - [ ] Task: Implement TTS Alerts

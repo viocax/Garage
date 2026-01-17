@@ -132,6 +132,11 @@
     "permission": {
       "title": "Location Permission Required",
       "message": "Speed detection needs access to your location to work properly. Please go to settings to enable location permission."
+    },
+    "interval": {
+      "averageSpeed": "Avg. Speed",
+      "remaining": "Remaining",
+      "limit": "Limit"
     }
   },
   "speedDetection": {

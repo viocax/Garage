@@ -132,6 +132,11 @@
     "permission": {
       "title": "需要位置權限",
       "message": "測速功能需要存取您的位置資訊才能正常運作。請前往設定開啟位置權限。"
+    },
+    "interval": {
+      "averageSpeed": "區間平均速度",
+      "remaining": "剩餘距離",
+      "limit": "速限"
     }
   },
   "speedDetection": {
