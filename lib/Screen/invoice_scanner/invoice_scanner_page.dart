@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:flutter_zxing/flutter_zxing.dart';
 
 import '../../core/di/service_locator.dart';
 import '../../core/models/invoice_data.dart';
@@ -36,37 +36,20 @@ class _InvoiceScannerView extends StatefulWidget {
 }
 
 class _InvoiceScannerViewState extends State<_InvoiceScannerView> {
-  late MobileScannerController _scannerController;
   bool _hasScanned = false;
+  bool _showScanner = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _scannerController = MobileScannerController(
-      detectionSpeed: DetectionSpeed.normal,
-      facing: CameraFacing.back,
-    );
-  }
-
-  @override
-  void dispose() {
-    _scannerController.dispose();
-    super.dispose();
-  }
-
-  void _onDetect(BarcodeCapture capture) {
+  void _onScanSuccess(Code? code) {
     // Prevent multiple detections
     if (_hasScanned) return;
 
-    final barcodes = capture.barcodes;
-    if (barcodes.isEmpty) return;
-
-    final barcode = barcodes.first;
-    final rawValue = barcode.rawValue;
+    final rawValue = code?.text;
 
     if (rawValue != null && rawValue.isNotEmpty) {
-      _hasScanned = true;
-      _scannerController.stop();
+      setState(() {
+        _hasScanned = true;
+        _showScanner = false;
+      });
       context.read<InvoiceScannerBloc>().add(
         InvoiceScannerQrDetected(rawValue),
       );
@@ -76,8 +59,8 @@ class _InvoiceScannerViewState extends State<_InvoiceScannerView> {
   void _resetScanner() {
     setState(() {
       _hasScanned = false;
+      _showScanner = true;
     });
-    _scannerController.start();
     context.read<InvoiceScannerBloc>().add(const InvoiceScannerRetry());
   }
 
@@ -105,11 +88,17 @@ class _InvoiceScannerViewState extends State<_InvoiceScannerView> {
           return Stack(
             children: [
               // Camera preview
-              if (state is InvoiceScannerScanning ||
-                  state is InvoiceScannerInitial)
-                MobileScanner(
-                  controller: _scannerController,
-                  onDetect: _onDetect,
+              if (_showScanner &&
+                  (state is InvoiceScannerScanning ||
+                      state is InvoiceScannerInitial))
+                ReaderWidget(
+                  onScan: _onScanSuccess,
+                  scanDelay: const Duration(milliseconds: 500),
+                  tryHarder: true,
+                  tryInverted: true,
+                  showGallery: false,
+                  showToggleCamera: false,
+                  showFlashlight: true,
                 ),
 
               // Processing overlay
@@ -119,8 +108,9 @@ class _InvoiceScannerViewState extends State<_InvoiceScannerView> {
               if (state is InvoiceScannerError) _buildErrorOverlay(state),
 
               // Scan guide overlay
-              if (state is InvoiceScannerScanning ||
-                  state is InvoiceScannerInitial)
+              if (_showScanner &&
+                  (state is InvoiceScannerScanning ||
+                      state is InvoiceScannerInitial))
                 _buildScanGuideOverlay(),
             ],
           );
