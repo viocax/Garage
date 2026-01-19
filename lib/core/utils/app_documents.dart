@@ -24,8 +24,8 @@ class AppDocuments {
 *   **Google Sign-In / Google Drive**：用於 Android 端的備份功能。
 *   **iCloud**：用於 iOS 端的備份功能。
 
-## 3. 資料安全
-我們致力於保護您的資料。既然您的資料主要儲存於您的裝置上，保護資料的最佳方式是確保您的裝置安全並定期進行雲端備份。
+## 3. 聯絡我們
+若您對本隱私政策有任何疑問，請透過 App 內的意見回饋功能與我們聯絡。
 
 ## 4. 您的權益
 您可以隨時透過裝置設定撤回位置權限，或在 App 中清除所有本地資料。
@@ -44,6 +44,8 @@ Thank you for choosing **Garage**. We value your privacy and this policy explain
 The "Speed Camera Warning" feature requires access to your real-time location.
 *   **Local Processing**: Location data is processed locally on your device in real-time.
 *   **No Upload**: We **do not** upload your location data to any server, nor do we share it with third parties.
+### Vehicle and Maintenance Records
+All data you enter in the App (such as refueling, maintenance, vehicle information) is stored in your device's local database.
 
 ## 2. Third-party Services
 We use the following services:
