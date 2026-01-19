@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:garage/core/models/camera.dart';
 import 'package:garage/core/models/interval_zone.dart';
 import 'package:garage/core/models/user_settings.dart';
 import 'package:garage/core/repositories/local_speed_camera_repository.dart';
@@ -12,8 +11,12 @@ import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:geolocator/geolocator.dart';
 
 class MockLocationService extends Mock implements LocationService {}
+
 class MockTtsService extends Mock implements TtsService {}
-class MockUserSettingsRepository extends Mock implements UserSettingsRepository {}
+
+class MockUserSettingsRepository extends Mock
+    implements UserSettingsRepository {}
+
 class MockIntervalManager extends Mock implements IntervalManager {}
 
 void main() {
@@ -30,7 +33,7 @@ void main() {
     mockTts = MockTtsService();
     mockSettingsRepo = MockUserSettingsRepository();
     mockIntervalManager = MockIntervalManager();
-    
+
     repository = LocalSpeedCameraRepository(
       locationService: mockLocation,
       ttsService: mockTts,
@@ -40,16 +43,20 @@ void main() {
 
     // Default settings
     when(() => mockSettingsRepo.loadSettings()).thenAnswer(
-      (_) => Future.value(const UserSettings(
-        isVoiceAlertEnabled: true,
-        alertDistance: 500,
-        speedTolerance: 5,
-      )),
+      (_) => Future.value(
+        const UserSettings(
+          isVoiceAlertEnabled: true,
+          alertDistance: 500,
+          speedTolerance: 5,
+        ),
+      ),
     );
 
-    when(() => mockLocation.requestPermission(background: any(named: 'background')))
-        .thenAnswer((_) async => true);
-    
+    when(
+      () =>
+          mockLocation.requestPermission(background: any(named: 'background')),
+    ).thenAnswer((_) async => true);
+
     when(() => mockTts.speak(any())).thenAnswer((_) async {});
   });
 
@@ -67,30 +74,40 @@ void main() {
       // 模擬已經在區間內
       when(() => mockIntervalManager.isActive).thenReturn(true);
       when(() => mockIntervalManager.currentZone).thenReturn(zone);
-      
+
       // 模擬超速狀態
-      when(() => mockIntervalManager.calculateStatus(
-        distanceTraveled: any(named: 'distanceTraveled'),
-        currentTime: any(named: 'currentTime'),
-      )).thenReturn(const IntervalStatus(
-        averageSpeed: 80.0,
-        remainingDistance: 1000.0,
-        isOverSpeed: true,
-        distanceTraveled: 1000.0,
-        timeElapsed: 45,
-      ));
+      when(
+        () => mockIntervalManager.calculateStatus(
+          distanceTraveled: any(named: 'distanceTraveled'),
+          currentTime: any(named: 'currentTime'),
+        ),
+      ).thenReturn(
+        const IntervalStatus(
+          averageSpeed: 80.0,
+          remainingDistance: 1000.0,
+          isOverSpeed: true,
+          distanceTraveled: 1000.0,
+          timeElapsed: 45,
+        ),
+      );
 
       final position = Position(
         latitude: 25.0330,
         longitude: 121.5654,
         timestamp: DateTime.now(),
-        accuracy: 0, altitude: 0, heading: 0, speed: 20, // 72km/h
-        speedAccuracy: 0, altitudeAccuracy: 0, headingAccuracy: 0,
+        accuracy: 0,
+        altitude: 0,
+        heading: 0,
+        speed: 20, // 72km/h
+        speedAccuracy: 0,
+        altitudeAccuracy: 0,
+        headingAccuracy: 0,
       );
 
       final positionStreamController = StreamController<Position>();
-      when(() => mockLocation.getPositionStream())
-          .thenAnswer((_) => positionStreamController.stream);
+      when(
+        () => mockLocation.getPositionStream(),
+      ).thenAnswer((_) => positionStreamController.stream);
 
       await repository.startLocationTracking((model) {});
 
@@ -101,16 +118,20 @@ void main() {
       verify(() => mockTts.speak('區間平均速度過高，請減速')).called(1);
 
       // 5秒後再次更新，不應該提醒
-      positionStreamController.add(position.copyWith(
-        timestamp: position.timestamp.add(const Duration(seconds: 5)),
-      ));
+      positionStreamController.add(
+        position.copyWith(
+          timestamp: position.timestamp.add(const Duration(seconds: 5)),
+        ),
+      );
       await Future.delayed(const Duration(milliseconds: 50));
       verifyNever(() => mockTts.speak('區間平均速度過高，請減速'));
 
       // 11秒後再次更新，應該提醒第二次
-      positionStreamController.add(position.copyWith(
-        timestamp: position.timestamp.add(const Duration(seconds: 11)),
-      ));
+      positionStreamController.add(
+        position.copyWith(
+          timestamp: position.timestamp.add(const Duration(seconds: 11)),
+        ),
+      );
       await Future.delayed(const Duration(milliseconds: 50));
       verify(() => mockTts.speak('區間平均速度過高，請減速')).called(1);
     });

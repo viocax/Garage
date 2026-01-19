@@ -22,9 +22,7 @@ class IntervalInfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayAvgSpeed = unit == SpeedUnit.kmh 
-        ? averageSpeed.round().toString() 
-        : averageSpeed.round().toString(); // Bloc already converted it
+    final displayAvgSpeed = averageSpeed.round().toString(); // Bloc already converted it
 
     final distanceText = remainingDistance > 1000
         ? '${(remainingDistance / 1000).toStringAsFixed(1)}km'
@@ -38,13 +36,13 @@ class IntervalInfoWidget extends StatelessWidget {
           constraints: const BoxConstraints(minWidth: 160, maxWidth: 220),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isOverSpeed 
-                ? AppTheme.dashboardAccentRed.withOpacity(0.3)
+            color: isOverSpeed
+                ? AppTheme.dashboardAccentRed.withValues(alpha: 0.3)
                 : AppTheme.blackTransparent30,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isOverSpeed 
-                  ? AppTheme.dashboardAccentRed.withOpacity(0.5)
+              color: isOverSpeed
+                  ? AppTheme.dashboardAccentRed.withValues(alpha: 0.5)
                   : AppTheme.whiteTransparent20,
               width: 2,
             ),
@@ -70,7 +68,9 @@ class IntervalInfoWidget extends StatelessWidget {
                   Text(
                     displayAvgSpeed,
                     style: TextStyle(
-                      color: isOverSpeed ? AppTheme.dashboardAccentRed : AppTheme.accentColor,
+                      color: isOverSpeed
+                          ? AppTheme.dashboardAccentRed
+                          : AppTheme.accentColor,
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                     ),
@@ -113,16 +113,17 @@ class IntervalInfoWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSmallInfo(String label, String value, {CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start}) {
+  Widget _buildSmallInfo(
+    String label,
+    String value, {
+    CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start,
+  }) {
     return Column(
       crossAxisAlignment: crossAxisAlignment,
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: AppTheme.whiteTransparent70,
-            fontSize: 10,
-          ),
+          style: TextStyle(color: AppTheme.whiteTransparent70, fontSize: 10),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

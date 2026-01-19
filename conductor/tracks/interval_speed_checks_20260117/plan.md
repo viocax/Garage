@@ -40,7 +40,7 @@
     - [x] "Entering average speed check zone. Limit 60."
     - [x] "Average speed too high." (if speeding)
     - [x] "Leaving zone."
-- [ ] Task: Final Integration Test
-    - [ ] Simulate a drive through the mock zone.
-    - [ ] Verify UI switches modes and alerts trigger correctly.
+- [x] Task: Final Integration Test
+    - [x] Simulate a drive through the mock zone.
+    - [x] Verify UI switches modes and alerts trigger correctly.
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Alerts & Testing' (Protocol in workflow.md)
