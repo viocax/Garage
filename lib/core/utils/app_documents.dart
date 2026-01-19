@@ -8,27 +8,17 @@ class AppDocuments {
 
 ## 1. 資訊收集與使用
 
-### 位置資訊 (Location Data)
-本應用程式的「測速提醒」功能需要存取您的即時位置資訊，以便在您接近測速照相點時發出提醒。
-*   **本機處理**：位置資訊僅在您的裝置上進行即時運算。
-*   **不予上傳**：我們**不會**將您的位置資訊上傳至任何伺服器，亦不會與任何第三方分享您的行蹤。
-
 ### 車輛與維修紀錄
 您在 App 中輸入的所有數據（如加油、維修、車輛資訊）均儲存於您的裝置本地資料庫中。
-*   **雲端同步**：若您主動開啟雲端同步功能，資料將加密傳輸至您個人的 iCloud 或 Google Drive 空間。開發者無法存取您的雲端備份。
 
 ## 2. 第三方服務
 
 本應用程式使用以下第三方服務，其可能收集用於識別您身份的資訊：
 *   **Google AdMob**：用於顯示廣告。AdMob 可能收集您的廣告識別碼 (IDFA/AAID) 以提供相關廣告。
-*   **Google Sign-In / Google Drive**：用於 Android 端的備份功能。
-*   **iCloud**：用於 iOS 端的備份功能。
 
 ## 3. 聯絡我們
 若您對本隱私政策有任何疑問，請透過 App 內的意見回饋功能與我們聯絡。
 
-## 4. 您的權益
-您可以隨時透過裝置設定撤回位置權限，或在 App 中清除所有本地資料。
 
 ---
 
@@ -40,17 +30,12 @@ Thank you for choosing **Garage**. We value your privacy and this policy explain
 
 ## 1. Information Collection and Use
 
-### Location Data
-The "Speed Camera Warning" feature requires access to your real-time location.
-*   **Local Processing**: Location data is processed locally on your device in real-time.
-*   **No Upload**: We **do not** upload your location data to any server, nor do we share it with third parties.
 ### Vehicle and Maintenance Records
 All data you enter in the App (such as refueling, maintenance, vehicle information) is stored in your device's local database.
 
 ## 2. Third-party Services
 We use the following services:
 *   **Google AdMob**: For advertising purposes.
-*   **Google Sign-In / Cloud Storage**: For your data backup.
 
 ## 3. Contact Us
 If you have any questions, please contact us via the feedback section in the App.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garage/core/config/feature_flags.dart';
 
 sealed class TabbarType {
   const TabbarType();
@@ -39,10 +40,10 @@ class SettingsTab extends TabbarType {
 
 // Tab 配置管理類
 class TabConfig {
-  static const List<TabbarType> tabs = [
-    SpeedCameraTab(),
-    RecordsTab(),
-    SettingsTab(),
+  static List<TabbarType> get tabs => [
+    if (FeatureFlags.enableSpeedCamera) const SpeedCameraTab(),
+    const RecordsTab(),
+    const SettingsTab(),
   ];
 
   static int getTabIndex(TabbarType tab) {
@@ -51,7 +52,7 @@ class TabConfig {
 
   static TabbarType getTab(int index) {
     if (index < 0 || index >= tabs.length) {
-      return const SpeedCameraTab();
+      return const RecordsTab();
     }
     return tabs[index];
   }
@@ -60,6 +61,7 @@ class TabConfig {
     final isDuplicate = currentIndex == getTabIndex(clickTab);
     return isDuplicate;
   }
+
   static bool shouldUseDarkTheme(int currentIndex) {
     final tab = getTab(currentIndex);
     switch (tab) {

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/core/config/feature_flags.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
 import 'package:garage/screen/app/home/bloc/garage_home_event.dart';
@@ -17,9 +18,7 @@ class GarageHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => GarageHomeBloc(),
-      child: Builder(
-        builder: (context) => _body(context),
-      ),
+      child: Builder(builder: (context) => _body(context)),
     );
   }
 
@@ -41,11 +40,12 @@ class GarageHomePage extends StatelessWidget {
             context.read<GarageHomeBloc>().add(TabChanged(tabbarType));
           },
           items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.speed_outlined),
-              activeIcon: Icon(Icons.speed),
-              label: 'tabs.speedometer'.tr(),
-            ),
+            if (FeatureFlags.enableSpeedCamera)
+              BottomNavigationBarItem(
+                icon: Icon(Icons.speed_outlined),
+                activeIcon: Icon(Icons.speed),
+                label: 'tabs.speedometer'.tr(),
+              ),
             BottomNavigationBarItem(
               icon: Icon(Icons.book_outlined),
               activeIcon: Icon(Icons.book),
