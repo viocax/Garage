@@ -158,7 +158,7 @@ class SettingsPage extends StatelessWidget {
                         const SizedBox(height: 40),
                         Center(
                           child: Text(
-                            'Garage v1.0.0',
+                            state.appVersion,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.3,

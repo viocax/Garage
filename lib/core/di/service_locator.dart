@@ -57,6 +57,9 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<InvoiceRepository>(
     () => MofApiInvoiceRepository(useStub: true),
   );
+  getIt.registerLazySingleton<AppInfoRepository>(
+    () => LocalAppInfoRepository(),
+  );
 }
 
 /// 重置所有依賴（測試用）
@@ -97,4 +100,5 @@ class RepositoryScopes {
   AppOpenAdRepository get appOpenAd => _getIt<AppOpenAdRepository>();
   AdRepository get ad => _getIt<AdRepository>();
   InvoiceRepository get invoice => _getIt<InvoiceRepository>();
+  AppInfoRepository get appInfo => _getIt<AppInfoRepository>();
 }

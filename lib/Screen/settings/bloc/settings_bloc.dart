@@ -12,16 +12,18 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final ISpeedCameraRepository _speedCameraRepository;
   final AdRepository _adRepository;
   final InAppReview _inAppReview;
+  final AppInfoRepository _appInfoRepository;
 
   SettingsBloc({
     ISpeedCameraRepository? speedCameraRepository,
     AdRepository? adRepository,
     InAppReview? inAppReview,
-  })  : _speedCameraRepository =
-            speedCameraRepository ?? getIt.repo.speedCamera,
-        _adRepository = adRepository ?? getIt.repo.ad,
-        _inAppReview = inAppReview ?? InAppReview.instance,
-        super(const SettingsState()) {
+    AppInfoRepository? appInfoRepository,
+  }) : _speedCameraRepository = speedCameraRepository ?? getIt.repo.speedCamera,
+       _adRepository = adRepository ?? getIt.repo.ad,
+       _inAppReview = inAppReview ?? InAppReview.instance,
+       _appInfoRepository = appInfoRepository ?? getIt.repo.appInfo,
+       super(const SettingsState()) {
     on<SettingsEvent>(_onEvent);
 
     add(const LoadSettingsStatus());
@@ -52,7 +54,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   }
 
   Future<void> _onLoadStatus(Emitter<SettingsState> emit) async {
-    emit(state.copyWith(isPro: false));
+    final appVersion = await _appInfoRepository.getFullVersionString();
+    emit(state.copyWith(isPro: false, appVersion: appVersion));
   }
 
   Future<void> _onStopTracking(Emitter<SettingsState> emit) async {

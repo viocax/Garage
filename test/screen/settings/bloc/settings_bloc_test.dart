@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:garage/core/config/ad_constants.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
+import 'package:garage/core/repositories/app_info_repository.dart';
 import 'package:garage/core/repositories/speed_camera_repository.dart';
 import 'package:garage/screen/settings/bloc/settings_bloc.dart';
 import 'package:garage/screen/settings/bloc/settings_event.dart';
@@ -17,6 +18,8 @@ class MockAdRepository extends Mock implements AdRepository {}
 
 class MockInAppReview extends Mock implements InAppReview {}
 
+class MockAppInfoRepository extends Mock implements AppInfoRepository {}
+
 void main() {
   // 註冊 fallback values
   setUpAll(() {
@@ -27,15 +30,20 @@ void main() {
     late MockSpeedCameraRepository mockSpeedCameraRepository;
     late MockAdRepository mockAdRepository;
     late MockInAppReview mockInAppReview;
+    late MockAppInfoRepository mockAppInfoRepository;
 
     setUp(() {
       mockSpeedCameraRepository = MockSpeedCameraRepository();
       mockAdRepository = MockAdRepository();
       mockInAppReview = MockInAppReview();
+      mockAppInfoRepository = MockAppInfoRepository();
 
       // 設置默認行為
       when(() => mockSpeedCameraRepository.isTracking).thenReturn(false);
       when(() => mockAdRepository.isAdFree).thenReturn(false);
+      when(
+        () => mockAppInfoRepository.getFullVersionString(),
+      ).thenAnswer((_) async => 'Garage v0.0.1');
     });
 
     SettingsBloc buildBloc() {
@@ -43,17 +51,19 @@ void main() {
         speedCameraRepository: mockSpeedCameraRepository,
         adRepository: mockAdRepository,
         inAppReview: mockInAppReview,
+        appInfoRepository: mockAppInfoRepository,
       );
     }
 
     group('初始化', () {
       blocTest<SettingsBloc, SettingsState>(
-        '應該在建構時自動載入設定狀態',
+        '應該在建構時自動載入設定狀態和App版本',
         build: buildBloc,
         expect: () => [
           isA<SettingsState>()
               .having((s) => s.isPro, 'isPro', false)
-              .having((s) => s.action, 'action', SettingsAction.none),
+              .having((s) => s.action, 'action', SettingsAction.none)
+              .having((s) => s.appVersion, 'appVersion', 'Garage v0.0.1'),
         ],
       );
 
@@ -106,8 +116,9 @@ void main() {
       blocTest<SettingsBloc, SettingsState>(
         '應該成功停止追蹤並導航到速度設定',
         setUp: () {
-          when(() => mockSpeedCameraRepository.stopLocationTracking())
-              .thenAnswer((_) async => {});
+          when(
+            () => mockSpeedCameraRepository.stopLocationTracking(),
+          ).thenAnswer((_) async => {});
         },
         build: buildBloc,
         act: (bloc) => bloc.add(const StopTracking()),
@@ -120,16 +131,18 @@ void main() {
           ),
         ],
         verify: (_) {
-          verify(() => mockSpeedCameraRepository.stopLocationTracking())
-              .called(1);
+          verify(
+            () => mockSpeedCameraRepository.stopLocationTracking(),
+          ).called(1);
         },
       );
 
       blocTest<SettingsBloc, SettingsState>(
         '停止追蹤失敗時應該顯示錯誤訊息',
         setUp: () {
-          when(() => mockSpeedCameraRepository.stopLocationTracking())
-              .thenThrow(Exception('停止追蹤失敗'));
+          when(
+            () => mockSpeedCameraRepository.stopLocationTracking(),
+          ).thenThrow(Exception('停止追蹤失敗'));
         },
         build: buildBloc,
         act: (bloc) => bloc.add(const StopTracking()),
@@ -155,9 +168,11 @@ void main() {
         skip: 1,
         expect: () => [],
         verify: (_) {
-          verifyNever(() => mockAdRepository.showRewardedAd(
-                onReward: any(named: 'onReward'),
-              ));
+          verifyNever(
+            () => mockAdRepository.showRewardedAd(
+              onReward: any(named: 'onReward'),
+            ),
+          );
         },
       );
 
@@ -165,24 +180,28 @@ void main() {
         '應該顯示獎勵廣告並在完成後給予票券',
         setUp: () {
           when(() => mockAdRepository.isAdFree).thenReturn(false);
-          when(() => mockAdRepository.showRewardedAd(
-                onReward: any(named: 'onReward'),
-              )).thenAnswer((invocation) async {
-            final onReward =
-                invocation.namedArguments[#onReward] as Function();
+          when(
+            () => mockAdRepository.showRewardedAd(
+              onReward: any(named: 'onReward'),
+            ),
+          ).thenAnswer((invocation) async {
+            final onReward = invocation.namedArguments[#onReward] as Function();
             await onReward();
           });
-          when(() => mockAdRepository.grantAdTicket(1))
-              .thenAnswer((_) async => {});
+          when(
+            () => mockAdRepository.grantAdTicket(1),
+          ).thenAnswer((_) async => {});
         },
         build: buildBloc,
         act: (bloc) => bloc.add(const WatchAdForTicket()),
         skip: 1,
         wait: const Duration(milliseconds: 100),
         verify: (bloc) {
-          verify(() => mockAdRepository.showRewardedAd(
-                onReward: any(named: 'onReward'),
-              )).called(1);
+          verify(
+            () => mockAdRepository.showRewardedAd(
+              onReward: any(named: 'onReward'),
+            ),
+          ).called(1);
           verify(() => mockAdRepository.grantAdTicket(1)).called(1);
         },
       );
@@ -199,9 +218,11 @@ void main() {
         skip: 1,
         expect: () => [],
         verify: (_) {
-          verifyNever(() => mockAdRepository.showRewardedAd(
-                onReward: any(named: 'onReward'),
-              ));
+          verifyNever(
+            () => mockAdRepository.showRewardedAd(
+              onReward: any(named: 'onReward'),
+            ),
+          );
         },
       );
 
@@ -209,27 +230,33 @@ void main() {
         '應該顯示獎勵廣告並在完成後移除橫幅',
         setUp: () {
           when(() => mockAdRepository.isAdFree).thenReturn(false);
-          when(() => mockAdRepository.showRewardedAd(
-                onReward: any(named: 'onReward'),
-              )).thenAnswer((invocation) async {
-            final onReward =
-                invocation.namedArguments[#onReward] as Function();
+          when(
+            () => mockAdRepository.showRewardedAd(
+              onReward: any(named: 'onReward'),
+            ),
+          ).thenAnswer((invocation) async {
+            final onReward = invocation.namedArguments[#onReward] as Function();
             await onReward();
           });
-          when(() => mockAdRepository.grantBannerAdFree(any()))
-              .thenAnswer((_) async => {});
+          when(
+            () => mockAdRepository.grantBannerAdFree(any()),
+          ).thenAnswer((_) async => {});
         },
         build: buildBloc,
         act: (bloc) => bloc.add(const WatchAdForBannerRemoval()),
         skip: 1,
         wait: const Duration(milliseconds: 100),
         verify: (bloc) {
-          verify(() => mockAdRepository.showRewardedAd(
-                onReward: any(named: 'onReward'),
-              )).called(1);
-          verify(() =>
-                  mockAdRepository.grantBannerAdFree(AdConstants.bannerAdFreeDuration))
-              .called(1);
+          verify(
+            () => mockAdRepository.showRewardedAd(
+              onReward: any(named: 'onReward'),
+            ),
+          ).called(1);
+          verify(
+            () => mockAdRepository.grantBannerAdFree(
+              AdConstants.bannerAdFreeDuration,
+            ),
+          ).called(1);
         },
       );
     });
@@ -238,10 +265,12 @@ void main() {
       blocTest<SettingsBloc, SettingsState>(
         '應該能夠開啟商店評分頁面',
         setUp: () {
-          when(() => mockInAppReview.isAvailable())
-              .thenAnswer((_) async => true);
-          when(() => mockInAppReview.openStoreListing())
-              .thenAnswer((_) async => {});
+          when(
+            () => mockInAppReview.isAvailable(),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockInAppReview.openStoreListing(),
+          ).thenAnswer((_) async => {});
         },
         build: buildBloc,
         act: (bloc) => bloc.add(const RateApp()),
@@ -256,8 +285,9 @@ void main() {
       blocTest<SettingsBloc, SettingsState>(
         '當評分功能不可用時應該顯示錯誤',
         setUp: () {
-          when(() => mockInAppReview.isAvailable())
-              .thenAnswer((_) async => false);
+          when(
+            () => mockInAppReview.isAvailable(),
+          ).thenAnswer((_) async => false);
         },
         build: buildBloc,
         act: (bloc) => bloc.add(const RateApp()),
@@ -275,8 +305,9 @@ void main() {
       blocTest<SettingsBloc, SettingsState>(
         '評分時發生錯誤應該顯示錯誤訊息',
         setUp: () {
-          when(() => mockInAppReview.isAvailable())
-              .thenThrow(Exception('評分失敗'));
+          when(
+            () => mockInAppReview.isAvailable(),
+          ).thenThrow(Exception('評分失敗'));
         },
         build: buildBloc,
         act: (bloc) => bloc.add(const RateApp()),
@@ -296,14 +327,17 @@ void main() {
       blocTest<SettingsBloc, SettingsState>(
         '應該將 action 重置為 none',
         build: buildBloc,
-        seed: () => const SettingsState(action: SettingsAction.goToSpeedSetting),
+        seed: () => const SettingsState(
+          action: SettingsAction.goToSpeedSetting,
+          appVersion: 'Garage v0.0.1',
+        ),
         act: (bloc) => bloc.add(const ResetSettingsAction()),
         expect: () => [
-          isA<SettingsState>().having(
-            (s) => s.action,
-            'action',
-            SettingsAction.none,
-          ),
+          // LoadSettingsStatus 的結果和 seed 相同，Bloc 不會 emit 重複的狀態
+          // 只有 ResetSettingsAction 會產生新的 emit
+          isA<SettingsState>()
+              .having((s) => s.action, 'action', SettingsAction.none)
+              .having((s) => s.appVersion, 'appVersion', 'Garage v0.0.1'),
         ],
       );
     });
