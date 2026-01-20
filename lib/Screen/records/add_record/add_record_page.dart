@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/core/models/vehicle.dart';
-import 'package:garage/core/models/invoice_data.dart';
-import 'package:garage/router/app_router.dart';
+// import 'package:garage/core/models/invoice_data.dart';
+// import 'package:garage/router/app_router.dart';
 import 'package:garage/theme/app_theme.dart';
 
 import 'bloc/add_record_bloc.dart';
@@ -84,33 +84,33 @@ class _AddRecordViewContent extends StatelessWidget {
           ),
           actions: [
             // Scan Invoice Button
-            IconButton(
-              onPressed: () async {
-                final result = await context.pushPathWithResult<InvoiceData>(
-                  AppPath.invoiceScanner,
-                );
-                if (result != null && context.mounted) {
-                  context.read<AddRecordBloc>().add(
-                    InvoiceDataApplied(
-                      amount: result.totalAmount,
-                      date: result.date,
-                    ),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '已套用發票資料：\$${result.totalAmount.toStringAsFixed(0)}',
-                      ),
-                      backgroundColor: AppTheme.primaryColor,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(Icons.qr_code_scanner),
-              color: AppTheme.accentColor,
-              tooltip: 'invoiceScanner.title'.tr(),
-            ),
+            // IconButton(
+            //   onPressed: () async {
+            //     final result = await context.pushPathWithResult<InvoiceData>(
+            //       AppPath.invoiceScanner,
+            //     );
+            //     if (result != null && context.mounted) {
+            //       context.read<AddRecordBloc>().add(
+            //         InvoiceDataApplied(
+            //           amount: result.totalAmount,
+            //           date: result.date,
+            //         ),
+            //       );
+            //       ScaffoldMessenger.of(context).showSnackBar(
+            //         SnackBar(
+            //           content: Text(
+            //             '已套用發票資料：\$${result.totalAmount.toStringAsFixed(0)}',
+            //           ),
+            //           backgroundColor: AppTheme.primaryColor,
+            //           duration: const Duration(seconds: 2),
+            //         ),
+            //       );
+            //     }
+            //   },
+            //   icon: const Icon(Icons.qr_code_scanner),
+            //   color: AppTheme.accentColor,
+            //   tooltip: 'invoiceScanner.title'.tr(),
+            // ),
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: TextButton(

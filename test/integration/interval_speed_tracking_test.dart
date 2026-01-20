@@ -237,9 +237,6 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       state = speedBloc.state as SpeedData;
-      print(
-        'DEBUG: State after exit pos: isInterval=${state.model.isInterval}',
-      );
 
       // 驗證離開
       verify(() => mockTtsService.speak('離開區間測速')).called(1);
