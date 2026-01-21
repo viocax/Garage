@@ -53,7 +53,9 @@
     "selectMonth": "Select Month",
     "filter": "Filter: ",
     "all": "All",
-    "noFilteredRecords": "No matching records found"
+    "noFilteredRecords": "No matching records found",
+    "nextService": "Next Service",
+    "kmLeft": "{} km left"
   },
   "addRecord": {
     "title": "Add Record",

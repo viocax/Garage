@@ -392,6 +392,14 @@ class _HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate health color
+    Color healthColor = AppTheme.statusGreen;
+    if (vehicle.maintenanceHealth < 0.2) {
+      healthColor = AppTheme.dashboardAccentRed;
+    } else if (vehicle.maintenanceHealth < 0.5) {
+      healthColor = AppTheme.statusOrange;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -519,7 +527,11 @@ class _HeroSection extends StatelessWidget {
             // 只有當有油耗數據時才顯示分隔線和油耗 chip
             if (fuelEfficiency.hasData) ...[
               const SizedBox(width: 12),
-              Container(width: 1, height: 24, color: AppTheme.whiteTransparent20),
+              Container(
+                width: 1,
+                height: 24,
+                color: AppTheme.whiteTransparent20,
+              ),
               const SizedBox(width: 12),
               _StatChip(
                 icon: Icons.local_gas_station_outlined,
@@ -531,6 +543,55 @@ class _HeroSection extends StatelessWidget {
             ],
           ],
         ),
+        const SizedBox(height: 16),
+        // Maintenance Health Bar
+        if (vehicle.maintenanceIntervalKm > 0) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.whiteTransparent08,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'records.nextService'.tr(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      'records.kmLeft'.tr(
+                        args: [NumberFormat('#,###').format(vehicle.remindKm)],
+                      ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: healthColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: vehicle.maintenanceHealth,
+                    backgroundColor: AppTheme.blackTransparent20,
+                    color: healthColor,
+                    minHeight: 6,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }

@@ -38,6 +38,10 @@ class AppTheme {
   static const Color statusGreen = Color(
     0xFF22C55E,
   ); // Online/Success indicator green
+  static const Color statusOrange = Color(
+    0xFFF59E0B,
+  ); // Warning/Medium status orange
+  static const Color statusRed = Color(0xFFEF4444); // Error/Low status red
 
   // Record Type Colors
   static const Color recordTypeFuelColor = Color(

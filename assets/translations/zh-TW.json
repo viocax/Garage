@@ -53,7 +53,9 @@
     "selectMonth": "選擇月份",
     "filter": "篩選：",
     "all": "全部",
-    "noFilteredRecords": "沒有符合條件的記錄"
+    "noFilteredRecords": "沒有符合條件的記錄",
+    "nextService": "下次保養",
+    "kmLeft": "剩餘 {} km"
   },
   "addRecord": {
     "title": "新增紀錄",
