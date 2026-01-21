@@ -55,7 +55,7 @@ jobs:
         if: startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/testflight'
         uses: maierj/fastlane-action@v3.1.0
         with:
-          lane: 'beta'
+          lane: 'upload'
           subdirectory: 'ios'
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
