@@ -1,0 +1,18 @@
+{
+  "fuelType": {
+    "octane92": "92",
+    "octane95": "95",
+    "octane98": "98",
+    "diesel": "柴油",
+    "unleadedFormat": "無鉛{}"
+  },
+  "recordType": {
+    "fuel": "加油",
+    "maintenance": "保養",
+    "other": "其他"
+  },
+  "addRecord": {
+    "invalidFuelAmount": "請輸入有效的加油量",
+    "atLeastOneMaintenanceItem": "請至少輸入一個保養項目"
+  }
+}

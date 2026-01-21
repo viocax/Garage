@@ -16,6 +16,9 @@ void main() async {
   // 初始化依賴注入
   await setupServiceLocator();
 
+  // 初始化 Firebase 服務 (包含 Crashlytics)
+  await getIt.service.firebase.initialize();
+
   // 載入使用者設定
   await getIt.repo.userSettings.loadSettings();
 

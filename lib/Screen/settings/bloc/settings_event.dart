@@ -2,16 +2,6 @@ sealed class SettingsEvent {
   const SettingsEvent();
 }
 
-// Export data
-final class ExportData extends SettingsEvent {
-  const ExportData();
-}
-
-// Clear data
-final class ClearData extends SettingsEvent {
-  const ClearData();
-}
-
 final class ClickSpeedSetting extends SettingsEvent {
   const ClickSpeedSetting();
 }
@@ -28,4 +18,22 @@ final class WatchAdForTicket extends SettingsEvent {
 // Watch ad for banner removal
 final class WatchAdForBannerRemoval extends SettingsEvent {
   const WatchAdForBannerRemoval();
+}
+
+// Send feedback
+final class SendFeedback extends SettingsEvent {
+  const SendFeedback();
+}
+
+// Rate App
+final class RateApp extends SettingsEvent {
+  const RateApp();
+}
+
+final class LoadSettingsStatus extends SettingsEvent {
+  const LoadSettingsStatus();
+}
+
+final class ResetSettingsAction extends SettingsEvent {
+  const ResetSettingsAction();
 }

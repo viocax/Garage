@@ -1,8 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/core/models/vehicle.dart';
+// import 'package:garage/core/models/invoice_data.dart';
+// import 'package:garage/router/app_router.dart';
 import 'package:garage/theme/app_theme.dart';
 
 import 'bloc/add_record_bloc.dart';
@@ -56,6 +60,7 @@ class _AddRecordViewContent extends StatelessWidget {
         backgroundColor: AppTheme.dashboardBg,
         appBar: AppBar(
           backgroundColor: AppTheme.dashboardBg,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
           surfaceTintColor:
               Colors.transparent, // Disable Material 3 surface tint
           centerTitle: true,
@@ -78,6 +83,34 @@ class _AddRecordViewContent extends StatelessWidget {
             ),
           ),
           actions: [
+            // Scan Invoice Button
+            // IconButton(
+            //   onPressed: () async {
+            //     final result = await context.pushPathWithResult<InvoiceData>(
+            //       AppPath.invoiceScanner,
+            //     );
+            //     if (result != null && context.mounted) {
+            //       context.read<AddRecordBloc>().add(
+            //         InvoiceDataApplied(
+            //           amount: result.totalAmount,
+            //           date: result.date,
+            //         ),
+            //       );
+            //       ScaffoldMessenger.of(context).showSnackBar(
+            //         SnackBar(
+            //           content: Text(
+            //             '已套用發票資料：\$${result.totalAmount.toStringAsFixed(0)}',
+            //           ),
+            //           backgroundColor: AppTheme.primaryColor,
+            //           duration: const Duration(seconds: 2),
+            //         ),
+            //       );
+            //     }
+            //   },
+            //   icon: const Icon(Icons.qr_code_scanner),
+            //   color: AppTheme.accentColor,
+            //   tooltip: 'invoiceScanner.title'.tr(),
+            // ),
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: TextButton(
@@ -476,7 +509,8 @@ class _MileageInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AddRecordBloc, AddRecordState>(
-      buildWhen: (previous, current) => previous.km != current.km,
+      buildWhen: (previous, current) =>
+          previous.km != current.km || previous.speedUnit != current.speedUnit,
       builder: (context, state) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -511,7 +545,9 @@ class _MileageInput extends StatelessWidget {
                   horizontal: 16,
                   vertical: 14,
                 ),
-                hintText: 'km',
+                hintText: state.speedUnit == SpeedUnit.kmh
+                    ? 'common.unitKm'.tr()
+                    : 'common.unitMi'.tr(),
                 hintStyle: const TextStyle(color: AppTheme.placeholderGray),
               ),
               onChanged: (value) {
@@ -837,19 +873,21 @@ class _RemainingFuelSlider extends StatelessWidget {
 class _MaintenanceFields extends StatelessWidget {
   const _MaintenanceFields();
 
-  static const maintenanceItems = [
-    '機油',
-    '機油濾芯',
-    '空氣濾芯',
-    '冷氣濾網',
-    '煞車油',
-    '變速箱油',
-    '火星塞',
-    '輪胎',
-    '煞車來令',
-    '電瓶',
-    '其他',
-  ];
+  static List<String> getMaintenanceItems() {
+    return [
+      'maintenanceItem.engineOil'.tr(),
+      'maintenanceItem.oilFilter'.tr(),
+      'maintenanceItem.airFilter'.tr(),
+      'maintenanceItem.cabinFilter'.tr(),
+      'maintenanceItem.brakeFluid'.tr(),
+      'maintenanceItem.transmissionFluid'.tr(),
+      'maintenanceItem.sparkPlug'.tr(),
+      'maintenanceItem.tire'.tr(),
+      'maintenanceItem.brakePad'.tr(),
+      'maintenanceItem.battery'.tr(),
+      'maintenanceItem.other'.tr(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -900,7 +938,7 @@ class _MaintenanceFields extends StatelessWidget {
                   entry: entry,
                   index: index,
                   canDelete: state.maintenanceEntries.length > 1,
-                  items: maintenanceItems,
+                  items: getMaintenanceItems(),
                 );
               }),
 

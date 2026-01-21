@@ -23,7 +23,9 @@
     "later": "Later",
     "goToSettings": "Go to Settings",
     "unitKm": "km",
-    "unitPricePerLiter": "$/L"
+    "unitMi": "mi",
+    "unitPricePerLiter": "$/L",
+    "edit": "Edit"
   },
   "records": {
     "title": "My Garage",
@@ -41,7 +43,19 @@
     "totalSpent": "Total Spent",
     "recordCount": "Records",
     "recordCountWithUnit": "{} items",
-    "loadFailed": "Load failed"
+    "loadFailed": "Load failed",
+    "monthlyExpense": "Monthly Expenses",
+    "categories": "Categories",
+    "annualExpenseComparison": "Annual Expense Comparison",
+    "yearFormat": "Year {}",
+    "fuelEfficiencyTrend": "Fuel Efficiency Trend (km/L)",
+    "fuelEfficiencyEmpty": "At least two fuel records are needed to calculate fuel efficiency",
+    "selectMonth": "Select Month",
+    "filter": "Filter: ",
+    "all": "All",
+    "noFilteredRecords": "No matching records found",
+    "nextService": "Next Service",
+    "kmLeft": "{} km left"
   },
   "addRecord": {
     "title": "Add Record",
@@ -59,7 +73,9 @@
     "notes": "Notes",
     "notesPlaceholder": "Enter notes...",
     "itemNumber": "Item {}",
-    "total": "Total: ${}"
+    "total": "Total: ${}",
+    "invalidFuelAmount": "Please enter a valid fuel amount",
+    "atLeastOneMaintenanceItem": "Please enter at least one maintenance item"
   },
   "recordType": {
     "fuel": "Fuel",
@@ -70,7 +86,8 @@
     "octane92": "92",
     "octane95": "95",
     "octane98": "98",
-    "diesel": "Diesel"
+    "diesel": "Diesel",
+    "unleadedFormat": "Unleaded {}"
   },
   "maintenanceItem": {
     "engineOil": "Engine Oil",
@@ -96,6 +113,7 @@
     "about": "About",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
+    "openSourceLicenses": "Open Source Licenses",
     "feedback": "Feedback",
     "rateApp": "Rate App",
     "adManagement": "Ads & Rewards",
@@ -106,7 +124,22 @@
     "removeBanner": "Remove Banner",
     "removeBannerDesc": "Remove bottom banner for 12 hours",
     "earnedTicketSuccess": "Earned 1 Ad Ticket!",
-    "removeBannerSuccess": "Banner removed for 12 hours!"
+    "removeBannerSuccess": "Banner removed for 12 hours!",
+    "garagePro": "Garage Pro",
+    "proUnlocked": "Pro features unlocked",
+    "proUnlockDesc": "Unlock cloud sync and advanced stats",
+    "proEnabled": "Enabled"
+  },
+  "speedCamera": {
+    "permission": {
+      "title": "Location Permission Required",
+      "message": "Speed detection needs access to your location to work properly. Please go to settings to enable location permission."
+    },
+    "interval": {
+      "averageSpeed": "Avg. Speed",
+      "remaining": "Remaining",
+      "limit": "Limit"
+    }
   },
   "speedDetection": {
     "title": "Speed Detection",
@@ -151,7 +184,23 @@
     "uploadFailed": "Upload failed",
     "downloading": "Downloading data...",
     "downloadComplete": "Download complete!",
-    "downloadFailed": "Download failed"
+    "downloadFailed": "Download failed",
+    "clearLocalData": "Clear Local Data",
+    "clearLocalDesc": "Delete all local vehicles and records",
+    "confirmClear": "Confirm Clear",
+    "clearLocalWarning": "This will delete all local vehicle and record data. This action cannot be undone. If you have a cloud backup, you can restore from cloud later. Are you sure you want to continue?",
+    "clear": "Clear",
+    "clearing": "Clearing data...",
+    "clearComplete": "Clear complete!",
+    "clearFailed": "Clear failed",
+    "deleteCloudBackup": "Delete Cloud Backup",
+    "deleteCloudDesc": "Delete backup file from cloud",
+    "confirmDeleteBackup": "Confirm Delete Backup",
+    "deleteBackupWarning": "This will permanently delete the backup file from cloud. This action cannot be undone. Are you sure you want to continue?",
+    "delete": "Delete",
+    "deleting": "Deleting backup...",
+    "deleteComplete": "Delete complete!",
+    "deleteFailed": "Delete failed"
   },
   "vehicle": {
     "addVehicleTooltip": "Add Vehicle",
@@ -178,6 +227,57 @@
     "maintenanceIntervalPlaceholder": "5000",
     "submit": "Complete",
     "editLaterHint": "You can edit vehicle info in settings later",
-    "errorOccurred": "An error occurred"
+    "errorOccurred": "An error occurred",
+    "fillAllFields": "Please fill in all required fields",
+    "addVehicleFailed": "Failed to add vehicle",
+    "editTitle": "Edit Vehicle Info",
+    "updateVehicleFailed": "Failed to update vehicle"
+  },
+  "premium": {
+    "successTitle": "Congratulations!",
+    "successDesc": "You have successfully enabled Garage Pro privileges and enjoy full functionality.",
+    "successButton": "Awesome",
+    "failureMessage": "Operation failed",
+    "proMemberStatus": "You are a PRO member",
+    "unlockAllFeatures": "Unlock all advanced features",
+    "upgradeProDesc": "Upgrade to Pro for unlimited sync and data tracking.",
+    "thanksSupport": "Thanks for your support!",
+    "allAccess": "You currently have all Garage Pro privileges.",
+    "noOfferings": "No plans available at the moment",
+    "bestChoice": "Best Choice",
+    "monthlyPlan": "Monthly Subscription",
+    "annualPlan": "Annual Subscription",
+    "monthlyDesc": "Cancel anytime, enjoy Pro without pressure.",
+    "annualDesc": "One year long, better price.",
+    "restorePurchases": "Restore Purchases",
+    "visualPreviewTitle": "Pro Feature Preview",
+    "previewTag": "Pro Preview",
+    "features": {
+      "noAds": "Ad-free experience",
+      "noAdsDesc": "Remove all interstitial and banner ads.",
+      "cloudSync": "Cloud Auto Sync",
+      "cloudSyncDesc": "Seamlessly switch your data between multiple devices.",
+      "stats": "Advanced Statistics",
+      "statsDesc": "Includes fuel consumption trends and annual spending comparison.",
+      "support": "Priority Customer Support",
+      "supportDesc": "Our new features will be prioritized for Pro users."
+    }
+  },
+  "invoiceScanner": {
+    "title": "Scan Invoice",
+    "hint": "Place the left QR code of the invoice in the frame",
+    "processing": "Processing invoice data...",
+    "retry": "Retry",
+    "result": {
+      "title": "Invoice Info",
+      "fromApi": "Full Data",
+      "fromQr": "Basic Data",
+      "number": "Invoice Number",
+      "date": "Date",
+      "amount": "Total Amount",
+      "items": "Items",
+      "rescan": "Rescan",
+      "use": "Use Invoice"
+    }
   }
 }

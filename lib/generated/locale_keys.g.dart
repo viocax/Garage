@@ -89,6 +89,7 @@ abstract class  LocaleKeys {
   static const settings_about = 'settings.about';
   static const settings_termsOfService = 'settings.termsOfService';
   static const settings_privacyPolicy = 'settings.privacyPolicy';
+  static const settings_openSourceLicenses = 'settings.openSourceLicenses';
   static const settings_feedback = 'settings.feedback';
   static const settings_rateApp = 'settings.rateApp';
   static const settings_adManagement = 'settings.adManagement';
@@ -101,6 +102,10 @@ abstract class  LocaleKeys {
   static const settings_earnedTicketSuccess = 'settings.earnedTicketSuccess';
   static const settings_removeBannerSuccess = 'settings.removeBannerSuccess';
   static const settings = 'settings';
+  static const speedCamera_permission_title = 'speedCamera.permission.title';
+  static const speedCamera_permission_message = 'speedCamera.permission.message';
+  static const speedCamera_permission = 'speedCamera.permission';
+  static const speedCamera = 'speedCamera';
   static const speedDetection_title = 'speedDetection.title';
   static const speedDetection_locationService = 'speedDetection.locationService';
   static const speedDetection_locationPermission = 'speedDetection.locationPermission';
@@ -121,6 +126,7 @@ abstract class  LocaleKeys {
   static const speedDetection_notificationText = 'speedDetection.notificationText';
   static const speedDetection = 'speedDetection';
   static const cloudSync_title = 'cloudSync.title';
+  static const cloudSync_service = 'cloudSync.service';
   static const cloudSync_selectService = 'cloudSync.selectService';
   static const cloudSync_syncOperations = 'cloudSync.syncOperations';
   static const cloudSync_notSupported = 'cloudSync.notSupported';

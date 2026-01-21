@@ -2,18 +2,22 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/widgets/primary_action_button.dart';
+import 'package:garage/core/models/vehicle.dart';
 
 import 'bloc/add_vehicle_bloc.dart';
 
 class AddVehiclePage extends StatelessWidget {
-  const AddVehiclePage({super.key});
+  final Vehicle? vehicle;
+
+  const AddVehiclePage({super.key, this.vehicle});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AddVehicleBloc(),
+      create: (context) => AddVehicleBloc(vehicleToEdit: vehicle),
       child: BlocListener<AddVehicleBloc, AddVehicleState>(
         listenWhen: (previous, current) => previous.status != current.status,
         listener: (context, state) {
@@ -38,14 +42,16 @@ class AddVehiclePage extends StatelessWidget {
             );
           }
         },
-        child: const _AddVehicleViewContent(),
+        child: _AddVehicleViewContent(isEditing: vehicle != null),
       ),
     );
   }
 }
 
 class _AddVehicleViewContent extends StatelessWidget {
-  const _AddVehicleViewContent();
+  final bool isEditing;
+
+  const _AddVehicleViewContent({required this.isEditing});
 
   @override
   Widget build(BuildContext context) {
@@ -59,45 +65,48 @@ class _AddVehicleViewContent extends StatelessWidget {
             SliverAppBar(
               backgroundColor: Colors.transparent,
               surfaceTintColor: Colors.transparent,
+              systemOverlayStyle: SystemUiOverlayStyle.light,
               pinned: true,
               expandedHeight: 280,
               leading: _CloseButton(),
-              flexibleSpace: FlexibleSpaceBar(background: _HeroSection()),
+              flexibleSpace: FlexibleSpaceBar(
+                background: _HeroSection(isEditing: isEditing),
+              ),
             ),
             // Form content
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
                 child: Column(
-                  children: const [
+                  children: [
                     _InputFieldCard(
                       stepNumber: 1,
                       icon: Icons.drive_file_rename_outline,
                       child: _VehicleNameInput(),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     _InputFieldCard(
                       stepNumber: 2,
                       icon: Icons.confirmation_number_outlined,
                       child: _LicensePlateInput(),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     _InputFieldCard(
                       stepNumber: 3,
                       icon: Icons.speed_outlined,
                       child: _MileageInput(),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     _InputFieldCard(
                       stepNumber: 4,
                       icon: Icons.build_outlined,
                       isOptional: true,
                       child: _MaintenanceIntervalInput(),
                     ),
-                    SizedBox(height: 32),
-                    _SubmitButton(),
-                    SizedBox(height: 16),
-                    _SkipText(),
+                    const SizedBox(height: 32),
+                    _SubmitButton(isEditing: isEditing),
+                    const SizedBox(height: 16),
+                    if (!isEditing) _SkipText(),
                   ],
                 ),
               ),
@@ -131,6 +140,10 @@ class _CloseButton extends StatelessWidget {
 }
 
 class _HeroSection extends StatelessWidget {
+  final bool isEditing;
+
+  const _HeroSection({required this.isEditing});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -196,7 +209,7 @@ class _HeroSection extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'addVehicle.title'.tr(),
+              isEditing ? 'addVehicle.editTitle'.tr() : 'addVehicle.title'.tr(),
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
@@ -343,8 +356,29 @@ class _InputFieldCard extends StatelessWidget {
   }
 }
 
-class _VehicleNameInput extends StatelessWidget {
+class _VehicleNameInput extends StatefulWidget {
   const _VehicleNameInput();
+
+  @override
+  State<_VehicleNameInput> createState() => _VehicleNameInputState();
+}
+
+class _VehicleNameInputState extends State<_VehicleNameInput> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: context.read<AddVehicleBloc>().state.vehicleName,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -369,6 +403,7 @@ class _VehicleNameInput extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _StyledTextField(
+          controller: _controller,
           hintText: 'addVehicle.vehicleNamePlaceholder'.tr(),
           onChanged: (value) {
             context.read<AddVehicleBloc>().add(VehicleNameChanged(value));
@@ -379,8 +414,29 @@ class _VehicleNameInput extends StatelessWidget {
   }
 }
 
-class _LicensePlateInput extends StatelessWidget {
+class _LicensePlateInput extends StatefulWidget {
   const _LicensePlateInput();
+
+  @override
+  State<_LicensePlateInput> createState() => _LicensePlateInputState();
+}
+
+class _LicensePlateInputState extends State<_LicensePlateInput> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: context.read<AddVehicleBloc>().state.licensePlate,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -405,6 +461,7 @@ class _LicensePlateInput extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _StyledTextField(
+          controller: _controller,
           hintText: 'addVehicle.licensePlatePlaceholder'.tr(),
           textCapitalization: TextCapitalization.characters,
           inputFormatters: [
@@ -433,8 +490,28 @@ class _UpperCaseTextFormatter extends TextInputFormatter {
   }
 }
 
-class _MileageInput extends StatelessWidget {
+class _MileageInput extends StatefulWidget {
   const _MileageInput();
+
+  @override
+  State<_MileageInput> createState() => _MileageInputState();
+}
+
+class _MileageInputState extends State<_MileageInput> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final km = context.read<AddVehicleBloc>().state.currentKm;
+    _controller = TextEditingController(text: km == 0 ? '' : km.toString());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -461,6 +538,7 @@ class _MileageInput extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             _StyledTextField(
+              controller: _controller,
               hintText: '0',
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -494,58 +572,92 @@ class _MileageInput extends StatelessWidget {
   }
 }
 
-class _MaintenanceIntervalInput extends StatelessWidget {
+class _MaintenanceIntervalInput extends StatefulWidget {
   const _MaintenanceIntervalInput();
 
   @override
+  State<_MaintenanceIntervalInput> createState() =>
+      _MaintenanceIntervalInputState();
+}
+
+class _MaintenanceIntervalInputState extends State<_MaintenanceIntervalInput> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final interval = context.read<AddVehicleBloc>().state.maintenanceIntervalKm;
+    _controller = TextEditingController(
+      text: interval == 0 ? '' : interval.toString(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'addVehicle.maintenanceInterval'.tr(),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.dashboardTextPrimary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'addVehicle.maintenanceIntervalDesc'.tr(),
-          style: TextStyle(
-            fontSize: 13,
-            color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.7),
-          ),
-        ),
-        const SizedBox(height: 14),
-        _StyledTextField(
-          hintText: 'addVehicle.maintenanceIntervalPlaceholder'.tr(),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          suffix: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppTheme.whiteTransparent08,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Text(
-              'km',
-              style: TextStyle(
-                fontSize: 14,
+    return BlocBuilder<AddVehicleBloc, AddVehicleState>(
+      buildWhen: (previous, current) => previous.speedUnit != current.speedUnit,
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'addVehicle.maintenanceInterval'.tr(),
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.dashboardTextSecondary,
+                color: AppTheme.dashboardTextPrimary,
               ),
             ),
-          ),
-          onChanged: (value) {
-            final interval = int.tryParse(value) ?? 0;
-            context.read<AddVehicleBloc>().add(
-              MaintenanceIntervalChanged(interval),
-            );
-          },
-        ),
-      ],
+            const SizedBox(height: 4),
+            Text(
+              'addVehicle.maintenanceIntervalDesc'.tr(),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.dashboardTextSecondary.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 14),
+            _StyledTextField(
+              controller: _controller,
+              hintText: 'addVehicle.maintenanceIntervalPlaceholder'.tr(),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              suffix: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.whiteTransparent08,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  state.speedUnit == SpeedUnit.kmh
+                      ? 'common.unitKm'.tr()
+                      : 'common.unitMi'.tr(),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.dashboardTextSecondary,
+                  ),
+                ),
+              ),
+              onChanged: (value) {
+                final interval = int.tryParse(value) ?? 0;
+                context.read<AddVehicleBloc>().add(
+                  MaintenanceIntervalChanged(interval),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -557,6 +669,7 @@ class _StyledTextField extends StatelessWidget {
   final Widget? suffix;
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
+  final TextEditingController? controller;
 
   const _StyledTextField({
     required this.hintText,
@@ -565,11 +678,13 @@ class _StyledTextField extends StatelessWidget {
     this.suffix,
     this.onChanged,
     this.inputFormatters,
+    this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: controller,
       cursorColor: AppTheme.dashboardAccentRed,
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
@@ -617,7 +732,8 @@ class _StyledTextField extends StatelessWidget {
 }
 
 class _SubmitButton extends StatelessWidget {
-  const _SubmitButton();
+  final bool isEditing;
+  const _SubmitButton({required this.isEditing});
 
   @override
   Widget build(BuildContext context) {
@@ -627,8 +743,11 @@ class _SubmitButton extends StatelessWidget {
           onPressed: () {
             context.read<AddVehicleBloc>().add(const SubmitVehicle());
           },
-          text: 'addVehicle.submit'.tr(),
-          icon: Icons.check_circle_outline,
+          text: isEditing
+              ? 'common.save'
+                    .tr() // Use generic save or editVehicle.save
+              : 'addVehicle.submit'.tr(),
+          icon: isEditing ? Icons.save_outlined : Icons.check_circle_outline,
         );
       },
     );

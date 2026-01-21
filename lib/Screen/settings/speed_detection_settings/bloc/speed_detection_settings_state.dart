@@ -1,7 +1,11 @@
+import 'package:equatable/equatable.dart';
 import 'package:garage/core/models/speed_unit.dart';
 
-sealed class SpeedDetectionSettingsState {
+sealed class SpeedDetectionSettingsState extends Equatable {
   const SpeedDetectionSettingsState();
+
+  @override
+  List<Object?> get props => [];
 }
 
 final class SpeedDetectionSettingsInitial extends SpeedDetectionSettingsState {
@@ -22,7 +26,8 @@ final class SpeedDetectionSettingsLoaded extends SpeedDetectionSettingsState {
   static const int minAlertDistance = 300;
   static const int maxAlertDistance = 1000;
   static const int alertDistanceStep = 100;
-  int get alertDistanceDivisions => (maxAlertDistance - minAlertDistance) ~/ alertDistanceStep;
+  int get alertDistanceDivisions =>
+      (maxAlertDistance - minAlertDistance) ~/ alertDistanceStep;
 
   // Location permission
   final bool hasLocationPermission;
@@ -47,9 +52,20 @@ final class SpeedDetectionSettingsLoaded extends SpeedDetectionSettingsState {
     return SpeedDetectionSettingsLoaded(
       speedUnit: speedUnit ?? this.speedUnit,
       isVoiceAlertEnabled: isVoiceAlertEnabled ?? this.isVoiceAlertEnabled,
-      voiceVolumePercentage: voiceVolumePercentage ?? this.voiceVolumePercentage,
+      voiceVolumePercentage:
+          voiceVolumePercentage ?? this.voiceVolumePercentage,
       alertDistance: alertDistance ?? this.alertDistance, // constructor 會自動驗證
-      hasLocationPermission: hasLocationPermission ?? this.hasLocationPermission,
+      hasLocationPermission:
+          hasLocationPermission ?? this.hasLocationPermission,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    speedUnit,
+    isVoiceAlertEnabled,
+    voiceVolumePercentage,
+    alertDistance,
+    hasLocationPermission,
+  ];
 }

@@ -1,5 +1,66 @@
 part of 'records_bloc.dart';
 
+/// 油耗顯示數據
+class FuelEfficiencyDisplay {
+  final double kmPerLiter; // km/L 值
+
+  const FuelEfficiencyDisplay({required this.kmPerLiter});
+
+  /// 空數據（無油耗記錄）
+  static const FuelEfficiencyDisplay empty = FuelEfficiencyDisplay(
+    kmPerLiter: 0.0,
+  );
+
+  /// 是否有有效數據
+  bool get hasData => kmPerLiter > 0.0;
+
+  /// 格式化顯示字串
+  /// 返回格式：10.5 km/L 或空字串（當數據不足時）
+  String format() {
+    if (!hasData) return '';
+    return '${kmPerLiter.toStringAsFixed(1)} km/L';
+  }
+
+  /// 計算車輛的最新油耗
+  ///
+  /// 處理三種情況：
+  /// 1. 無加油記錄：返回 empty（顯示 N/A）
+  /// 2. 只有一筆記錄：返回 empty（需要至少兩筆記錄才能計算）
+  /// 3. 多筆記錄：使用最近兩筆記錄計算
+  static FuelEfficiencyDisplay calculateFromVehicle(Vehicle vehicle) {
+    return calculate(vehicle.records.toList());
+  }
+
+  /// 根據記錄列表計算油耗（方便測試）
+  static FuelEfficiencyDisplay calculate(List<VehicleRecord> records) {
+    // 取得所有加油記錄，按日期排序（最新的在前）
+    final fuelRecords = records.where((r) => r.typeName == 'fuel').toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    // 情況 1：沒有任何加油記錄
+    if (fuelRecords.isEmpty) {
+      return FuelEfficiencyDisplay.empty;
+    }
+
+    // 情況 2：只有一筆加油記錄 - 無法計算油耗，需要至少兩筆記錄
+    if (fuelRecords.length == 1) {
+      return FuelEfficiencyDisplay.empty;
+    }
+
+    // 情況 3：多筆記錄 - 使用最近兩筆
+    final mostRecent = fuelRecords[0];
+    final previousRecord = fuelRecords[1];
+
+    final efficiency = mostRecent.calculateFuelEfficiency(previousRecord.km);
+
+    if (efficiency <= 0) {
+      return FuelEfficiencyDisplay.empty;
+    }
+
+    return FuelEfficiencyDisplay(kmPerLiter: efficiency);
+  }
+}
+
 enum RecordsSideEffect {
   navigateToAddVehicle,
   navigateToAddRecord,
@@ -12,6 +73,7 @@ class RecordsState extends Equatable {
   final UserSettings? userSettings;
   final String odometerString;
   final String unitString;
+  final FuelEfficiencyDisplay fuelEfficiency;
   final bool isLoading;
   final String? errorMessage;
   final RecordsSideEffect? sideEffect;
@@ -22,6 +84,7 @@ class RecordsState extends Equatable {
     this.userSettings,
     this.odometerString = '0',
     this.unitString = 'km',
+    this.fuelEfficiency = FuelEfficiencyDisplay.empty,
     this.isLoading = false,
     this.errorMessage,
     this.sideEffect,
@@ -30,11 +93,10 @@ class RecordsState extends Equatable {
   bool get isEmpty => vehicles.isEmpty;
 
   // Helper to get the current vehicle
-  Vehicle get currentVehicle =>
-      vehicles.firstWhere(
-        (v) => v.vehicleId == currentVehicleId,
-        orElse: () => Vehicle.empty(),
-      );
+  Vehicle get currentVehicle => vehicles.firstWhere(
+    (v) => v.vehicleId == currentVehicleId,
+    orElse: () => Vehicle.empty(),
+  );
 
   @override
   List<Object?> get props => [
@@ -43,6 +105,7 @@ class RecordsState extends Equatable {
     userSettings,
     odometerString,
     unitString,
+    fuelEfficiency,
     isLoading,
     errorMessage,
     sideEffect,
@@ -54,6 +117,7 @@ class RecordsState extends Equatable {
     UserSettings? userSettings,
     String? odometerString,
     String? unitString,
+    FuelEfficiencyDisplay? fuelEfficiency,
     bool? isLoading,
     String? errorMessage,
     RecordsSideEffect? sideEffect,
@@ -66,6 +130,7 @@ class RecordsState extends Equatable {
       userSettings: userSettings ?? this.userSettings,
       odometerString: odometerString ?? this.odometerString,
       unitString: unitString ?? this.unitString,
+      fuelEfficiency: fuelEfficiency ?? this.fuelEfficiency,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       sideEffect: clearSideEffect ? null : sideEffect,

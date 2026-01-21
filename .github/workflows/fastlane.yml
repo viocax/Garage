@@ -3,9 +3,8 @@ name: CI/CD
 on:
   push:
     branches:
-      - master
       - testflight
-      - 'release/*'
+      - release
   pull_request:
     branches: [master]
 
@@ -31,14 +30,14 @@ jobs:
       - name: Run Tests
         run: flutter test
 
-      # Build without codesign for CI (master)
-      - name: Build iOS (CI)
-        if: github.ref == 'refs/heads/master' || github.event_name == 'pull_request'
+      # Build Check for PRs (master)
+      - name: Build iOS (Check)
+        if: github.event_name == 'pull_request'
         run: flutter build ios --release --no-codesign
 
-      # TestFlight Deploy (release/* or testflight branch only)
+      # TestFlight Deploy (testflight branch or release branch)
       - name: Setup Ruby
-        if: startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/testflight'
+        if: github.event_name == 'push'
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
@@ -46,17 +45,22 @@ jobs:
           working-directory: ios
 
       - name: Setup SSH for Match
-        if: startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/testflight'
+        if: github.event_name == 'push'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.MATCH_DEPLOY_KEY }}
 
       - name: Deploy to TestFlight
-        if: startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/testflight'
-        uses: maierj/fastlane-action@v3.1.0
-        with:
-          lane: 'beta'
-          subdirectory: 'ios'
+        if: github.event_name == 'push'
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/testflight" ]]; then
+             echo "🚀 Running fastlane upload for TestFlight branch..."
+             bundle exec fastlane ios upload
+          elif [[ "${{ github.ref }}" == "refs/heads/release" ]]; then
+             echo "🏷️ Running fastlane release (with Tagging) for Release branch..."
+             bundle exec fastlane ios release
+          fi
+        working-directory: ios
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}

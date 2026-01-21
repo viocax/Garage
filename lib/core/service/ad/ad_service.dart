@@ -18,7 +18,4 @@ abstract class AdService {
   Future<void> showRewardedAd({
     required Function(RewardItem) onUserEarnedReward,
   });
-
-  /// 載入原生廣告（如果需要預先載入）
-  Future<void> loadNativeAd();
 }

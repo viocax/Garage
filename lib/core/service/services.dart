@@ -1,5 +1,6 @@
 export 'isar_service.dart';
 export 'location/location_service.dart';
+export 'location/interval_manager.dart';
 export 'location/geolocator_interface.dart';
 export 'network/http_service.dart';
 export 'network/api_request.dart';
@@ -12,3 +13,4 @@ export 'shared_preferences/shared_preferences_interface.dart';
 export 'cloud_sync/cloud_sync.dart';
 export 'ad/ad_service.dart';
 export 'ad/mobile_ad_service.dart';
+export 'firebase_service.dart';

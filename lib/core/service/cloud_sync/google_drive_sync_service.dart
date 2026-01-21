@@ -1,24 +1,136 @@
 import 'dart:convert';
 
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:garage/core/core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:isar_community/isar.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class GoogleDriveSyncService implements CloudSyncService {
+/// Interface for Google Sign-In operations, allowing injection for testing.
+abstract class GoogleSignInWrapper {
+  GoogleSignInAccount? get currentUser;
+  Future<bool> isSignedIn();
+  Future<GoogleSignInAccount?> signIn();
+  Future<GoogleSignInAccount?> signInSilently();
+  Future<GoogleSignInAccount?> signOut();
+  Future<http.Client?> authenticatedClient();
+}
+
+/// Default implementation using actual GoogleSignIn.
+class DefaultGoogleSignInWrapper implements GoogleSignInWrapper {
+  final GoogleSignIn _googleSignIn;
+
+  DefaultGoogleSignInWrapper()
+    : _googleSignIn = GoogleSignIn(scopes: [drive.DriveApi.driveAppdataScope]);
+
+  @override
+  GoogleSignInAccount? get currentUser => _googleSignIn.currentUser;
+
+  @override
+  Future<bool> isSignedIn() => _googleSignIn.isSignedIn();
+
+  @override
+  Future<GoogleSignInAccount?> signIn() => _googleSignIn.signIn();
+
+  @override
+  Future<GoogleSignInAccount?> signInSilently() =>
+      _googleSignIn.signInSilently();
+
+  @override
+  Future<GoogleSignInAccount?> signOut() => _googleSignIn.signOut();
+
+  @override
+  Future<http.Client?> authenticatedClient() =>
+      _googleSignIn.authenticatedClient();
+}
+
+/// Interface for Drive API operations, allowing injection for testing.
+abstract class DriveApiWrapper {
+  Future<drive.FileList> listFiles({
+    required String spaces,
+    required String q,
+    required String fields,
+  });
+  Future<drive.File> createFile(drive.File file, {drive.Media? uploadMedia});
+  Future<drive.File> updateFile(
+    drive.File file,
+    String fileId, {
+    drive.Media? uploadMedia,
+  });
+  Future<void> deleteFile(String fileId);
+  Future<drive.Media> downloadFile(String fileId);
+}
+
+/// Default implementation using actual DriveApi.
+class DefaultDriveApiWrapper implements DriveApiWrapper {
+  final drive.DriveApi _driveApi;
+
+  DefaultDriveApiWrapper(http.Client client)
+    : _driveApi = drive.DriveApi(client);
+
+  @override
+  Future<drive.FileList> listFiles({
+    required String spaces,
+    required String q,
+    required String fields,
+  }) {
+    return _driveApi.files.list(spaces: spaces, q: q, $fields: fields);
+  }
+
+  @override
+  Future<drive.File> createFile(drive.File file, {drive.Media? uploadMedia}) {
+    return _driveApi.files.create(file, uploadMedia: uploadMedia);
+  }
+
+  @override
+  Future<drive.File> updateFile(
+    drive.File file,
+    String fileId, {
+    drive.Media? uploadMedia,
+  }) {
+    return _driveApi.files.update(file, fileId, uploadMedia: uploadMedia);
+  }
+
+  @override
+  Future<void> deleteFile(String fileId) {
+    return _driveApi.files.delete(fileId);
+  }
+
+  @override
+  Future<drive.Media> downloadFile(String fileId) async {
+    return await _driveApi.files.get(
+          fileId,
+          downloadOptions: drive.DownloadOptions.fullMedia,
+        )
+        as drive.Media;
+  }
+}
+
+class GoogleDriveSyncService extends CloudSyncService with CloudSyncDataMixin {
   static const _backupFileName = 'garage_backup.json';
   static const _lastSyncKey = 'google_drive_last_sync';
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
-      drive.DriveApi.driveAppdataScope,
-    ],
-  );
+  final GoogleSignInWrapper _googleSignIn;
+  final Future<SharedPreferences> Function() _getPrefs;
+  DriveApiWrapper? _driveApi;
 
-  drive.DriveApi? _driveApi;
+  /// Creates a GoogleDriveSyncService with optional dependency injection.
+  ///
+  /// For production, use the default constructor without parameters.
+  /// For testing, inject mock implementations.
+  GoogleDriveSyncService({
+    GoogleSignInWrapper? googleSignIn,
+    Future<SharedPreferences> Function()? getPrefs,
+    DriveApiWrapper? driveApi,
+  }) : _googleSignIn = googleSignIn ?? DefaultGoogleSignInWrapper(),
+       _getPrefs = getPrefs ?? SharedPreferences.getInstance,
+       _driveApi = driveApi;
+
+  /// For testing: allows setting the DriveApi directly.
+  void setDriveApiForTesting(DriveApiWrapper api) {
+    _driveApi = api;
+  }
 
   @override
   CloudProvider get provider => CloudProvider.googleDrive;
@@ -48,7 +160,7 @@ class GoogleDriveSyncService implements CloudSyncService {
       if (httpClient == null) {
         return CloudSyncResult.failure('無法取得認證');
       }
-      _driveApi = drive.DriveApi(httpClient);
+      _driveApi = DefaultDriveApiWrapper(httpClient);
 
       return CloudSyncResult.success();
     } catch (e) {
@@ -71,7 +183,7 @@ class GoogleDriveSyncService implements CloudSyncService {
       }
 
       // Get app data to export
-      final exportData = await _getExportData();
+      final exportData = await getExportData();
       if (exportData == null) {
         return CloudSyncResult.failure('無法取得匯出資料');
       }
@@ -87,7 +199,7 @@ class GoogleDriveSyncService implements CloudSyncService {
 
       if (existingFileId != null) {
         // Update existing file
-        await _driveApi!.files.update(
+        await _driveApi!.updateFile(
           drive.File(),
           existingFileId,
           uploadMedia: media,
@@ -98,10 +210,7 @@ class GoogleDriveSyncService implements CloudSyncService {
           ..name = _backupFileName
           ..parents = ['appDataFolder'];
 
-        await _driveApi!.files.create(
-          driveFile,
-          uploadMedia: media,
-        );
+        await _driveApi!.createFile(driveFile, uploadMedia: media);
       }
 
       // Save sync time
@@ -129,10 +238,7 @@ class GoogleDriveSyncService implements CloudSyncService {
       }
 
       // Download the file content
-      final response = await _driveApi!.files.get(
-        fileId,
-        downloadOptions: drive.DownloadOptions.fullMedia,
-      ) as drive.Media;
+      final response = await _driveApi!.downloadFile(fileId);
 
       final bytes = <int>[];
       await for (final chunk in response.stream) {
@@ -141,7 +247,7 @@ class GoogleDriveSyncService implements CloudSyncService {
       final jsonString = utf8.decode(bytes);
 
       // Restore the data
-      final success = await _restoreData(jsonString);
+      final success = await restoreData(jsonString);
       if (!success) {
         return CloudSyncResult.failure('還原資料失敗');
       }
@@ -158,10 +264,37 @@ class GoogleDriveSyncService implements CloudSyncService {
 
   @override
   Future<DateTime?> getLastSyncTime() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     final timestamp = prefs.getInt(_lastSyncKey);
     if (timestamp == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(timestamp);
+  }
+
+  @override
+  Future<CloudSyncResult> deleteBackup() async {
+    try {
+      // Ensure we have a valid Drive API client
+      if (!await _ensureDriveApi()) {
+        return CloudSyncResult.failure('請先登入 Google 帳號');
+      }
+
+      // Find the backup file
+      final fileId = await _findBackupFile();
+      if (fileId == null) {
+        return CloudSyncResult.failure('雲端沒有備份資料');
+      }
+
+      // Delete the backup file
+      await _driveApi!.deleteFile(fileId);
+
+      // Clear local sync time record
+      final prefs = await _getPrefs();
+      await prefs.remove(_lastSyncKey);
+
+      return CloudSyncResult.success();
+    } catch (e) {
+      return CloudSyncResult.failure('刪除失敗：${e.toString()}');
+    }
   }
 
   // Private helper methods
@@ -177,7 +310,7 @@ class GoogleDriveSyncService implements CloudSyncService {
       final httpClient = await _googleSignIn.authenticatedClient();
       if (httpClient == null) return false;
 
-      _driveApi = drive.DriveApi(httpClient);
+      _driveApi = DefaultDriveApiWrapper(httpClient);
       return true;
     } catch (e) {
       return false;
@@ -186,10 +319,10 @@ class GoogleDriveSyncService implements CloudSyncService {
 
   Future<String?> _findBackupFile() async {
     try {
-      final fileList = await _driveApi!.files.list(
+      final fileList = await _driveApi!.listFiles(
         spaces: 'appDataFolder',
         q: "name = '$_backupFileName'",
-        $fields: 'files(id, name)',
+        fields: 'files(id, name)',
       );
 
       if (fileList.files == null || fileList.files!.isEmpty) {
@@ -203,213 +336,7 @@ class GoogleDriveSyncService implements CloudSyncService {
   }
 
   Future<void> _saveLastSyncTime(DateTime time) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setInt(_lastSyncKey, time.millisecondsSinceEpoch);
-  }
-
-  /// Export app data to JSON string
-  Future<String?> _getExportData() async {
-    try {
-      final isar = await getIt.service.isarDB.isar;
-
-      // 取得所有車輛
-      final vehicles = await isar.vehicles.where().findAll();
-
-      // 取得所有記錄
-      final records = await isar.vehicleRecords.where().findAll();
-
-      debugPrint('CloudSync: 匯出 ${vehicles.length} 輛車, ${records.length} 筆記錄');
-
-      final exportData = {
-        'version': 1,
-        'exportedAt': DateTime.now().toIso8601String(),
-        'vehicles': vehicles.map((v) => _vehicleToJson(v)).toList(),
-        'records': records.map((r) => _recordToJson(r)).toList(),
-      };
-
-      return jsonEncode(exportData);
-    } catch (e) {
-      debugPrint('CloudSync: 匯出失敗 - $e');
-      return null;
-    }
-  }
-
-  /// 將 Vehicle 轉換為 JSON Map
-  Map<String, dynamic> _vehicleToJson(Vehicle vehicle) {
-    return {
-      'vehicleId': vehicle.vehicleId,
-      'carName': vehicle.carName,
-      'licensePlate': vehicle.licensePlate,
-      'currentKm': vehicle.currentKm,
-      'maintenanceIntervalKm': vehicle.maintenanceIntervalKm,
-      'kmToNextMaintenance': vehicle.kmToNextMaintenance,
-      'order': vehicle.order,
-    };
-  }
-
-  /// 將 VehicleRecord 轉換為 JSON Map
-  Map<String, dynamic> _recordToJson(VehicleRecord record) {
-    final json = <String, dynamic>{
-      'recordId': record.recordId,
-      'vehicleId': record.vehicleId,
-      'typeName': record.typeName,
-      'title': record.title,
-      'date': record.date.toIso8601String(),
-      'cost': record.cost,
-      'km': record.km,
-      'notes': record.notes,
-    };
-
-    // 根據類型加入對應的資料
-    if (record.fuelData != null) {
-      json['fuelData'] = {
-        'fuelType': record.fuelData!.fuelType.name,
-        'fuelAmount': record.fuelData!.fuelAmount,
-        'pricePerLiter': record.fuelData!.pricePerLiter,
-        'remainingFuel': record.fuelData!.remainingFuel,
-      };
-    }
-
-    if (record.maintenanceData != null) {
-      json['maintenanceData'] = record.maintenanceData!
-          .map((m) => {
-                'item': m.item,
-                'amount': m.amount,
-                'nextMaintenanceKm': m.nextMaintenanceKm,
-                'note': m.note,
-              })
-          .toList();
-    }
-
-    if (record.otherData != null) {
-      json['otherData'] = {
-        'amount': record.otherData!.amount,
-        'note': record.otherData!.note,
-      };
-    }
-
-    return json;
-  }
-
-  /// Restore app data from JSON string
-  Future<bool> _restoreData(String jsonString) async {
-    try {
-      final data = jsonDecode(jsonString) as Map<String, dynamic>;
-
-      // 驗證版本
-      final version = data['version'] as int?;
-      if (version == null || version > 1) {
-        debugPrint('CloudSync: 不支援的備份版本 $version');
-        return false;
-      }
-
-      final isar = await getIt.service.isarDB.isar;
-
-      // 解析車輛資料
-      final vehiclesJson = data['vehicles'] as List<dynamic>? ?? [];
-      final recordsJson = data['records'] as List<dynamic>? ?? [];
-
-      debugPrint('CloudSync: 還原 ${vehiclesJson.length} 輛車, ${recordsJson.length} 筆記錄');
-
-      await isar.writeTxn(() async {
-        // 清空現有資料
-        await isar.vehicles.clear();
-        await isar.vehicleRecords.clear();
-
-        // 還原車輛
-        final vehicles = <Vehicle>[];
-        for (final vJson in vehiclesJson) {
-          final vehicle = _vehicleFromJson(vJson as Map<String, dynamic>);
-          vehicles.add(vehicle);
-        }
-        await isar.vehicles.putAll(vehicles);
-
-        // 還原記錄
-        final records = <VehicleRecord>[];
-        for (final rJson in recordsJson) {
-          final record = _recordFromJson(rJson as Map<String, dynamic>);
-          records.add(record);
-        }
-        await isar.vehicleRecords.putAll(records);
-
-        // 重建 IsarLinks 關聯
-        for (final vehicle in vehicles) {
-          final vehicleRecords = records
-              .where((r) => r.vehicleId == vehicle.vehicleId)
-              .toList();
-          vehicle.records.addAll(vehicleRecords);
-          await vehicle.records.save();
-        }
-      });
-
-      debugPrint('CloudSync: 還原完成');
-      return true;
-    } catch (e) {
-      debugPrint('CloudSync: 還原失敗 - $e');
-      return false;
-    }
-  }
-
-  /// 從 JSON Map 建立 Vehicle
-  Vehicle _vehicleFromJson(Map<String, dynamic> json) {
-    return Vehicle()
-      ..vehicleId = json['vehicleId'] as String? ?? ''
-      ..carName = json['carName'] as String? ?? ''
-      ..licensePlate = json['licensePlate'] as String? ?? ''
-      ..currentKm = json['currentKm'] as int? ?? 0
-      ..maintenanceIntervalKm = json['maintenanceIntervalKm'] as int? ?? 5000
-      ..kmToNextMaintenance = json['kmToNextMaintenance'] as int? ?? 5000
-      ..order = json['order'] as int? ?? 0;
-  }
-
-  /// 從 JSON Map 建立 VehicleRecord
-  VehicleRecord _recordFromJson(Map<String, dynamic> json) {
-    final record = VehicleRecord()
-      ..recordId = json['recordId'] as String? ?? ''
-      ..vehicleId = json['vehicleId'] as String? ?? ''
-      ..typeName = json['typeName'] as String? ?? 'other'
-      ..title = json['title'] as String? ?? ''
-      ..date = DateTime.tryParse(json['date'] as String? ?? '') ?? DateTime.now()
-      ..cost = (json['cost'] as num?)?.toDouble() ?? 0
-      ..km = json['km'] as int? ?? 0
-      ..notes = json['notes'] as String?;
-
-    // 還原加油資料
-    final fuelJson = json['fuelData'] as Map<String, dynamic>?;
-    if (fuelJson != null) {
-      record.fuelData = FuelData(
-        fuelType: FuelType.values.firstWhere(
-          (e) => e.name == fuelJson['fuelType'],
-          orElse: () => FuelType.octane95,
-        ),
-        fuelAmount: (fuelJson['fuelAmount'] as num?)?.toDouble() ?? 0,
-        pricePerLiter: (fuelJson['pricePerLiter'] as num?)?.toDouble() ?? 0,
-        remainingFuel: fuelJson['remainingFuel'] as int? ?? 90,
-      );
-    }
-
-    // 還原保養資料
-    final maintenanceJson = json['maintenanceData'] as List<dynamic>?;
-    if (maintenanceJson != null) {
-      record.maintenanceData = maintenanceJson
-          .map((m) => MaintenanceData(
-                item: m['item'] as String? ?? '',
-                amount: (m['amount'] as num?)?.toDouble() ?? 0,
-                nextMaintenanceKm: m['nextMaintenanceKm'] as int?,
-                note: m['note'] as String? ?? '',
-              ))
-          .toList();
-    }
-
-    // 還原其他資料
-    final otherJson = json['otherData'] as Map<String, dynamic>?;
-    if (otherJson != null) {
-      record.otherData = OtherData(
-        amount: (otherJson['amount'] as num?)?.toDouble() ?? 0,
-        note: otherJson['note'] as String? ?? '',
-      );
-    }
-
-    return record;
   }
 }

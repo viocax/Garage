@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/theme/app_theme.dart';
+import '../../test_helpers.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeLocalization();
+  });
+
   group('FuelType Enum', () {
-    test('應該有正確的 label', () {
+    testLocalized('應該有正確的 label', (tester) async {
       expect(FuelType.octane92.label, '92');
       expect(FuelType.octane95.label, '95');
       expect(FuelType.octane98.label, '98');
@@ -85,7 +90,7 @@ void main() {
     });
 
     group('formattedSummary', () {
-      test('柴油應該顯示 "柴油"', () {
+      testLocalized('柴油應該顯示 "柴油"', (tester) async {
         final data = FuelData(
           fuelType: FuelType.diesel,
           fuelAmount: 45.5,
@@ -94,7 +99,7 @@ void main() {
         expect(data.formattedSummary, '柴油  45.5L');
       });
 
-      test('汽油應該顯示 "無鉛XX"', () {
+      testLocalized('汽油應該顯示 "無鉛XX"', (tester) async {
         final data92 = FuelData(
           fuelType: FuelType.octane92,
           fuelAmount: 30.0,
@@ -203,7 +208,7 @@ void main() {
     const testOdometer = 50000;
 
     group('RecordTypeFuel', () {
-      test('應該有正確的屬性', () {
+      testLocalized('應該有正確的屬性', (tester) async {
         final recordType = RecordTypeFuel(
           data: FuelData(fuelAmount: 40.0, pricePerLiter: 32.0),
           recordDate: testDate,
@@ -228,7 +233,7 @@ void main() {
         expect(recordType.validationError, null);
       });
 
-      test('加油量為 0 時應該有驗證錯誤', () {
+      testLocalized('加油量為 0 時應該有驗證錯誤', (tester) async {
         final recordType = RecordTypeFuel(
           data: FuelData(fuelAmount: 0),
           recordDate: testDate,
@@ -238,7 +243,7 @@ void main() {
         expect(recordType.validationError, '請輸入有效的加油量');
       });
 
-      test('加油量為負數時應該有驗證錯誤', () {
+      testLocalized('加油量為負數時應該有驗證錯誤', (tester) async {
         final recordType = RecordTypeFuel(
           data: FuelData(fuelAmount: -10),
           recordDate: testDate,
@@ -250,7 +255,7 @@ void main() {
     });
 
     group('RecordTypeMaintenance', () {
-      test('應該有正確的屬性', () {
+      testLocalized('應該有正確的屬性', (tester) async {
         final recordType = RecordTypeMaintenance(
           data: [MaintenanceData(item: '機油', amount: 1500)],
           recordDate: testDate,
@@ -304,7 +309,7 @@ void main() {
         expect(recordType.validationError, null);
       });
 
-      test('沒有有效項目時應該有驗證錯誤', () {
+      testLocalized('沒有有效項目時應該有驗證錯誤', (tester) async {
         final recordType = RecordTypeMaintenance(
           data: [
             MaintenanceData(item: '', amount: 500),
@@ -317,7 +322,7 @@ void main() {
         expect(recordType.validationError, '請至少輸入一個保養項目');
       });
 
-      test('空資料列表應該有驗證錯誤', () {
+      testLocalized('空資料列表應該有驗證錯誤', (tester) async {
         final recordType = RecordTypeMaintenance(
           data: [],
           recordDate: testDate,
@@ -329,7 +334,7 @@ void main() {
     });
 
     group('RecordTypeOther', () {
-      test('應該有正確的屬性', () {
+      testLocalized('應該有正確的屬性', (tester) async {
         final recordType = RecordTypeOther(
           data: OtherData(amount: 500, note: '停車費'),
           recordDate: testDate,
@@ -338,7 +343,7 @@ void main() {
 
         expect(recordType.label, '其他');
         expect(recordType.icon, Icons.receipt);
-        expect(recordType.color, AppTheme.systemGray);
+        expect(recordType.color, AppTheme.recordTypeOtherColor);
         expect(recordType.typeName, 'other');
       });
 

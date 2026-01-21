@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -121,24 +122,26 @@ extension DialogExtension on BuildContext {
   Future<bool?> showAdaptiveConfirmDialog({
     required String title,
     String? message,
-    String cancelText = '取消',
-    String confirmText = '確定',
+    String? cancelText,
+    String? confirmText,
     bool isDestructiveAction = false,
   }) {
+    final effectiveCancelText = cancelText ?? 'common.cancel'.tr();
+    final effectiveConfirmText = confirmText ?? 'common.confirm'.tr();
     if (_isIOS) {
       return _showIOSConfirmDialog(
         title: title,
         message: message,
-        cancelText: cancelText,
-        confirmText: confirmText,
+        cancelText: effectiveCancelText,
+        confirmText: effectiveConfirmText,
         isDestructiveAction: isDestructiveAction,
       );
     } else {
       return _showMaterialConfirmDialog(
         title: title,
         message: message,
-        cancelText: cancelText,
-        confirmText: confirmText,
+        cancelText: effectiveCancelText,
+        confirmText: effectiveConfirmText,
         isDestructiveAction: isDestructiveAction,
       );
     }

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:garage/core/utils/log.dart';
 import 'api_request.dart';
 import 'http_method.dart';
 import 'http_exception.dart' as custom;
@@ -49,7 +50,7 @@ class HttpService {
     } on DioException catch (e) {
       throw _handleDioException(e);
     } catch (e, stackTrace) {
-      debugPrint('✗ Unexpected error: $e');
+      Log.e('HttpService: Unexpected error', e, stackTrace);
       throw custom.HttpException(
         '請求失敗: $e',
         stackTrace: stackTrace,
@@ -229,35 +230,35 @@ class HttpService {
 class _LogInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    debugPrint('╔══════════════════════════════════════════════════════════════');
-    debugPrint('║ ${options.method}: ${options.uri}');
+    Log.d('╔══════════════════════════════════════════════════════════════');
+    Log.d('║ ${options.method}: ${options.uri}');
     if (options.queryParameters.isNotEmpty) {
-      debugPrint('║ Query: ${options.queryParameters}');
+      Log.d('║ Query: ${options.queryParameters}');
     }
     if (options.data != null) {
-      debugPrint('║ Body: ${options.data}');
+      Log.d('║ Body: ${options.data}');
     }
     if (options.headers.isNotEmpty) {
-      debugPrint('║ Headers: ${options.headers}');
+      Log.d('║ Headers: ${options.headers}');
     }
-    debugPrint('╚══════════════════════════════════════════════════════════════');
+    Log.d('╚══════════════════════════════════════════════════════════════');
     handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    debugPrint('✓ Response: ${response.statusCode} - ${response.requestOptions.uri}');
-    debugPrint('  Data: ${response.data}');
+    Log.d('✓ Response: ${response.statusCode} - ${response.requestOptions.uri}');
+    Log.d('  Data: ${response.data}');
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    debugPrint('✗ Error: ${err.type} - ${err.requestOptions.uri}');
-    debugPrint('  Message: ${err.message}');
+    Log.e('HttpService: Error - ${err.type} - ${err.requestOptions.uri}', err);
+    Log.d('  Message: ${err.message}');
     if (err.response != null) {
-      debugPrint('  Status: ${err.response?.statusCode}');
-      debugPrint('  Data: ${err.response?.data}');
+      Log.d('  Status: ${err.response?.statusCode}');
+      Log.d('  Data: ${err.response?.data}');
     }
     handler.next(err);
   }

@@ -11,7 +11,11 @@ class AppLifecycleInitial extends AppLifecycleState {}
 
 class AppLifecycleBloc extends Bloc<AppLifecycleEvent, AppLifecycleState>
     with AppLifecycleMixin<AppLifecycleEvent, AppLifecycleState> {
-  AppLifecycleBloc() : super(AppLifecycleInitial()) {
+  final AppOpenAdRepository _appOpenAdRepository;
+
+  AppLifecycleBloc({AppOpenAdRepository? appOpenAdRepository})
+    : _appOpenAdRepository = appOpenAdRepository ?? getIt.repo.appOpenAd,
+      super(AppLifecycleInitial()) {
     // 啟動生命週期監聽
     initLifecycleObserver();
   }
@@ -19,6 +23,6 @@ class AppLifecycleBloc extends Bloc<AppLifecycleEvent, AppLifecycleState>
   @override
   void onAppResumed() {
     super.onAppResumed();
-    getIt.repo.appOpenAd.showAdIfAvailable();
+    _appOpenAdRepository.showAdIfAvailable();
   }
 }

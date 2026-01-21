@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:garage/core/extensions/dialog_extension.dart';
+import 'package:garage/core/core.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:garage/widgets/widgets.dart';
@@ -27,13 +27,18 @@ class SettingsPage extends StatelessWidget {
     final theme = Theme.of(context);
     return BlocConsumer<SettingsBloc, SettingsState>(
       listener: (context, state) {
-        switch (state) {
-          case SettingsNormal():
+        if (state.errorMessage != null) {
+          // Toast implementation can be added here
+        }
+
+        switch (state.action) {
+          case SettingsAction.none:
             break;
-          case GoToSpeedSetting():
-            context.goPath(AppPath.speedDetectionSettings);
+          case SettingsAction.goToSpeedSetting:
+            context.pushPathWithResult(AppPath.speedDetectionSettings);
+            context.read<SettingsBloc>().add(const ResetSettingsAction());
             break;
-          case RemindUserStopTrackingAlert():
+          case SettingsAction.showStopTrackingAlert:
             context.showAdaptivePermissionAlert(
               title: 'speedDetection.speedRunning'.tr(),
               message: 'speedDetection.speedRunningMsg'.tr(),
@@ -43,9 +48,7 @@ class SettingsPage extends StatelessWidget {
                 context.read<SettingsBloc>().add(const StopTracking());
               },
             );
-            break;
-          case SettingsError():
-            // TODO: show toast
+            context.read<SettingsBloc>().add(const ResetSettingsAction());
             break;
         }
       },
@@ -65,71 +68,91 @@ class SettingsPage extends StatelessWidget {
                         // 一般設定
                         SettingsSectionHeader(title: 'settings.general'.tr()),
                         SettingsItem(
-                          title: 'settings.adManagement'.tr(),
-                          icon: Icons.card_giftcard,
-                          subtitle: 'settings.adManagementDesc'.tr(),
-                          onTap: () {
-                            _showAdManagementDialog(context);
-                          },
-                        ),
-                        SettingsItem(
                           title: 'settings.vehicleManagement'.tr(),
                           icon: Icons.directions_car_outlined,
                           onTap: () {
-                            context.goPath(AppPath.vehicleManagement);
-                          },
-                        ),
-                        SettingsItem(
-                          title: 'settings.speedDetection'.tr(),
-                          icon: Icons.radar_outlined,
-                          onTap: () {
-                            context.read<SettingsBloc>().add(
-                              const ClickSpeedSetting(),
+                            context.pushPathWithResult(
+                              AppPath.vehicleManagement,
                             );
                           },
                         ),
 
-                        // 資料管理
-                        SettingsSectionHeader(title: 'settings.data'.tr()),
-                        SettingsItem(
-                          title: 'settings.cloudSync'.tr(),
-                          icon: Icons.cloud_sync_outlined,
-                          onTap: () {
-                            context.goPath(AppPath.cloudSync);
-                          },
-                        ),
-                        SettingsItem(
-                          title: 'settings.clearData'.tr(),
-                          icon: Icons.delete_outline,
-                          isDestructive: true,
-                          onTap: () {
-                            context.read<SettingsBloc>().add(const ClearData());
-                          },
-                        ),
+                        // TODO: Phase2在處理
+                        // SettingsItem(
+                        //   title: 'settings.speedDetection'.tr(),
+                        //   icon: Icons.radar_outlined,
+                        //   onTap: () {
+                        //     context.read<SettingsBloc>().add(
+                        //       const ClickSpeedSetting(),
+                        //     );
+                        //   },
+                        // ),
+                        if (!state.isPro)
+                          SettingsItem(
+                            title: 'settings.adManagement'.tr(),
+                            icon: Icons.card_giftcard,
+                            subtitle: 'settings.adManagementDesc'.tr(),
+                            onTap: () {
+                              _showAdManagementDialog(context);
+                            },
+                          ),
+
+                        // TODO: Phase2在處理 資料管理
+                        // SettingsSectionHeader(title: 'settings.data'.tr()),
+                        // SettingsItem(
+                        //   title: 'settings.cloudSync'.tr(),
+                        //   icon: Icons.cloud_sync_outlined,
+                        //   onTap: () {
+                        //     context.pushPathWithResult(AppPath.cloudSync);
+                        //   },
+                        // ),
 
                         // 關於
                         SettingsSectionHeader(title: 'settings.about'.tr()),
                         SettingsItem(
                           title: 'settings.termsOfService'.tr(),
                           icon: Icons.description_outlined,
+                          onTap: () {
+                            context.pushPathWithResult(AppPath.termsOfService);
+                          },
                         ),
                         SettingsItem(
                           title: 'settings.privacyPolicy'.tr(),
                           icon: Icons.privacy_tip_outlined,
+                          onTap: () {
+                            context.pushPathWithResult(AppPath.privacyPolicy);
+                          },
+                        ),
+                        SettingsItem(
+                          title: 'settings.openSourceLicenses'.tr(),
+                          icon: Icons.source_outlined,
+                          onTap: () {
+                            context.pushPathWithResult(
+                              AppPath.openSourceLicenses,
+                            );
+                          },
                         ),
                         SettingsItem(
                           title: 'settings.feedback'.tr(),
                           icon: Icons.feedback_outlined,
+                          onTap: () {
+                            context.read<SettingsBloc>().add(
+                              const SendFeedback(),
+                            );
+                          },
                         ),
                         SettingsItem(
                           title: 'settings.rateApp'.tr(),
                           icon: Icons.star_outline,
+                          onTap: () {
+                            context.read<SettingsBloc>().add(const RateApp());
+                          },
                         ),
 
                         const SizedBox(height: 40),
                         Center(
                           child: Text(
-                            'Garage v1.0.0',
+                            state.appVersion,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.3,
@@ -153,61 +176,63 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _showAdManagementDialog(BuildContext context) {
+    final settingsBloc = context.read<SettingsBloc>();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'settings.adRewards'.tr(),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+      builder: (modalContext) => BlocProvider.value(
+        value: settingsBloc,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(modalContext).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.confirmation_number_outlined),
-                title: Text('settings.earnAdTicket'.tr()),
-                subtitle: Text('settings.earnAdTicketDesc'.tr()),
-                trailing: const Icon(Icons.play_circle_outline),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<SettingsBloc>().add(const WatchAdForTicket());
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.remove_circle_outline),
-                title: Text('settings.removeBanner'.tr()),
-                subtitle: Text('settings.removeBannerDesc'.tr()),
-                trailing: const Icon(Icons.play_circle_outline),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<SettingsBloc>().add(
-                    const WatchAdForBannerRemoval(),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-            ],
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'settings.adRewards'.tr(),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.confirmation_number_outlined),
+                  title: Text('settings.earnAdTicket'.tr()),
+                  subtitle: Text('settings.earnAdTicketDesc'.tr()),
+                  trailing: const Icon(Icons.play_circle_outline),
+                  onTap: () {
+                    Navigator.pop(modalContext);
+                    settingsBloc.add(const WatchAdForTicket());
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.remove_circle_outline),
+                  title: Text('settings.removeBanner'.tr()),
+                  subtitle: Text('settings.removeBannerDesc'.tr()),
+                  trailing: const Icon(Icons.play_circle_outline),
+                  onTap: () {
+                    Navigator.pop(modalContext);
+                    settingsBloc.add(const WatchAdForBannerRemoval());
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

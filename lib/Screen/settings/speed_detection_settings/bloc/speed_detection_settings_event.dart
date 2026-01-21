@@ -25,10 +25,6 @@ final class ChangeVoiceVolume extends SpeedDetectionSettingsEvent {
   const ChangeVoiceVolume(this.percentage);
 }
 
-final class PlayTestVoice extends SpeedDetectionSettingsEvent {
-  const PlayTestVoice();
-}
-
 // Alert settings
 final class ChangeAlertDistance extends SpeedDetectionSettingsEvent {
   final int distance;

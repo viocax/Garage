@@ -7,6 +7,8 @@ class SettingsItem extends StatelessWidget {
   final IconData icon;
   final String? subtitle;
   final bool isDestructive;
+  final Color? iconColor;
+  final Widget? trailing;
   final VoidCallback? onTap;
 
   const SettingsItem({
@@ -15,6 +17,8 @@ class SettingsItem extends StatelessWidget {
     required this.icon,
     this.subtitle,
     this.isDestructive = false,
+    this.iconColor,
+    this.trailing,
     this.onTap,
   });
 
@@ -37,9 +41,11 @@ class SettingsItem extends StatelessWidget {
         child: ListTile(
           leading: Icon(
             icon,
-            color: isDestructive
-                ? theme.colorScheme.error
-                : theme.colorScheme.primary,
+            color:
+                iconColor ??
+                (isDestructive
+                    ? theme.colorScheme.error
+                    : theme.colorScheme.primary),
           ),
           title: Text(
             title,
@@ -57,7 +63,9 @@ class SettingsItem extends StatelessWidget {
                   ),
                 )
               : null,
-          trailing: const Icon(Icons.chevron_right, color: AppTheme.systemGray),
+          trailing:
+              trailing ??
+              const Icon(Icons.chevron_right, color: AppTheme.systemGray),
           onTap: onTap ?? () {},
         ),
       ),

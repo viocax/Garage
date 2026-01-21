@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -17,29 +18,23 @@ class CategoryPieChart extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.whiteTransparent08,
-            AppTheme.whiteTransparent04,
-          ],
+          colors: [AppTheme.whiteTransparent08, AppTheme.whiteTransparent04],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.whiteTransparent15),
       ),
       child: Column(
         children: [
-          const Text(
-            '分類',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.systemGray,
-            ),
+          Text(
+            'records.categories'.tr(),
+            style: TextStyle(fontSize: 12, color: AppTheme.systemGray),
           ),
           const SizedBox(height: 4),
           Expanded(
             child: data.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      '暫無數據',
+                      'common.noData'.tr(),
                       style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.systemGray,
@@ -51,17 +46,19 @@ class CategoryPieChart extends StatelessWidget {
                       sectionsSpace: 2,
                       centerSpaceRadius: 20,
                       sections: data
-                          .map((d) => PieChartSectionData(
-                                color: d.color,
-                                value: d.totalCost,
-                                title: '${d.percentage.toStringAsFixed(0)}%',
-                                titleStyle: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.accentColor,
-                                ),
-                                radius: 35,
-                              ))
+                          .map(
+                            (d) => PieChartSectionData(
+                              color: d.color,
+                              value: d.totalCost,
+                              title: '${d.percentage.toStringAsFixed(0)}%',
+                              titleStyle: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.accentColor,
+                              ),
+                              radius: 35,
+                            ),
+                          )
                           .toList(),
                     ),
                   ),
@@ -72,10 +69,7 @@ class CategoryPieChart extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: data
-                  .map((d) => _LegendItem(
-                        color: d.color,
-                        label: d.label,
-                      ))
+                  .map((d) => _LegendItem(color: d.color, label: d.label))
                   .toList(),
             ),
         ],
@@ -98,18 +92,12 @@ class _LegendItem extends StatelessWidget {
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 9,
-            color: AppTheme.systemGray,
-          ),
+          style: const TextStyle(fontSize: 9, color: AppTheme.systemGray),
         ),
       ],
     );

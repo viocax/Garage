@@ -1,31 +1,72 @@
-# Tech Stack - Garage (車庫)
+# Technology Stack & Architecture
 
-## 1. Core Frameworks & Languages
-- **Language**: [Dart](https://dart.dev/)
-- **Framework**: [Flutter](https://flutter.dev/) (3.10+)
-- **Platforms**: iOS, Android
+## Core Framework & Language
 
-## 2. State Management & Architecture
-- **State Management**: [flutter_bloc](https://pub.dev/packages/flutter_bloc) & [Cubit](https://pub.dev/packages/bloc)
-- **Dependency Injection**: [get_it](https://pub.dev/packages/get_it)
-- **Routing**: [go_router](https://pub.dev/packages/go_router)
-- **Data Models**: [equatable](https://pub.dev/packages/equatable)
+| Item | Technology |
+|------|------------|
+| Language | Dart (SDK ^3.10.1) |
+| Framework | Flutter 3.10+ |
+| Platforms | iOS (Primary), Android |
 
-## 3. Data Storage & Persistence
-- **Local Database**: [isar_community](https://isar.dev/) (High-performance NoSQL)
-- **Persistent Settings**: [shared_preferences](https://pub.dev/packages/shared_preferences)
-- **Cloud Sync**: 
-  - [icloud_storage](https://pub.dev/packages/icloud_storage) (iOS)
-  - [google_sign_in](https://pub.dev/packages/google_sign_in) & [googleapis](https://pub.dev/packages/googleapis) (Android/Google Drive)
+## Phase Planning
 
-## 4. UI, Maps & Graphics
-- **3D Rendering**: [model_viewer_plus](https://pub.dev/packages/model_viewer_plus)
-- **Maps**: [flutter_map](https://pub.dev/packages/flutter_map) (OpenStreetMap based)
-- **Charts**: [fl_chart](https://pub.dev/packages/fl_chart)
-- **Typography**: [google_fonts](https://pub.dev/packages/google_fonts)
-- **Theming**: Custom specialized dark themed UI
+| Phase | Scope | Status |
+|-------|-------|--------|
+| **Phase 1** | Vehicle Records, Multi-vehicle, Charts, Ad System | 🔄 In Progress |
+| **Phase 2** | QR Code Invoice Scanner, Cloud Sync, Subscription | 📋 Planned |
+| **Phase 3** | Speed Camera Alerts, Interval Checks, 3D Animation | 📋 Planned |
 
-## 5. Device Services
-- **Location**: [geolocator](https://pub.dev/packages/geolocator)
-- **Text-to-Speech**: [flutter_tts](https://pub.dev/packages/flutter_tts)
-- **Network**: [dio](https://pub.dev/packages/dio)
+## Architecture: Clean Architecture + BLoC
+
+Data Flow: **UI → BLoC → UseCase → Repository → Service/DataSource**
+
+### Layers
+
+- **Presentation Layer**: Widgets + BLoC (State Management)
+- **Domain Layer**: UseCases + Entities + Repository Interfaces
+- **Data Layer**: Repository Implementations + Data Sources (Services)
+
+### Dependency Injection
+
+- **Tool**: `get_it` (Service Locator)
+- **Registration**: `lib/core/di/service_locator.dart`
+- **Scoping**: Services/Repositories as Singletons, BLoCs as Factories
+
+## Data Layer & Persistence
+
+| Usage | Technology |
+|-------|------------|
+| Local Database | `isar_community` (NoSQL) |
+| Local Storage | `shared_preferences` |
+| Networking | `dio` |
+| Serialization | `json_serializable` |
+
+## UI & Visuals
+
+| Usage | Technology |
+|-------|------------|
+| Design System | Glassmorphism + Dark Theme |
+| 3D Graphics | `model_viewer_plus` |
+| Charts | `fl_chart` |
+| Typography | `google_fonts` |
+| Localization | `easy_localization` |
+
+## Services & Integration
+
+| Usage | Technology |
+|-------|------------|
+| Maps | `flutter_map` (OpenStreetMap) |
+| Location | `geolocator` |
+| TTS | `flutter_tts` |
+| Cloud Sync | `icloud_storage`, `googleapis` |
+| Monetization | `google_mobile_ads` (AdMob) |
+| Analytics | Firebase Crashlytics |
+
+## Development & DevOps
+
+| Usage | Technology |
+|-------|------------|
+| Code Generation | `build_runner` |
+| Testing | `flutter_test`, `bloc_test`, `mocktail` |
+| Logging | `logger` (via `Log` wrapper) |
+| Deployment | `fastlane` (iOS) |

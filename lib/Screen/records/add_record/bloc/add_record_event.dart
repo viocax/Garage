@@ -126,3 +126,19 @@ class RemainingFuelChanged extends AddRecordEvent {
 class SubmitRecord extends AddRecordEvent {
   const SubmitRecord();
 }
+
+/// 載入使用者設定事件
+class LoadUserSettings extends AddRecordEvent {
+  const LoadUserSettings();
+}
+
+/// 套用發票掃描資料事件
+class InvoiceDataApplied extends AddRecordEvent {
+  final double amount;
+  final DateTime date;
+
+  const InvoiceDataApplied({required this.amount, required this.date});
+
+  @override
+  List<Object> get props => [amount, date];
+}

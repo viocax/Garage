@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/core/models/vehicle.dart';
@@ -6,15 +7,24 @@ import 'package:garage/theme/app_theme.dart';
 
 import 'all_records_event.dart';
 import 'all_records_state.dart';
+import 'records_provider.dart';
 
 class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
   final Vehicle vehicle;
+  final IRecordsProvider _recordsProvider;
+  StreamSubscription<bool>? _subscriptionSubscription;
 
-  AllRecordsBloc({required this.vehicle}) : super(const AllRecordsState()) {
+  AllRecordsBloc({
+    required this.vehicle,
+    IRecordsProvider? recordsProvider,
+  }) : _recordsProvider = recordsProvider ?? VehicleRecordsProvider(vehicle),
+       super(const AllRecordsState()) {
     on<LoadAllRecords>(_onLoadAllRecords);
     on<SelectMonth>(_onSelectMonth);
     on<ToggleTypeFilter>(_onToggleTypeFilter);
     on<ClearFilters>(_onClearFilters);
+    on<UpdateProStatus>(_onUpdateProStatus);
+
 
     // Auto-load on creation
     add(const LoadAllRecords());
@@ -27,9 +37,8 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
     emit(state.copyWith(status: AllRecordsStatus.loading));
 
     try {
-      // Ensure records are loaded from database
-      await vehicle.records.load();
-      final records = vehicle.records.toList();
+      // Load records using the provider
+      final records = await _recordsProvider.loadRecords();
 
       // Sort by date descending
       records.sort((a, b) => b.date.compareTo(a.date));
@@ -38,9 +47,11 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
       final availableMonths = _extractAvailableMonths(records);
 
       // Calculate chart data
-      
+
       final monthlyData = _calculateMonthlyExpense(records);
       final categoryData = _calculateCategoryExpense(records);
+      final fuelEfficiencyData = _calculateFuelEfficiencyData(records);
+      final annualData = _calculateAnnualExpense(records);
       final totalExpense = records.fold(0.0, (sum, r) => sum + r.cost);
 
       emit(
@@ -51,8 +62,11 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
           availableMonths: availableMonths,
           monthlyExpenseData: monthlyData,
           categoryExpenseData: categoryData,
+          fuelEfficiencyData: fuelEfficiencyData,
+          annualExpenseData: annualData,
           totalExpense: totalExpense,
           recordCount: records.length,
+          isPro: false,
         ),
       );
     } catch (e) {
@@ -83,6 +97,9 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
       newTypes.remove(event.typeName);
     } else {
       newTypes.add(event.typeName);
+    }
+    if (newTypes.isEmpty) {
+      return;
     }
     emit(state.copyWith(selectedTypes: newTypes));
     _applyFilters(emit);
@@ -128,6 +145,8 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
 
     final monthlyData = _calculateMonthlyExpense(filtered);
     final categoryData = _calculateCategoryExpense(filtered);
+    final fuelEfficiencyData = _calculateFuelEfficiencyData(filtered);
+    final annualData = _calculateAnnualExpense(filtered);
 
     final totalExpense = filtered.fold(0.0, (sum, r) => sum + r.cost);
     emit(
@@ -137,6 +156,8 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
         recordCount: filtered.length,
         monthlyExpenseData: monthlyData,
         categoryExpenseData: categoryData,
+        fuelEfficiencyData: fuelEfficiencyData,
+        annualExpenseData: annualData,
       ),
     );
   }
@@ -207,13 +228,13 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
     const colorMap = {
       'fuel': AppTheme.recordTypeFuelColor,
       'maintenance': AppTheme.recordTypeMaintenanceColor,
-      'other': AppTheme.systemGray,
+      'other': AppTheme.recordTypeOtherColor,
     };
 
     final labelMap = {
       'fuel': 'recordType.fuel'.tr(),
       'maintenance': 'recordType.maintenance'.tr(),
-      'other': 'recordType.other'.tr()
+      'other': 'recordType.other'.tr(),
     };
 
     return categoryTotals.entries
@@ -228,5 +249,63 @@ class AllRecordsBloc extends Bloc<AllRecordsEvent, AllRecordsState> {
           ),
         )
         .toList();
+  }
+
+  List<FuelEfficiencyData> _calculateFuelEfficiencyData(
+    List<VehicleRecord> records,
+  ) {
+    // 取得所有加油紀錄，依照日期從舊到新排列（為了計算里程差）
+    final fuelRecords = records.where((r) => r.typeName == 'fuel').toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    if (fuelRecords.length < 2) return [];
+
+    final result = <FuelEfficiencyData>[];
+
+    for (int i = 1; i < fuelRecords.length; i++) {
+      final current = fuelRecords[i];
+      final previous = fuelRecords[i - 1];
+
+      final efficiency = current.calculateFuelEfficiency(previous.km);
+      if (efficiency > 0) {
+        result.add(
+          FuelEfficiencyData(date: current.date, kmPerLiter: efficiency),
+        );
+      }
+    }
+
+    // 回傳時保持日期從舊到新（適合折線圖）
+    return result;
+  }
+
+  List<AnnualExpenseData> _calculateAnnualExpense(List<VehicleRecord> records) {
+    if (records.isEmpty) return [];
+
+    final annualTotals = <int, double>{};
+    for (final record in records) {
+      final year = record.date.year;
+      annualTotals[year] = (annualTotals[year] ?? 0) + record.cost;
+    }
+
+    final sortedYears = annualTotals.keys.toList()..sort();
+    return sortedYears
+        .map(
+          (year) =>
+              AnnualExpenseData(year: year, totalCost: annualTotals[year]!),
+        )
+        .toList();
+  }
+
+  void _onUpdateProStatus(
+    UpdateProStatus event,
+    Emitter<AllRecordsState> emit,
+  ) {
+    emit(state.copyWith(isPro: event.isPro));
+  }
+
+  @override
+  Future<void> close() {
+    _subscriptionSubscription?.cancel();
+    return super.close();
   }
 }

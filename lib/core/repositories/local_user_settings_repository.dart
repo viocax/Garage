@@ -11,7 +11,12 @@ class LocalUserSettingsRepository implements UserSettingsRepository {
   final SharedPreferencesService _prefs;
   UserSettings? _cachedSettings;
 
-  LocalUserSettingsRepository() : _prefs = getIt.service.preferences;
+  /// Creates a LocalUserSettingsRepository with optional dependency injection.
+  ///
+  /// For production, use the default constructor without parameters.
+  /// For testing, inject a mock SharedPreferencesService.
+  LocalUserSettingsRepository({SharedPreferencesService? preferencesService})
+    : _prefs = preferencesService ?? getIt.service.preferences;
 
   @override
   UserSettings get currentSettings =>

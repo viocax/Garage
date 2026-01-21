@@ -12,10 +12,16 @@ part 'records_event.dart';
 part 'records_state.dart';
 
 class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
-  final VehicleRepository vehicleRepository = getIt.repo.vehicle;
-  final UserSettingsRepository userSettingsRepository = getIt.repo.userSettings;
+  final VehicleRepository vehicleRepository;
+  final UserSettingsRepository userSettingsRepository;
 
-  RecordsBloc() : super(const RecordsState(isLoading: true)) {
+  RecordsBloc({
+    VehicleRepository? vehicleRepository,
+    UserSettingsRepository? userSettingsRepository,
+  }) : vehicleRepository = vehicleRepository ?? getIt.repo.vehicle,
+       userSettingsRepository =
+           userSettingsRepository ?? getIt.repo.userSettings,
+       super(const RecordsState(isLoading: true)) {
     on<LoadVehicleRecord>(_onLoadVehicleRecord);
     on<SwitchVehicle>(_onSwitchVehicle);
     on<ClickAddVehicleButton>(_onClickAddVehicleButton);
@@ -108,6 +114,15 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
         SpeedUnit.mph => '${km.toDouble().mile}',
       };
 
+      // 計算當前車輛的油耗
+      final vehicle = vehicles.isEmpty
+          ? Vehicle.empty()
+          : vehicles.firstWhere(
+              (v) => v.vehicleId == currentVehicleId,
+              orElse: () => vehicles.first,
+            );
+      final fuelEfficiency = _calculateLatestFuelEfficiency(vehicle);
+
       emit(
         RecordsState(
           vehicles: vehicles,
@@ -115,6 +130,7 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
           userSettings: userSettings,
           odometerString: odometerString,
           unitString: unitString,
+          fuelEfficiency: fuelEfficiency,
           isLoading: false,
         ),
       );
@@ -149,11 +165,20 @@ class RecordsBloc extends Bloc<RecordsEvent, RecordsState> {
       SpeedUnit.mph => '${km.toDouble().mile}',
     };
 
+    // 計算切換後車輛的油耗
+    final fuelEfficiency = _calculateLatestFuelEfficiency(vehicle);
+
     emit(
       state.copyWith(
         currentVehicleId: event.vehicleId,
         odometerString: odometerString,
+        fuelEfficiency: fuelEfficiency,
       ),
     );
+  }
+
+  /// 計算最近一次的油耗
+  FuelEfficiencyDisplay _calculateLatestFuelEfficiency(Vehicle vehicle) {
+    return FuelEfficiencyDisplay.calculateFromVehicle(vehicle);
   }
 }

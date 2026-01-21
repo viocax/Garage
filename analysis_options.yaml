@@ -9,6 +9,15 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  errors:
+    # 將 TODO 註釋視為資訊級別提示（在 IDE 中顯示）
+    todo: info
+    # 可選：將未使用的元素視為警告
+    # unused_element: warning
+    # unused_field: warning
+    # unused_local_variable: warning
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

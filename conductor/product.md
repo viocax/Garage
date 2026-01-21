@@ -1,18 +1,61 @@
-# Product Guide - Garage (車庫)
+# Product Definition
 
-## 1. Initial Concept
-一款專為汽車愛好者設計的 iOS 車輛管理 App，結合 **測速照相提醒** 與 **保養/消費紀錄** 功能。
+## 1. Vision
 
-## 2. Target Users
-- **長途駕駛者**：經常行駛於公路，需要精準的 GPS 速度偵測與測速照相提醒以避免罰單並提升駕駛安全。
-- **汽車愛好者與數據追蹤者**：熱衷於詳細紀錄車輛的加油、保養及各項開銷，對車輛維護狀況與開費有高度管理需求。
+**Garage** is a vehicle management app designed specifically for car enthusiasts, combining **Maintenance/Expense Tracking** and **Speed Camera Alerts**. It features a modern Glassmorphism design style, allowing car owners to effortlessly manage all vehicle expenses and ensure driving safety.
 
-## 3. Core Value Proposition
-- **優雅的測速警示體驗**：結合 3D 視覺動畫與 TTS 語音播報，提供比傳統地圖導航更專注、更具科技感的測速警示，減輕駕駛心理壓力。
-- **一站式數位管家**：整合分散的車輛資料（消費、油耗、保養里程），提供視覺化圖表分析，讓車主隨時掌握車況與開支。
-- **可靠的資料主權與同步**：透過 iCloud 與 Google Drive 雙雲端支援，讓使用者在享受原生 App 體驗的同時，能確保資料的安全備份與跨裝置無縫同步。
+## 2. Target Audience
 
-## 4. Brand & Experience Principles
-- **現代與科技感 (Modern & Tech-savvy)**：介面設計簡潔，善用當代 UI 元素，展現高品質的數位體驗。
-- **實用與數據導向 (Utility & Data-focused)**：在保有美感的同時，確保資訊展示清晰（如統計圖表、紀錄清單），操作流程直觀高效。
-- **動感與互動性 (Dynamic & Engaging)**：利用 3D 車輛模型與即時狀態列帶來的視覺回饋，讓 App 不僅僅是工具，更是一個充滿活力的數位儀表。
+- **Car Enthusiasts**: Track maintenance, modifications, and fuel statistics.
+- **Commuters**: Need real-time speed camera alerts.
+- **Multi-Vehicle Owners**: Manage records and maintenance schedules for multiple vehicles.
+
+## 3. Core Features
+
+### Phase 1: Vehicle Records (Current)
+- **Multi-Vehicle Management**: Create profiles for multiple vehicles with custom sorting.
+- **Record Management**: Refueling, maintenance, and other expense records.
+- **Maintenance Health**: Visual progress bar for remaining mileage.
+- **Statistics Charts**: Monthly/Annual expenses, categorical statistics.
+- **Ad Integration**: Banner, Interstitial, Native, and Rewarded ads.
+
+### Phase 2: QR Code & Cloud Sync (Planned)
+- **Invoice Scanning**: Quick input of expense data via QR Code scanning.
+- **Cloud Sync**: iCloud (iOS) / Google Drive backup and restore.
+- **Subscription**: Premium features (Ad-free, Advanced Charts).
+
+### Phase 3: Speed Camera (Planned)
+- **Real-time Speed Display**: GPS speed detection with HUD-style interface.
+- **Speed Camera Alerts**: Visual + TTS voice warnings.
+- **Interval Speed Checks**: Average speed calculation for interval zones.
+- **3D Vehicle Animation**: Dynamic display based on vehicle speed.
+- **Map Integration**: OpenStreetMap displaying speed camera locations.
+
+## 4. Roadmap
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| **Phase 1** | Vehicle Record Management, Multi-vehicle, Charts, Ad System | 🔄 In Progress |
+| **Phase 2** | QR Code Invoice Scanner, Cloud Sync, Subscription | 📋 Planned |
+| **Phase 3** | Speed Camera Alerts, Interval Checks, 3D Animation | 📋 Planned |
+
+## 5. Business Model
+
+### Free Tier
+- Basic vehicle record management
+- Mileage tracking
+- Local data storage
+- Ad-supported
+
+### Premium Tier (Phase 2)
+- Ad-free experience
+- Automatic cloud sync
+- Advanced statistical charts
+- Data export (CSV/PDF)
+
+## 6. Success Metrics
+
+- **User Retention**: DAU/WAU activity levels.
+- **Monetization**: Balance between ad revenue and subscription conversion rate.
+- **Stability**: Crash-free sessions > 99%.
+- **Performance**: 60fps UI smoothness.

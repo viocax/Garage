@@ -38,7 +38,6 @@ class GarageHomePage extends StatelessWidget {
               index,
               initialLocation: TabConfig.duplicate(index, tabbarType) == false,
             );
-            // TODO: 到時候再看看需不需要，之後想知道相關點擊事件
             context.read<GarageHomeBloc>().add(TabChanged(tabbarType));
           },
           items: [

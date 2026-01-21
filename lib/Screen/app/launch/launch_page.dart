@@ -25,7 +25,7 @@ class _LaunchPageState extends State<LaunchPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => LaunchBloc(this),
+      create: (_) => LaunchBloc(vsync: this),
       child: const LaunchView(),
     );
   }

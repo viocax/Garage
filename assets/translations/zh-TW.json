@@ -23,7 +23,9 @@
     "later": "稍後再說",
     "goToSettings": "前往設定",
     "unitKm": "km",
-    "unitPricePerLiter": "元/L"
+    "unitMi": "mi",
+    "unitPricePerLiter": "元/L",
+    "edit": "編輯"
   },
   "records": {
     "title": "我的車庫",
@@ -41,7 +43,19 @@
     "totalSpent": "總花費",
     "recordCount": "記錄數",
     "recordCountWithUnit": "{} 筆",
-    "loadFailed": "載入失敗"
+    "loadFailed": "載入失敗",
+    "monthlyExpense": "月度消費",
+    "categories": "分類",
+    "annualExpenseComparison": "年度花費對比",
+    "yearFormat": "{} 年",
+    "fuelEfficiencyTrend": "油耗趨勢 (km/L)",
+    "fuelEfficiencyEmpty": "需要至少兩筆加油紀錄來計算油耗",
+    "selectMonth": "選擇月份",
+    "filter": "篩選：",
+    "all": "全部",
+    "noFilteredRecords": "沒有符合條件的記錄",
+    "nextService": "下次保養",
+    "kmLeft": "剩餘 {} km"
   },
   "addRecord": {
     "title": "新增紀錄",
@@ -59,7 +73,9 @@
     "notes": "備註",
     "notesPlaceholder": "輸入備註...",
     "itemNumber": "項目 {}",
-    "total": "總計：${}"
+    "total": "總計：${}",
+    "invalidFuelAmount": "請輸入有效的加油量",
+    "atLeastOneMaintenanceItem": "請至少輸入一個保養項目"
   },
   "recordType": {
     "fuel": "加油",
@@ -70,7 +86,8 @@
     "octane92": "92",
     "octane95": "95",
     "octane98": "98",
-    "diesel": "柴油"
+    "diesel": "柴油",
+    "unleadedFormat": "無鉛{}"
   },
   "maintenanceItem": {
     "engineOil": "機油",
@@ -96,6 +113,7 @@
     "about": "關於",
     "termsOfService": "使用條款",
     "privacyPolicy": "隱私政策",
+    "openSourceLicenses": "開源授權",
     "feedback": "意見回饋",
     "rateApp": "評分 App",
     "adManagement": "廣告與獎勵",
@@ -106,7 +124,22 @@
     "removeBanner": "觀看廣告移除橫幅",
     "removeBannerDesc": "暫時移除底部廣告 12 小時",
     "earnedTicketSuccess": "成功獲得 1 張廣告票券！",
-    "removeBannerSuccess": "成功移除橫幅廣告 12 小時！"
+    "removeBannerSuccess": "成功移除橫幅廣告 12 小時！",
+    "garagePro": "Garage Pro",
+    "proUnlocked": "Pro 功能已全數解鎖",
+    "proUnlockDesc": "解鎖雲端同步與進階統計",
+    "proEnabled": "已啟用"
+  },
+  "speedCamera": {
+    "permission": {
+      "title": "需要位置權限",
+      "message": "測速功能需要存取您的位置資訊才能正常運作。請前往設定開啟位置權限。"
+    },
+    "interval": {
+      "averageSpeed": "區間平均速度",
+      "remaining": "剩餘距離",
+      "limit": "速限"
+    }
   },
   "speedDetection": {
     "title": "測速設置",
@@ -151,7 +184,23 @@
     "uploadFailed": "上傳失敗",
     "downloading": "正在下載資料...",
     "downloadComplete": "下載完成！",
-    "downloadFailed": "下載失敗"
+    "downloadFailed": "下載失敗",
+    "clearLocalData": "清除本地資料",
+    "clearLocalDesc": "刪除所有本地車輛和記錄",
+    "confirmClear": "確認清除",
+    "clearLocalWarning": "這將刪除所有本地的車輛和記錄資料，此操作無法復原。如果您有雲端備份，可以稍後從雲端還原。確定要繼續嗎？",
+    "clear": "清除",
+    "clearing": "正在清除資料...",
+    "clearComplete": "清除完成！",
+    "clearFailed": "清除失敗",
+    "deleteCloudBackup": "刪除雲端備份",
+    "deleteCloudDesc": "從雲端刪除備份檔案",
+    "confirmDeleteBackup": "確認刪除備份",
+    "deleteBackupWarning": "這將永久刪除雲端上的備份檔案，此操作無法復原。確定要繼續嗎？",
+    "delete": "刪除",
+    "deleting": "正在刪除備份...",
+    "deleteComplete": "刪除完成！",
+    "deleteFailed": "刪除失敗"
   },
   "vehicle": {
     "addVehicleTooltip": "新增車輛",
@@ -178,6 +227,57 @@
     "maintenanceIntervalPlaceholder": "5000",
     "submit": "完成新增",
     "editLaterHint": "之後可以在設定中編輯車輛資訊",
-    "errorOccurred": "發生錯誤"
+    "errorOccurred": "發生錯誤",
+    "fillAllFields": "請填寫完整",
+    "addVehicleFailed": "新增車輛失敗",
+    "editTitle": "編輯車輛資訊",
+    "updateVehicleFailed": "更新車輛失敗"
+  },
+  "premium": {
+    "successTitle": "恭喜！",
+    "successDesc": "您已成功啟用 Garage Pro 權限，享受完整功能。",
+    "successButton": "太棒了",
+    "failureMessage": "操作失敗",
+    "proMemberStatus": "您已是 PRO 成員",
+    "unlockAllFeatures": "解鎖所有進階功能",
+    "upgradeProDesc": "升級 Pro 成員，享受無限同步與數據追蹤。",
+    "thanksSupport": "感謝您的支持！",
+    "allAccess": "您目前擁有 Garage Pro 的所有權限。",
+    "noOfferings": "目前沒有可選的方案",
+    "bestChoice": "最佳選擇",
+    "monthlyPlan": "按月訂閱",
+    "annualPlan": "年度訂閱",
+    "monthlyDesc": "隨時取消，無壓力享受 Pro。",
+    "annualDesc": "一年長效，價格更優惠。",
+    "restorePurchases": "還原購買 (Restore Purchases)",
+    "visualPreviewTitle": "Pro 專屬功能預覽",
+    "previewTag": "Pro 預覽",
+    "features": {
+      "noAds": "無廣告體驗",
+      "noAdsDesc": "移除所有插頁式與橫幅廣告。",
+      "cloudSync": "雲端自動同步",
+      "cloudSyncDesc": "讓您的數據在多台設備間無縫切換。",
+      "stats": "進階統計數據",
+      "statsDesc": "包含油耗趨勢與年度花費對比。",
+      "support": "優先客服支援",
+      "supportDesc": "我們的新功能將優先提供給 Pro 用戶。"
+    }
+  },
+  "invoiceScanner": {
+    "title": "掃描發票",
+    "hint": "將發票左側 QR Code 置於框內",
+    "processing": "正在處理發票資料...",
+    "retry": "重新掃描",
+    "result": {
+      "title": "發票資訊",
+      "fromApi": "完整資料",
+      "fromQr": "基本資料",
+      "number": "發票號碼",
+      "date": "交易日期",
+      "amount": "總金額",
+      "items": "消費明細",
+      "rescan": "重新掃描",
+      "use": "使用此發票"
+    }
   }
 }

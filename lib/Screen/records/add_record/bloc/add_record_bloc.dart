@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:uuid/uuid.dart';
 import 'add_record_event.dart';
@@ -9,18 +10,24 @@ import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
+import 'package:garage/core/repositories/user_settings_repository.dart';
+import 'package:garage/core/utils/log.dart';
 
 class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
   final Vehicle vehicle;
   final VehicleRepository _repository;
   final AdRepository _adRepository;
+  final UserSettingsRepository _userSettingsRepository;
 
   AddRecordBloc({
     required this.vehicle,
     VehicleRepository? repository,
     AdRepository? adRepository,
+    UserSettingsRepository? userSettingsRepository,
   }) : _repository = repository ?? getIt.repo.vehicle,
        _adRepository = adRepository ?? getIt.repo.ad,
+       _userSettingsRepository =
+           userSettingsRepository ?? getIt.repo.userSettings,
        super(
          AddRecordState(
            // 預設為加油類型，帶入當前日期和車輛里程
@@ -46,6 +53,13 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     on<FuelAmountChanged>(_onFuelAmountChanged);
     on<PricePerLiterChanged>(_onPricePerLiterChanged);
     on<RemainingFuelChanged>(_onRemainingFuelChanged);
+    // 使用者設定
+    on<LoadUserSettings>(_onLoadUserSettings);
+    // 發票掃描
+    on<InvoiceDataApplied>(_onInvoiceDataApplied);
+
+    // 立即載入使用者設定
+    add(const LoadUserSettings());
   }
 
   void _onRecordTypeChanged(
@@ -86,7 +100,7 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     emit(
       state.copyWith(
         recordType: newType,
-        errorMessage: null,
+        clearError: true,
         isAmountManuallyEdited: false,
       ),
     );
@@ -269,8 +283,40 @@ class AddRecordBloc extends Bloc<AddRecordEvent, AddRecordState> {
     }
   }
 
+  /// 載入使用者設定
+  Future<void> _onLoadUserSettings(
+    LoadUserSettings event,
+    Emitter<AddRecordState> emit,
+  ) async {
+    try {
+      final userSettings = await _userSettingsRepository.loadSettings();
+      emit(state.copyWith(speedUnit: userSettings.speedUnit));
+    } catch (e) {
+      Log.e('AddRecordBloc: Failed to load user settings', e);
+      emit(state.copyWith(speedUnit: SpeedUnit.kmh));
+    }
+  }
+
   /// 顯示廣告邏輯（由 UI 呼叫，封裝規則）
   void showAd({required void Function() onComplete}) {
     _adRepository.showInterstitialAd(onComplete: onComplete);
+  }
+
+  /// 套用發票掃描資料
+  void _onInvoiceDataApplied(
+    InvoiceDataApplied event,
+    Emitter<AddRecordState> emit,
+  ) {
+    // 更新金額和日期
+    emit(
+      state
+          .copyWithCommonFields(date: event.date)
+          .copyWithOtherData(amount: event.amount),
+    );
+
+    // 如果是加油類型且金額有設定，標記為手動編輯
+    if (state.recordType is RecordTypeFuel && event.amount > 0) {
+      emit(state.copyWith(isAmountManuallyEdited: true));
+    }
   }
 }

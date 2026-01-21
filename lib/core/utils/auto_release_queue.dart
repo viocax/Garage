@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:garage/core/utils/log.dart';
 
 /// 1. 定義介面
 /// 所有要進入 Queue 的物件都要實作這個 execute 方法
@@ -39,7 +39,7 @@ class AutoReleaseQueue {
   /// 不會影響當前正在執行的任務
   void clear() {
     _queue.clear();
-    debugPrint('AutoReleaseQueue: 已清空隊列，剩餘任務數: ${_queue.length}');
+    Log.d('AutoReleaseQueue: 已清空隊列，剩餘任務數: ${_queue.length}');
   }
 
   /// 取消所有任務（包括當前正在執行的）
@@ -47,7 +47,7 @@ class AutoReleaseQueue {
   void cancelAll() {
     _isCancelled = true;
     _queue.clear();
-    debugPrint('AutoReleaseQueue: 已取消所有任務');
+    Log.d('AutoReleaseQueue: 已取消所有任務');
   }
 
   /// 內部的遞迴/迴圈處理邏輯
@@ -71,7 +71,7 @@ class AutoReleaseQueue {
         await currentItem.execute();
       } catch (e) {
         // 錯誤處理：即使失敗也要繼續，避免卡死整個 Queue
-        debugPrint("Item execution failed: $e");
+        Log.e("AutoReleaseQueue: Item execution failed", e);
       }
 
       // 3. Dequeue: 條件滿足後，移除隊首

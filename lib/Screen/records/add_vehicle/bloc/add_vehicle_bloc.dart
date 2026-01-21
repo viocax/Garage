@@ -1,12 +1,13 @@
 import 'package:bloc/bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:garage/core/di/service_locator.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/core/models/vehicle.dart';
 import 'package:garage/core/repositories/user_settings_repository.dart';
 import 'package:garage/core/repositories/vehicle_repository.dart';
 import 'package:garage/core/repositories/ad_repository.dart';
+import 'package:garage/core/utils/log.dart';
 
 part 'add_vehicle_event.dart';
 part 'add_vehicle_state.dart';
@@ -20,11 +21,22 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     VehicleRepository? vehicleRepository,
     UserSettingsRepository? userSettingsRepository,
     AdRepository? adRepository,
+    Vehicle? vehicleToEdit,
   }) : _vehicleRepository = vehicleRepository ?? getIt.repo.vehicle,
        _userSettingsRepository =
            userSettingsRepository ?? getIt.repo.userSettings,
        _adRepository = adRepository ?? getIt.repo.ad,
-       super(const AddVehicleState(speedUnit: SpeedUnit.kmh)) {
+       super(
+         AddVehicleState(
+           speedUnit: SpeedUnit.kmh,
+           // Update initial state if editing
+           vehicleName: vehicleToEdit?.carName ?? '',
+           licensePlate: vehicleToEdit?.licensePlate ?? '',
+           currentKm: vehicleToEdit?.currentKm ?? 0,
+           maintenanceIntervalKm: vehicleToEdit?.maintenanceIntervalKm ?? 0,
+           editingVehicle: vehicleToEdit,
+         ),
+       ) {
     on<LoadUserSettings>(_onLoadUserSettings);
     on<VehicleNameChanged>(_onVehicleNameChanged);
     on<LicensePlateChanged>(_onLicensePlateChanged);
@@ -40,9 +52,13 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
   ) async {
     try {
       final userSettings = await _userSettingsRepository.loadSettings();
+      // If editing, we might want to keep the unit consistent with settings,
+      // OR we might want to respect the vehicle's original context?
+      // Usually miles/km is a global display setting.
+      // The stored values are usually raw (e.g. km).
       emit(state.copyWith(speedUnit: userSettings.speedUnit));
     } catch (e) {
-      debugPrint(e.toString());
+      Log.e('AddVehicleBloc: Failed to load user settings', e);
     }
   }
 
@@ -80,7 +96,10 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
   ) async {
     if (!state.isValid) {
       emit(
-        state.copyWith(status: AddVehicleStatus.failure, errorMessage: '請填寫完整'),
+        state.copyWith(
+          status: AddVehicleStatus.failure,
+          errorMessage: 'addVehicle.fillAllFields'.tr(),
+        ),
       );
       return;
     }
@@ -88,14 +107,29 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
     emit(state.copyWith(status: AddVehicleStatus.submitting));
 
     try {
-      final vehicle = Vehicle.create(
-        carName: state.vehicleName,
-        licensePlate: state.licensePlate,
-        currentKm: state.currentKm,
-        maintenanceIntervalKm: state.maintenanceIntervalKm,
-      );
+      final isEditing = state.isEditing;
+      final editingVehicle = state.editingVehicle;
 
-      final success = await _vehicleRepository.addVehicle(vehicle);
+      final vehicle = isEditing && editingVehicle != null
+          ? (Vehicle()
+              ..id = editingVehicle.id
+              ..vehicleId = editingVehicle.vehicleId
+              ..carName = state.vehicleName
+              ..licensePlate = state.licensePlate
+              ..currentKm = state.currentKm
+              ..maintenanceIntervalKm = state.maintenanceIntervalKm
+              ..order = editingVehicle.order
+              ..kmToNextMaintenance = state.currentKm + state.maintenanceIntervalKm)
+          : Vehicle.create(
+              carName: state.vehicleName,
+              licensePlate: state.licensePlate,
+              currentKm: state.currentKm,
+              maintenanceIntervalKm: state.maintenanceIntervalKm,
+            );
+
+      final success = isEditing
+          ? await _vehicleRepository.updateVehicle(vehicle)
+          : await _vehicleRepository.addVehicle(vehicle);
 
       if (success) {
         emit(
@@ -108,7 +142,9 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
         emit(
           state.copyWith(
             status: AddVehicleStatus.failure,
-            errorMessage: '新增車輛失敗',
+            errorMessage: isEditing
+                ? 'addVehicle.updateVehicleFailed'.tr()
+                : 'addVehicle.addVehicleFailed'.tr(),
           ),
         );
       }
@@ -124,6 +160,11 @@ class AddVehicleBloc extends Bloc<AddVehicleEvent, AddVehicleState> {
 
   /// 顯示廣告邏輯（由 UI 呼叫，封裝規則）
   void showAd({required void Function() onComplete}) {
+    // 如果是編輯模式，直接完成（不顯示廣告）
+    if (state.isEditing) {
+      onComplete();
+      return;
+    }
     _adRepository.showInterstitialAd(onComplete: onComplete);
   }
 }

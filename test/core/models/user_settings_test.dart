@@ -8,7 +8,7 @@ void main() {
       final settings = UserSettings.defaults();
 
       expect(settings.speedUnit, SpeedUnit.kmh);
-      expect(settings.isVoiceAlertEnabled, true);
+      expect(settings.isVoiceAlertEnabled, false);
       expect(settings.voiceVolume, 0.8);
       expect(settings.isPushNotificationEnabled, true);
     });
@@ -82,14 +82,12 @@ void main() {
     });
 
     test('fromJson 應該在無效資料時使用預設值', () {
-      final json = {
-        'speedUnit': 'invalid',
-      };
+      final json = {'speedUnit': 'invalid'};
 
       final settings = UserSettings.fromJson(json);
 
       expect(settings.speedUnit, SpeedUnit.kmh);
-      expect(settings.isVoiceAlertEnabled, true);
+      expect(settings.isVoiceAlertEnabled, false);
       expect(settings.voiceVolume, 0.8);
     });
 
@@ -121,8 +119,14 @@ void main() {
       expect(decoded.voiceSpeechRate, original.voiceSpeechRate);
       expect(decoded.alertDistance, original.alertDistance);
       expect(decoded.speedTolerance, original.speedTolerance);
-      expect(decoded.isPushNotificationEnabled, original.isPushNotificationEnabled);
-      expect(decoded.isMaintenanceReminderEnabled, original.isMaintenanceReminderEnabled);
+      expect(
+        decoded.isPushNotificationEnabled,
+        original.isPushNotificationEnabled,
+      );
+      expect(
+        decoded.isMaintenanceReminderEnabled,
+        original.isMaintenanceReminderEnabled,
+      );
       expect(decoded.maintenanceReminderDays, original.maintenanceReminderDays);
       expect(decoded.isAnalyticsEnabled, original.isAnalyticsEnabled);
       expect(decoded.isAutoBackupEnabled, original.isAutoBackupEnabled);
@@ -165,9 +169,7 @@ void main() {
 
   group('JSON Edge Cases', () {
     test('處理 null lastBackupTime', () {
-      final json = {
-        'lastBackupTime': null,
-      };
+      final json = {'lastBackupTime': null};
 
       final settings = UserSettings.fromJson(json);
       expect(settings.lastBackupTime, null);
@@ -175,9 +177,7 @@ void main() {
 
     test('處理有效的 lastBackupTime', () {
       final now = DateTime.now();
-      final json = {
-        'lastBackupTime': now.toIso8601String(),
-      };
+      final json = {'lastBackupTime': now.toIso8601String()};
 
       final settings = UserSettings.fromJson(json);
       expect(settings.lastBackupTime, isNotNull);
@@ -205,7 +205,7 @@ void main() {
 
       // 應該使用預設值
       expect(settings.speedUnit, SpeedUnit.kmh);
-      expect(settings.isVoiceAlertEnabled, true);
+      expect(settings.isVoiceAlertEnabled, false);
       expect(settings.voiceVolume, 0.8);
     });
   });

@@ -12,6 +12,7 @@ import 'package:garage/screen/app/home/bloc/garage_home_bloc.dart';
 import 'package:garage/screen/app/home/bloc/garage_home_state.dart';
 import 'package:garage/core/models/tabbar_type.dart';
 import 'package:garage/widgets/primary_action_button.dart';
+import 'package:garage/widgets/banner_ad_widget.dart';
 
 class RecordsPage extends StatelessWidget {
   const RecordsPage({super.key});
@@ -131,18 +132,27 @@ class RecordsPage extends StatelessWidget {
           ),
           bottomNavigationBar: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: state.vehicles.isNotEmpty
-                  ? PrimaryActionButton(
-                      onPressed: () =>
-                          _navigateToAddRecord(context, state.currentVehicle),
-                      text: 'records.addRecord'.tr(),
-                      icon: Icons.add,
-                    )
-                  : PrimaryActionButton(
-                      onPressed: () => _navigateToAddVehicle(context),
-                      text: 'records.addVehicle'.tr(),
-                    ),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  state.vehicles.isNotEmpty
+                      ? PrimaryActionButton(
+                          onPressed: () => _navigateToAddRecord(
+                            context,
+                            state.currentVehicle,
+                          ),
+                          text: 'records.addRecord'.tr(),
+                          icon: Icons.add,
+                        )
+                      : PrimaryActionButton(
+                          onPressed: () => _navigateToAddVehicle(context),
+                          text: 'records.addVehicle'.tr(),
+                        ),
+                  const SizedBox(height: 12),
+                  const BannerAdWidget(),
+                ],
+              ),
             ),
           ),
         ),
@@ -151,7 +161,9 @@ class RecordsPage extends StatelessWidget {
   }
 
   Future<void> _navigateToAddVehicle(BuildContext context) async {
-    final vehicle = await context.goPathWithResult<Vehicle>(AppPath.addVehicle);
+    final vehicle = await context.pushPathWithResult<Vehicle>(
+      AppPath.addVehicle,
+    );
     if (vehicle != null && context.mounted) {
       context.read<RecordsBloc>().add(
         LoadVehicleRecord(vehicleId: vehicle.vehicleId),
@@ -163,7 +175,7 @@ class RecordsPage extends StatelessWidget {
     BuildContext context,
     Vehicle vehicle,
   ) async {
-    final record = await context.goPathWithResult<VehicleRecord>(
+    final record = await context.pushPathWithResult<VehicleRecord>(
       AppPath.addRecord,
       extra: vehicle,
     );
@@ -173,11 +185,25 @@ class RecordsPage extends StatelessWidget {
   }
 
   Future<void> _navigateToEditVehicle(BuildContext context) async {
-    // await context.goPathWithResult(AppPath.vehicleManagement);
-    // if (context.mounted) {
-    //   // Reload vehicle data after returning from vehicle management
-    //   context.read<RecordsBloc>().add(const LoadVehicleRecord());
-    // }
+    final state = context.read<RecordsBloc>().state;
+    if (state.vehicles.isEmpty) return;
+
+    // Use centralized getter instead of duplicating lookup logic
+    final currentVehicle = state.currentVehicle;
+    if (currentVehicle.vehicleId.isEmpty) return;
+
+    // Navigate with result
+    final updatedVehicle = await context.pushPathWithResult<Vehicle>(
+      AppPath.addVehicle,
+      extra: currentVehicle,
+    );
+
+    if (updatedVehicle != null && context.mounted) {
+      // Reload is sufficient as it fetches fresh data
+      context.read<RecordsBloc>().add(
+        LoadVehicleRecord(vehicleId: updatedVehicle.vehicleId),
+      );
+    }
   }
 }
 
@@ -203,6 +229,7 @@ class _RecordsContent extends StatefulWidget {
 class _RecordsContentState extends State<_RecordsContent> {
   late PageController _pageController;
   int _currentPage = 0;
+  final NumberFormat _odometerFormat = NumberFormat('#,###');
 
   @override
   void initState() {
@@ -271,8 +298,12 @@ class _RecordsContentState extends State<_RecordsContent> {
             },
             itemBuilder: (context, index) {
               final vehicle = widget.vehicles[index];
-              final odometerString = vehicle.currentKm.toString();
-              final unitString = 'km'; // 這邊要根據使用者那邊資料
+              final odometerString = _odometerFormat.format(vehicle.currentKm);
+              final unitString =
+                  widget.unitString; // ✅ Fix: Use unit from widget
+              final fuelEfficiency = FuelEfficiencyDisplay.calculateFromVehicle(
+                vehicle,
+              );
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -309,15 +340,13 @@ class _RecordsContentState extends State<_RecordsContent> {
                         vehicle: vehicle,
                         odometerString: odometerString,
                         unitString: unitString,
+                        fuelEfficiency: fuelEfficiency,
                       ),
 
                       const SizedBox(height: 16),
 
                       // 分隔线
-                      Container(
-                        height: 1,
-                        color: AppTheme.whiteTransparent15,
-                      ),
+                      Container(height: 1, color: AppTheme.whiteTransparent15),
 
                       const SizedBox(height: 16),
 
@@ -350,6 +379,7 @@ class _HeroSection extends StatelessWidget {
   final Vehicle vehicle;
   final String odometerString;
   final String unitString;
+  final FuelEfficiencyDisplay fuelEfficiency;
 
   const _HeroSection({
     required this.textSecondary,
@@ -357,10 +387,19 @@ class _HeroSection extends StatelessWidget {
     required this.vehicle,
     required this.odometerString,
     required this.unitString,
+    required this.fuelEfficiency,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Calculate health color
+    Color healthColor = AppTheme.statusGreen;
+    if (vehicle.maintenanceHealth < 0.2) {
+      healthColor = AppTheme.dashboardAccentRed;
+    } else if (vehicle.maintenanceHealth < 0.5) {
+      healthColor = AppTheme.statusOrange;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -381,7 +420,19 @@ class _HeroSection extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 4),
+            IconButton(
+              onPressed: () {
+                context.read<RecordsBloc>().add(const ClickEditVehicleButton());
+              },
+              icon: Icon(Icons.edit_outlined, size: 18, color: textSecondary),
+              tooltip: 'common.edit'.tr(),
+              style: IconButton.styleFrom(
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -473,22 +524,74 @@ class _HeroSection extends StatelessWidget {
               textSecondary: textSecondary,
               textPrimary: textPrimary,
             ),
-            const SizedBox(width: 12),
-            Container(
-              width: 1,
-              height: 24,
-              color: AppTheme.whiteTransparent20,
-            ),
-            const SizedBox(width: 12),
-            _StatChip(
-              icon: Icons.local_gas_station_outlined,
-              label: 'records.fuelEfficiency'.tr(),
-              value: '9.2 L',
-              textSecondary: textSecondary,
-              textPrimary: textPrimary,
-            ),
+            // 只有當有油耗數據時才顯示分隔線和油耗 chip
+            if (fuelEfficiency.hasData) ...[
+              const SizedBox(width: 12),
+              Container(
+                width: 1,
+                height: 24,
+                color: AppTheme.whiteTransparent20,
+              ),
+              const SizedBox(width: 12),
+              _StatChip(
+                icon: Icons.local_gas_station_outlined,
+                label: 'records.fuelEfficiency'.tr(),
+                value: fuelEfficiency.format(),
+                textSecondary: textSecondary,
+                textPrimary: textPrimary,
+              ),
+            ],
           ],
         ),
+        const SizedBox(height: 16),
+        // Maintenance Health Bar
+        if (vehicle.maintenanceIntervalKm > 0) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.whiteTransparent08,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'records.nextService'.tr(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      'records.kmLeft'.tr(
+                        args: [NumberFormat('#,###').format(vehicle.remindKm)],
+                      ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: healthColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: vehicle.maintenanceHealth,
+                    backgroundColor: AppTheme.blackTransparent20,
+                    color: healthColor,
+                    minHeight: 6,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -514,19 +617,9 @@ class _StatChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: textSecondary,
-        ),
+        Icon(icon, size: 16, color: textSecondary),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: textSecondary,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: textSecondary)),
         const SizedBox(width: 6),
         Text(
           value,
@@ -567,17 +660,28 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
   static const double _cardHeight = 70.0;
 
   late FixedExtentScrollController _wheelController;
-
-  List<VehicleRecord> get _sortedRecords {
-    final sorted = List<VehicleRecord>.from(widget.records)
-      ..sort((a, b) => b.date.compareTo(a.date));
-    return sorted.take(_maxDisplayCount).toList();
-  }
+  late List<VehicleRecord> _sortedRecords;
 
   @override
   void initState() {
     super.initState();
     _wheelController = FixedExtentScrollController();
+    _updateSortedRecords();
+  }
+
+  @override
+  void didUpdateWidget(_RecentActivitySection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.records != oldWidget.records) {
+      _updateSortedRecords();
+    }
+  }
+
+  void _updateSortedRecords() {
+    // ✅ Optimization: Sort records only when list changes
+    final sorted = List<VehicleRecord>.from(widget.records)
+      ..sort((a, b) => b.date.compareTo(a.date));
+    _sortedRecords = sorted.take(_maxDisplayCount).toList();
   }
 
   @override
@@ -606,7 +710,7 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
             if (_sortedRecords.isNotEmpty)
               GestureDetector(
                 onTap: () {
-                  context.goPathWithResult(
+                  context.pushPathWithResult(
                     AppPath.allRecords,
                     extra: widget.vehicle,
                   );
@@ -664,7 +768,7 @@ class _RecentActivitySectionState extends State<_RecentActivitySection> {
               icon: record.type.icon,
               iconColor: record.type.color,
               title: record.title,
-              date: '${record.date.month}月${record.date.day}日',
+              date: DateFormat.MMMd().format(record.date),
               cost: record.formattedCost,
               accentRed: widget.accentRed,
               textSecondary: widget.textSecondary,
@@ -732,10 +836,7 @@ class _WheelTransactionCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.blackTransparent60,
-            AppTheme.blackTransparent90,
-          ],
+          colors: [AppTheme.blackTransparent60, AppTheme.blackTransparent90],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTheme.whiteTransparent20, width: 1),

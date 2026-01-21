@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import '../models/vehicle.dart';
 import '../models/vehicle_record.dart';
+import 'package:garage/core/utils/log.dart';
 
 /// Isar 資料庫服務
 class IsarService {
@@ -17,7 +18,7 @@ class IsarService {
 
   /// 初始化 Isar 資料庫
   Future<Isar> _initIsar() async {
-    debugPrint('IsarService: 初始化 Isar 資料庫');
+    Log.i('IsarService: 初始化 Isar 資料庫');
 
     final dir = await getApplicationDocumentsDirectory();
 
@@ -27,7 +28,7 @@ class IsarService {
       inspector: kDebugMode, // 只在 debug 模式啟用 inspector
     );
 
-    debugPrint('IsarService: Isar 資料庫已初始化於 ${dir.path}');
+    Log.i('IsarService: Isar 資料庫已初始化於 ${dir.path}');
     return isar;
   }
 
@@ -36,7 +37,7 @@ class IsarService {
     if (_isar != null) {
       await _isar!.close();
       _isar = null;
-      debugPrint('IsarService: Isar 資料庫已關閉');
+      Log.i('IsarService: Isar 資料庫已關閉');
     }
   }
 
@@ -46,7 +47,7 @@ class IsarService {
     await db.writeTxn(() async {
       await db.clear();
     });
-    debugPrint('IsarService: 所有資料已清空');
+    Log.i('IsarService: 所有資料已清空');
   }
 
   /// 取得資料庫統計資訊

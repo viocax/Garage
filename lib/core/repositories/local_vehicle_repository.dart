@@ -2,15 +2,22 @@ import 'package:garage/core/core.dart';
 import 'package:isar_community/isar.dart';
 
 class LocalVehicleRepository implements VehicleRepository {
-  final IsarService isarService = getIt.service.isarDB;
+  final IsarService _isarService;
   List<Vehicle> _cacheList = [];
+
+  /// Creates a LocalVehicleRepository with optional dependency injection.
+  ///
+  /// For production, use the default constructor without parameters.
+  /// For testing, inject a mock IsarService.
+  LocalVehicleRepository({IsarService? isarService})
+    : _isarService = isarService ?? getIt.service.isarDB;
 
   @override
   Future<List<Vehicle>> loadVehicles() async {
     if (_cacheList.isNotEmpty) {
       return _cacheList;
     }
-    final db = await isarService.isar;
+    final db = await _isarService.isar;
     // Sort by order ascending (smaller order number comes first)
     final vehicles = await db.vehicles.where().sortByOrder().findAll();
 
@@ -28,10 +35,15 @@ class LocalVehicleRepository implements VehicleRepository {
     _cacheList = [];
   }
 
+  /// For testing: invalidate cache
+  void invalidateCacheForTesting() {
+    _invalidateCache();
+  }
+
   @override
   Future<bool> addVehicle(Vehicle vehicle) async {
     try {
-      final db = await isarService.isar;
+      final db = await _isarService.isar;
       await db.writeTxn(() async {
         // Get all existing vehicles
         final existingVehicles = await db.vehicles.where().findAll();
@@ -66,7 +78,7 @@ class LocalVehicleRepository implements VehicleRepository {
   @override
   Future<bool> addRecord(String carId, VehicleRecord record) async {
     try {
-      final db = await isarService.isar;
+      final db = await _isarService.isar;
 
       // Find the vehicle by vehicleId
       final vehicle = await db.vehicles
@@ -100,7 +112,7 @@ class LocalVehicleRepository implements VehicleRepository {
   @override
   Future<bool> removeVehicle(String vehicleId) async {
     try {
-      final db = await isarService.isar;
+      final db = await _isarService.isar;
 
       final vehicle = await db.vehicles
           .filter()
@@ -134,7 +146,7 @@ class LocalVehicleRepository implements VehicleRepository {
   @override
   Future<bool> removeRecords(String vehicleId, List<String> recordIds) async {
     try {
-      final db = await isarService.isar;
+      final db = await _isarService.isar;
 
       final vehicle = await db.vehicles
           .filter()
@@ -172,7 +184,7 @@ class LocalVehicleRepository implements VehicleRepository {
     List<VehicleRecord> records,
   ) async {
     try {
-      final db = await isarService.isar;
+      final db = await _isarService.isar;
 
       await db.writeTxn(() async {
         for (final record in records) {
@@ -190,7 +202,7 @@ class LocalVehicleRepository implements VehicleRepository {
   @override
   Future<bool> updateVehicle(Vehicle vehicle) async {
     try {
-      final db = await isarService.isar;
+      final db = await _isarService.isar;
 
       await db.writeTxn(() async {
         await db.vehicles.put(vehicle);
@@ -209,5 +221,22 @@ class LocalVehicleRepository implements VehicleRepository {
     // This method can be used for batch operations if needed
     _invalidateCache();
     return true;
+  }
+
+  @override
+  Future<bool> removeAll() async {
+    try {
+      final db = await _isarService.isar;
+
+      await db.writeTxn(() async {
+        await db.vehicleRecords.clear();
+        await db.vehicles.clear();
+      });
+
+      _invalidateCache();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

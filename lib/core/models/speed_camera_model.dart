@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:garage/core/utils/log.dart';
 
 class SpeedCameraModel {
   int speedLimit;
@@ -8,6 +8,11 @@ class SpeedCameraModel {
   double latitude;
   double longitude;
   double heading; // 使用者行駛方向（0-360度）
+
+  // 區間測速相關
+  bool isInterval;
+  double averageSpeed;
+  double remainingDistance;
 
   static const double maxSpeed = 300;
 
@@ -19,6 +24,9 @@ class SpeedCameraModel {
     required this.latitude,
     required this.longitude,
     this.heading = 0.0,
+    this.isInterval = false,
+    this.averageSpeed = 0.0,
+    this.remainingDistance = 0.0,
   });
 
   SpeedCameraModel copyWith({
@@ -29,6 +37,9 @@ class SpeedCameraModel {
     double? latitude,
     double? longitude,
     double? heading,
+    bool? isInterval,
+    double? averageSpeed,
+    double? remainingDistance,
   }) {
     return SpeedCameraModel(
       speedLimit: speedLimit ?? this.speedLimit,
@@ -38,6 +49,9 @@ class SpeedCameraModel {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       heading: heading ?? this.heading,
+      isInterval: isInterval ?? this.isInterval,
+      averageSpeed: averageSpeed ?? this.averageSpeed,
+      remainingDistance: remainingDistance ?? this.remainingDistance,
     );
   }
 
@@ -75,7 +89,7 @@ class SpeedCameraModel {
     final double finalDuration =
         minDuration + (speedRatio * durationDifference);
 
-    debugPrint('SpeedBloc: finalDuration=$finalDuration');
+    Log.d('SpeedBloc: finalDuration=$finalDuration');
 
     return Duration(milliseconds: finalDuration.toInt());
   }

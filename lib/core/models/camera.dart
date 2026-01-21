@@ -20,6 +20,12 @@ class Camera {
   /// 描述（包含完整地址和方向）
   final String description;
 
+  /// 類型：'fixed' 或 'interval'
+  final String type;
+
+  /// 如果是區間測速，對應的區間 ID
+  final String? zoneId;
+
   const Camera({
     required this.id,
     required this.speedLimit,
@@ -27,6 +33,8 @@ class Camera {
     required this.longitude,
     required this.direction,
     required this.description,
+    this.type = 'fixed',
+    this.zoneId,
   });
 
   /// 從 JSON 資料建立 Camera 物件
@@ -38,6 +46,8 @@ class Camera {
       longitude: (json['lon'] as num?)?.toDouble() ?? 0.0,
       direction: json['dir'] as String? ?? '',
       description: json['disc'] as String? ?? '',
+      type: json['type'] as String? ?? 'fixed',
+      zoneId: json['zone_id'] as String?,
     );
   }
 
@@ -50,8 +60,13 @@ class Camera {
       'lon': longitude,
       'dir': direction,
       'disc': description,
+      'type': type,
+      'zone_id': zoneId,
     };
   }
+
+  /// 是否為區間測速相機
+  bool get isInterval => type == 'interval';
 
   /// 計算與指定座標的距離（公尺）
   double distanceTo(double lat, double lon) {
@@ -82,6 +97,8 @@ class Camera {
     double? longitude,
     String? direction,
     String? description,
+    String? type,
+    String? zoneId,
   }) {
     return Camera(
       id: id ?? this.id,
@@ -90,6 +107,8 @@ class Camera {
       longitude: longitude ?? this.longitude,
       direction: direction ?? this.direction,
       description: description ?? this.description,
+      type: type ?? this.type,
+      zoneId: zoneId ?? this.zoneId,
     );
   }
 

@@ -62,3 +62,6 @@ ios/*.ipa
 ios/*.dSYM.zip
 ios/Runner.ipa
 ios/Runner.app.dSYM.zip
+
+# AI Context
+GEMINI.md

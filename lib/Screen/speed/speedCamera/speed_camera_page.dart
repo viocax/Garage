@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_map/flutter_map.dart';
-import 'package:garage/theme/grid_background_painter.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +16,11 @@ import '../car3d/bloc/car_3d_event.dart';
 import 'bloc/speed_bloc.dart';
 import 'bloc/speed_state.dart';
 import 'bloc/speed_event.dart';
+import 'widgets/interval_info_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:garage/core/extensions/extensions.dart';
 
 class SpeedCameraPage extends StatefulWidget {
   const SpeedCameraPage({super.key});
@@ -100,11 +104,37 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
         listeners: [
           BlocListener<SpeedBloc, SpeedState>(
             listener: (context, state) {
+              if (state is SpeedData) {
+                if (state.showPermissionAlert) {
+                  context.showAdaptivePermissionAlert(
+                    title: 'speedCamera.permission.title'.tr(),
+                    message: 'speedCamera.permission.message'.tr(),
+                    cancelText: 'common.cancel'.tr(),
+                    confirmText: 'common.goToSettings'.tr(),
+                    onConfirm: () async {
+                      // 開啟系統設定
+                      await Geolocator.openAppSettings();
+                    },
+                    onCancel: () {
+                      // 使用者取消，可以在這裡重置狀態（如果需要）
+                    },
+                  );
+                }
+
+                // 顯示錯誤訊息
+                if (state.errorMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.errorMessage!),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: AppTheme.dashboardAccentRed,
+                    ),
+                  );
+                }
+              }
+
               switch (state) {
-                case SpeedData(
-                  // :final animationDuration, // TODO: 到時侯試試看要不要移除
-                  :final currentLocation,
-                ):
+                case SpeedData(:final currentLocation):
                   // 更新道路動畫時長
                   // _roadAnimationController.duration = animationDuration;
 
@@ -164,23 +194,33 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   ),
                 ),
 
-                // 2. Speed Limit Overlay (Top Left - over map)
+                // 2. Speed Limit Overlay or Interval Info
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 16,
-                  left: 16,
+                  right: 16,
                   child: BlocBuilder<SpeedBloc, SpeedState>(
                     builder: (context, state) {
-                      return switch (state) {
-                        SpeedData() => _buildSpeedLimitOverlay(state),
-                      };
+                      if (state is SpeedData) {
+                        if (state.isInterval) {
+                          return IntervalInfoWidget(
+                            averageSpeed: state.averageSpeed,
+                            remainingDistance: state.remainingDistance,
+                            speedLimit: state.model.speedLimit,
+                            unit: state.unit,
+                            isOverSpeed: state.isOverSpeed,
+                          );
+                        }
+                        return _buildSpeedLimitOverlay(state);
+                      }
+                      return const SizedBox.shrink();
                     },
                   ),
                 ),
 
-                // 3. Map Zoom Controls (Top Right)
+                // 3. Map Zoom Controls (Top Left)
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 16,
-                  right: 16,
+                  left: 16,
                   child: BlocBuilder<SpeedBloc, SpeedState>(
                     builder: (context, state) {
                       return switch (state) {
@@ -314,7 +354,7 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
         : defaultLocation;
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
@@ -378,45 +418,50 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
             ),
           ),
         ),
-        if (isDetecting) ...[
-          const SizedBox(height: 16),
-          // Stop Button
-          GestureDetector(
-            onTap: () {
+        const SizedBox(height: 16),
+        // Start/Stop Toggle Button
+        GestureDetector(
+          onTap: () {
+            if (isDetecting) {
               context.read<SpeedBloc>().add(const StopDetection());
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: BackdropFilter(
-                filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.systemRed.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.whiteTransparent20,
-                      width: 1,
+            } else {
+              context.read<SpeedBloc>().add(const StartDetection());
+            }
+          },
+          child: ClipOval(
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isDetecting
+                      ? AppTheme.systemRed.withValues(alpha: 0.8)
+                      : AppTheme.systemGreen.withValues(alpha: 0.8),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.whiteTransparent20,
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDetecting
+                          ? AppTheme.systemRed.withValues(alpha: 0.4)
+                          : AppTheme.systemGreen.withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      spreadRadius: 2,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.systemRed.withValues(alpha: 0.4),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.stop_rounded,
-                    color: AppTheme.accentColor,
-                    size: 24,
-                  ),
+                  ],
+                ),
+                child: Icon(
+                  isDetecting ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                  color: AppTheme.accentColor,
+                  size: 24,
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ],
     );
   }
@@ -444,6 +489,66 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
   // zoom 越大（越近），偏移量越小；zoom 越小（越遠），偏移量越大
   double _getLatitudeOffset(double zoom) {
     return _baseLatitudeOffset * pow(2, _baseZoom - zoom);
+  }
+
+  // 計算扇形的頂點（用於 PolygonLayer）
+  // center: 中心點
+  // radiusInMeters: 半徑（公尺）
+  // heading: 扇形中心朝向（度數，0=北）
+  // sweepAngle: 扇形角度（度數）
+  List<LatLng> _calculateSectorPoints(
+    LatLng center,
+    double radiusInMeters,
+    double heading,
+    double sweepAngle,
+  ) {
+    const int segments = 30; // 弧線段數
+    final points = <LatLng>[];
+
+    // 起始角度（以 heading 為中心）
+    final startAngle = heading - sweepAngle / 2;
+    final angleStep = sweepAngle / segments;
+
+    // 添加中心點
+    points.add(center);
+
+    // 計算弧線上的點
+    for (int i = 0; i <= segments; i++) {
+      final angle = startAngle + (angleStep * i);
+      final point = _calculateDestinationPoint(center, radiusInMeters, angle);
+      points.add(point);
+    }
+
+    // 閉合回中心點
+    points.add(center);
+
+    return points;
+  }
+
+  // 根據起點、距離和方位角計算目標點
+  LatLng _calculateDestinationPoint(
+    LatLng start,
+    double distanceInMeters,
+    double bearingDegrees,
+  ) {
+    const double earthRadius = 6371000; // 地球半徑（公尺）
+    final double bearing = bearingDegrees * (pi / 180); // 轉換為弧度
+    final double lat1 = start.latitude * (pi / 180);
+    final double lon1 = start.longitude * (pi / 180);
+    final double angularDistance = distanceInMeters / earthRadius;
+
+    final double lat2 = asin(
+      sin(lat1) * cos(angularDistance) +
+          cos(lat1) * sin(angularDistance) * cos(bearing),
+    );
+    final double lon2 =
+        lon1 +
+        atan2(
+          sin(bearing) * sin(angularDistance) * cos(lat1),
+          cos(angularDistance) - sin(lat1) * sin(lat2),
+        );
+
+    return LatLng(lat2 * (180 / pi), lon2 * (180 / pi));
   }
 
   Widget _buildFullScreenMap(SpeedData data) {
@@ -477,12 +582,15 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               userAgentPackageName: 'com.example.garage',
               retinaMode: true,
             ),
-            CircleLayer(
-              circles: [
-                CircleMarker(
-                  point: currentLatLng,
-                  radius: data.alertDistance.toDouble(),
-                  useRadiusInMeter: true,
+            PolygonLayer(
+              polygons: [
+                Polygon(
+                  points: _calculateSectorPoints(
+                    currentLatLng,
+                    data.alertDistance.toDouble(),
+                    data.model.heading,
+                    60, // 60 度扇形
+                  ),
                   color: data.isOverSpeed
                       ? AppTheme.redTransparent30
                       : AppTheme.greenTransparent30,
@@ -504,8 +612,9 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                     child: Transform.rotate(
                       angle: data.model.heading * (pi / 180), // 將度數轉換為弧度
                       child: Icon(
-                        Icons.directions_car,
-                        color: AppTheme.darkSurface,
+                        Icons.navigation_rounded,
+                        color: AppTheme.primaryColor,
+                        size: 16,
                       ),
                     ),
                   ),
@@ -525,16 +634,14 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               ],
             ),
           ],
-        ),
-        if (location == null) ...[
-          Container(color: AppTheme.blackTransparent75),
-          CustomPaint(painter: GridBackgroundPainter(), size: Size.infinite),
-        ] else ...[
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).size.height * 0.25,
+        ), // End of FlutterMap
+        // 頂部漸層遮罩
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: MediaQuery.of(context).size.height * 0.25,
+          child: IgnorePointer(
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -551,25 +658,46 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
               ),
             ),
           ),
-        ],
+        ),
         // 中間漸層遮罩（讓速度表清楚顯示，但保留底部道路區域）
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
           height: MediaQuery.of(context).size.height * 0.6,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppTheme.darkSurface.withValues(alpha: 0),
-                  AppTheme.darkSurface.withValues(alpha: 0.7),
-                  AppTheme.darkSurface.withValues(alpha: 0.9),
-                  AppTheme.darkSurface,
-                ],
-                stops: const [0.0, 0.6, 0.85, 1.0],
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppTheme.darkSurface.withValues(alpha: 0),
+                    AppTheme.darkSurface.withValues(alpha: 0.7),
+                    AppTheme.darkSurface.withValues(alpha: 0.9),
+                    AppTheme.darkSurface,
+                  ],
+                  stops: const [0.0, 0.6, 0.85, 1.0],
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Custom Attribution aligned to center right
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: GestureDetector(
+            onTap: () =>
+                launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.blackTransparent50,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                '© OpenStreetMap contributors',
+                style: TextStyle(color: Colors.white70, fontSize: 10),
               ),
             ),
           ),
@@ -586,35 +714,28 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     return AnimatedBuilder(
       animation: _roadAnimationController,
       builder: (context, child) {
-        return GestureDetector(
-          onDoubleTap: () {
-            if (!isDetecting) {
-              context.read<SpeedBloc>().add(const StartDetection());
-            }
-          },
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Road Visualization with animation
-              CustomPaint(
-                size: Size.infinite,
-                painter: RoadPainter(
-                  activeLaneColor: AppTheme.whiteTransparent20,
-                  animationValue: _roadAnimationController.value,
-                ),
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Road Visualization with animation
+            CustomPaint(
+              size: Size.infinite,
+              painter: RoadPainter(
+                activeLaneColor: AppTheme.whiteTransparent20,
+                animationValue: _roadAnimationController.value,
               ),
+            ),
 
-              // Car Model (3D)
-              Positioned(
-                bottom: 20,
-                child: SizedBox(
-                  width: carWidth,
-                  height: carHeight,
-                  child: const Car3DView(),
-                ),
+            // Car Model (3D)
+            Positioned(
+              bottom: 20,
+              child: SizedBox(
+                width: carWidth,
+                height: carHeight,
+                child: const Car3DView(),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

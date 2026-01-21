@@ -37,3 +37,12 @@ final class ToggleTypeFilter extends AllRecordsEvent {
 final class ClearFilters extends AllRecordsEvent {
   const ClearFilters();
 }
+
+/// Update pro status
+final class UpdateProStatus extends AllRecordsEvent {
+  final bool isPro;
+  const UpdateProStatus(this.isPro);
+
+  @override
+  List<Object?> get props => [isPro];
+}

@@ -1,17 +1,36 @@
-# Product Guidelines - Garage (車庫)
+# Product Guidelines
 
-## 1. Tone & Voice
-- **專業且親切 (Professional yet Friendly)**：我們像是一個值得信賴且懂車的好夥伴。在顯示速度與剩餘距離等關鍵數據時，語氣必須保持技術上的預確與嚴謹；但在互動、導覽或紀錄摘要時，則採用更具人文關懷且易於理解的語法。
-- **具驅動力 (Driven & Energetic)**：透過豐富的動畫反饋（如 3D 車輛動態）與明確的成就感設計（如統計分析的即時更新），讓車主在管理車輛瑣事時感到有趣且充滿活力。
+## 1. Prose Style & Tone
+*   **Tone:** **Professional and Precise.** The application should communicate reliability, safety, and technical accuracy.
+*   **Clarity:** Use clear, unambiguous language for safety warnings and data labels. Avoid slang or overly casual phrasing.
+*   **Efficiency:** Favor concise instructions. Users are often driving or quickly logging data; information should be digestible at a glance.
+*   **Localization:** Maintain consistency between English and Traditional Chinese, ensuring that technical terms (e.g., "maintenance", "speed limit") are used accurately in both languages.
 
-## 2. Visual Identity & UI Style
-- **層次鮮明的深色模式 (Layered Dark Mode)**：主要採深色背景（符合駕駛情境），並利用不同的陰影與色塊層次來區分視覺重點。色彩應具備高對比度，確保在各種光線條件下（如日間強光或夜間駕駛）皆有優異的閱讀性。
-- **數據視覺化導向 (Data Viz Centric)**：圖表不只是附件，而是核心。利用 fl_chart 展示的加油曲線、保養時程或支出分佈，應優先考量視覺美感與數據洞察，讓複雜的信息一看就懂。
-- **動態回饋 (Dynamic Feedback)**：善用 3D 模型與微動畫，讓 App 感覺「活」著。例如速度值的顏色變化、緩衝動態或頁面切換。
+## 2. Visual Identity & Design Principles
 
-## 3. Interaction Principles
-- **駕駛安全優先 (Safety First Interaction)**：按鍵應具備足夠大的觸控面積，減少精細手勢的需求。核心功能（如語音播報開關）應能快速單手操作。
-- **直覺手勢 (Intuitive Gestures)**：支持流暢的滑動與視圖切換，減少駕駛者的認知負擔。
+### Glassmorphism & Depth
+*   **Layers:** Use semi-transparent, blurred surfaces (frosted glass effect) to create a sense of hierarchy and premium quality.
+*   **Shadows:** Employ multi-layered drop shadows to give cards and buttons a "lifted" appearance against the dark background.
+*   **Tactile Feel:** Apply subtle noise textures to main backgrounds to add depth and a premium feel.
 
-## 4. Documentation Guidelines
-- **中英並重**：代碼註解優先使用中文以便團隊理解，但術語採用標準英文規範。App 介面目前優先支援繁體中文。
+### High-Contrast Safety
+*   **Color Logic:**
+    *   **Normal:** White or standard secondary colors for safe speeds.
+    *   **Warning:** Orange for approaching speed limits or approaching cameras.
+    *   **Danger:** Bold Red for exceeding limits or immediate safety alerts.
+*   **Legibility:** Use large, high-contrast typography (e.g., Google Fonts like Roboto or Oswald) for real-time speed and distance indicators.
+*   **HUD Efficiency:** The Speedometer and alerts must be legible even in high-glare or low-light conditions.
+
+### Data-Driven Clarity
+*   **Record Display:** Use clean grids and lists for logs. Align numbers to ensure easy comparison of costs and mileage.
+*   **Charts:** Utilize `fl_chart` with a clean, modern style. Avoid visual clutter; focus on the primary trend line or data point.
+*   **Icons:** Use consistent, recognizable iconography (e.g., Fuel Pump for gas, Wrench for maintenance) to aid navigation without reading text.
+
+## 3. Interaction Guidelines
+*   **Feedback:** Provide clear haptic or visual feedback for successful actions (e.g., saving a record).
+*   **Speed & Performance:** Aim for 60fps animations. 3D car movements and map transitions should be fluid.
+*   **Ad Integration:** Ads should be clearly distinguished from UI elements. Native ads should match the list styling but remain identifiable as sponsored content.
+
+## 4. Brand Messaging
+*   **Reliability:** "Your car's health and your safety, managed in one place."
+*   **Sophistication:** "A premium garage experience for every driver."

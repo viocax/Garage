@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/core/core.dart';
 import 'speed_event.dart';
@@ -7,25 +6,29 @@ import 'speed_state.dart';
 
 class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     with AppLifecycleMixin<SpeedEvent, SpeedState> {
-  final ISpeedCameraRepository repository = getIt.repo.speedCamera;
-  final UserSettingsRepository userSettingsRepository = getIt.repo.userSettings;
+  final ISpeedCameraRepository repository;
+  final UserSettingsRepository userSettingsRepository;
 
-  SpeedBloc()
-    : super(
-        SpeedData(
-          model: SpeedCameraModel(
-            speedLimit: 0,
-            currentSpeed: 0.0,
-            distance: 500.0,
-            isOverSpeed: false,
-            latitude: 0.0,
-            longitude: 0.0,
-            heading: 0.0,
-          ),
-          unit: SpeedUnit.kmh,
-          alertDistance: 0,
-        ),
-      ) {
+  SpeedBloc({
+    ISpeedCameraRepository? speedCameraRepository,
+    UserSettingsRepository? userSettingsRepo,
+  }) : repository = speedCameraRepository ?? getIt.repo.speedCamera,
+       userSettingsRepository = userSettingsRepo ?? getIt.repo.userSettings,
+       super(
+         SpeedData(
+           model: SpeedCameraModel(
+             speedLimit: 0,
+             currentSpeed: 0.0,
+             distance: 500.0,
+             isOverSpeed: false,
+             latitude: 0.0,
+             longitude: 0.0,
+             heading: 0.0,
+           ),
+           unit: SpeedUnit.kmh,
+           alertDistance: 0,
+         ),
+       ) {
     on<UpdateSpeed>(_onUpdateSpeed);
     on<StartDetection>(_onStartDetection);
     on<StopDetection>(_onStopDetection);
@@ -40,14 +43,20 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
 
   @override
   void onAppResumed() {
-    debugPrint('SpeedBloc: App 回到前景，使用高精度定位');
-    getIt.service.location.updatePolicy(LocationPolicy.best);
+    final currentState = state;
+    if (currentState is SpeedData && currentState.isDetecting) {
+      Log.d('SpeedBloc: App 回到前景，使用高精度定位');
+      repository.setLocationPolicyBest();
+    }
   }
 
   @override
   void onAppPaused() {
-    debugPrint('SpeedBloc: App 進入背景，切換至平衡定位模式');
-    getIt.service.location.updatePolicy(LocationPolicy.background);
+    final currentState = state;
+    if (currentState is SpeedData && currentState.isDetecting) {
+      Log.d('SpeedBloc: App 進入背景，切換至平衡定位模式');
+      repository.setLocationPolicyBackground();
+    }
   }
 
   Future<void> _onSpeedLoading(
@@ -57,7 +66,15 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     final currentState = state;
     if (currentState is! SpeedData) return;
     try {
+      await repository.syncFromRemote();
+    } catch (e) {
+      Log.e('SpeedBloc: 載入測速照相資料失敗', e);
+      emit(currentState.copyWith(errorMessage: '載入測速照相資料失敗'));
+      rethrow;
+    }
+    try {
       final settings = await userSettingsRepository.loadSettings();
+
       emit(
         currentState.copyWith(
           unit: settings.speedUnit,
@@ -79,11 +96,20 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
 
     final unit = settings.speedUnit;
     double newSpeed = event.currentSpeed;
+    double newAvgSpeed = event.speedCameraModel.averageSpeed;
+    
     if (unit == SpeedUnit.mph) {
       newSpeed = newSpeed.mile;
+      newAvgSpeed = newAvgSpeed.mile;
     }
 
-    emit(currentState.copyWith(model: event.speedCameraModel));
+    // 使用轉換後的速度更新 model
+    emit(currentState.copyWith(
+      model: event.speedCameraModel.copyWith(
+        currentSpeed: newSpeed,
+        averageSpeed: newAvgSpeed,
+      ),
+    ));
   }
 
   Future<void> _onStartDetection(
@@ -96,6 +122,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
 
     try {
       await _onSpeedLoading(const SpeedLoading(), emit);
+
       await repository.startLocationTracking((speedCameraModel) {
         if (speedCameraModel != null) {
           add(UpdateSpeed(speedCameraModel));
@@ -114,8 +141,14 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
       );
     } catch (e) {
       // 3. 處理錯誤
-      debugPrint('SpeedBloc: 啟動偵測失敗 - $e');
-      emit(currentState.copyWith(isDetecting: false));
+      Log.e('SpeedBloc: 啟動偵測失敗', e);
+      if (e.toString().contains('Location permission denied')) {
+        emit(
+          currentState.copyWith(isDetecting: false, showPermissionAlert: true),
+        );
+      } else {
+        emit(currentState.copyWith(isDetecting: false));
+      }
     }
   }
 
@@ -126,7 +159,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     final currentState = state;
     if (currentState is! SpeedData) return;
 
-    debugPrint('SpeedBloc: 停止偵測');
+    Log.d('SpeedBloc: 停止偵測');
 
     try {
       await repository.stopLocationTracking();
@@ -140,7 +173,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
         ),
       );
     } catch (e) {
-      debugPrint('SpeedBloc: 停止定位失敗 - $e');
+      Log.e('SpeedBloc: 停止定位失敗', e);
     }
   }
 

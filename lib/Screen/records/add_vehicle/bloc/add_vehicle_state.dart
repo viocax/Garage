@@ -11,6 +11,7 @@ class AddVehicleState extends Equatable {
   final AddVehicleStatus status;
   final Vehicle? createdVehicle;
   final String? errorMessage;
+  final Vehicle? editingVehicle;
 
   const AddVehicleState({
     this.vehicleName = '',
@@ -21,12 +22,15 @@ class AddVehicleState extends Equatable {
     this.status = AddVehicleStatus.initial,
     this.createdVehicle,
     this.errorMessage,
+    this.editingVehicle,
   });
 
   bool get isValid =>
       vehicleName.trim().isNotEmpty &&
       licensePlate.trim().isNotEmpty &&
       currentKm >= 0;
+
+  bool get isEditing => editingVehicle != null;
 
   @override
   List<Object?> get props => [
@@ -38,6 +42,7 @@ class AddVehicleState extends Equatable {
     status,
     createdVehicle,
     errorMessage,
+    editingVehicle,
   ];
 
   AddVehicleState copyWith({
@@ -49,16 +54,22 @@ class AddVehicleState extends Equatable {
     AddVehicleStatus? status,
     Vehicle? createdVehicle,
     String? errorMessage,
+    Vehicle? editingVehicle,
+    bool clearError = false,
+    bool clearCreatedVehicle = false,
   }) {
     return AddVehicleState(
       vehicleName: vehicleName ?? this.vehicleName,
       licensePlate: licensePlate ?? this.licensePlate,
       currentKm: currentKm ?? this.currentKm,
       speedUnit: speedUnit ?? this.speedUnit,
-      maintenanceIntervalKm: maintenanceIntervalKm ?? this.maintenanceIntervalKm,
+      maintenanceIntervalKm:
+          maintenanceIntervalKm ?? this.maintenanceIntervalKm,
       status: status ?? this.status,
-      createdVehicle: createdVehicle ?? this.createdVehicle,
-      errorMessage: errorMessage ?? this.errorMessage,
+      createdVehicle:
+          clearCreatedVehicle ? null : (createdVehicle ?? this.createdVehicle),
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      editingVehicle: editingVehicle ?? this.editingVehicle,
     );
   }
 }

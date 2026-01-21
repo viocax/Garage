@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:isar_community/isar.dart';
@@ -15,13 +16,13 @@ enum FuelType {
   String get label {
     switch (this) {
       case FuelType.octane92:
-        return '92';
+        return 'fuelType.octane92'.tr();
       case FuelType.octane95:
-        return '95';
+        return 'fuelType.octane95'.tr();
       case FuelType.octane98:
-        return '98';
+        return 'fuelType.octane98'.tr();
       case FuelType.diesel:
-        return '柴油';
+        return 'fuelType.diesel'.tr();
     }
   }
 }
@@ -67,9 +68,9 @@ class FuelData {
     final amount = '${fuelAmount.toStringAsFixed(1)}L';
     switch (fuelType) {
       case FuelType.diesel:
-        return '柴油  $amount';
+        return '${'fuelType.diesel'.tr()}  $amount';
       default:
-        return '無鉛${fuelType.label}  $amount';
+        return '${'fuelType.unleadedFormat'.tr(args: [fuelType.label])}  $amount';
     }
   }
 }
@@ -174,7 +175,7 @@ class RecordTypeFuel extends RecordType {
   });
 
   @override
-  String get label => '加油';
+  String get label => 'recordType.fuel'.tr();
 
   @override
   IconData get icon => Icons.local_gas_station;
@@ -188,7 +189,7 @@ class RecordTypeFuel extends RecordType {
   @override
   String? get validationError {
     if (data.fuelAmount <= 0) {
-      return '請輸入有效的加油量';
+      return 'addRecord.invalidFuelAmount'.tr();
     }
     return null;
   }
@@ -204,7 +205,7 @@ class RecordTypeMaintenance extends RecordType {
   });
 
   @override
-  String get label => '保養';
+  String get label => 'recordType.maintenance'.tr();
 
   @override
   IconData get icon => Icons.build;
@@ -225,7 +226,7 @@ class RecordTypeMaintenance extends RecordType {
   @override
   String? get validationError {
     if (validEntries.isEmpty) {
-      return '請至少輸入一個保養項目';
+      return 'addRecord.atLeastOneMaintenanceItem'.tr();
     }
     return null;
   }
@@ -241,13 +242,13 @@ class RecordTypeOther extends RecordType {
   });
 
   @override
-  String get label => '其他';
+  String get label => 'recordType.other'.tr();
 
   @override
   IconData get icon => Icons.receipt;
 
   @override
-  Color get color => AppTheme.systemGray;
+  Color get color => AppTheme.recordTypeOtherColor;
 
   @override
   String get typeName => 'other';
@@ -349,4 +350,17 @@ class VehicleRecord {
   // Helper to format km
   String get formattedKm =>
       '${km.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} km';
+
+  /// 計算油耗 (km/L)
+  /// 需要提供上一次加油時的里程數
+  double calculateFuelEfficiency(int previousKm) {
+    if (typeName != 'fuel' || fuelData == null || fuelData!.fuelAmount <= 0) {
+      return 0.0;
+    }
+
+    final distance = km - previousKm;
+    if (distance <= 0) return 0.0;
+
+    return distance / fuelData!.fuelAmount;
+  }
 }

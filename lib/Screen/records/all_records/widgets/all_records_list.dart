@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:garage/core/config/ad_constants.dart';
 import 'package:garage/core/models/vehicle_record.dart';
 import 'package:garage/theme/app_theme.dart';
 import 'package:garage/widgets/native_ad_card.dart';
@@ -15,19 +17,19 @@ class AllRecordsList extends StatelessWidget {
       return _buildEmptyState();
     }
 
-    const int adInterval = 8;
-    final int adCount = records.length ~/ adInterval;
+    final int adCount = records.length ~/ AdConstants.nativeAdInterval;
     final int totalCount = records.length + adCount;
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
-          if ((index + 1) % (adInterval + 1) == 0) {
+          if ((index + 1) % (AdConstants.nativeAdInterval + 1) == 0) {
             return const NativeAdCard();
           }
 
-          final int recordIndex = index - (index ~/ (adInterval + 1));
+          final int recordIndex =
+              index - (index ~/ (AdConstants.nativeAdInterval + 1));
           final record = records[recordIndex];
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -51,8 +53,8 @@ class AllRecordsList extends StatelessWidget {
                 color: AppTheme.systemGray.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 16),
-              const Text(
-                '沒有符合條件的記錄',
+              Text(
+                'records.noFilteredRecords'.tr(),
                 style: TextStyle(fontSize: 14, color: AppTheme.systemGray),
               ),
             ],
@@ -76,7 +78,7 @@ class _RecordItem extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          // TODO: Navigate to record detail
+          // Record detail view - planned feature
         },
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
