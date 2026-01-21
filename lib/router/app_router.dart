@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:garage/core/config/feature_flags.dart';
 import 'package:garage/screen/settings/settings_page.dart';
 import 'package:garage/screen/settings/static_content_page.dart';
 import 'package:garage/core/utils/app_documents.dart';
@@ -103,16 +102,15 @@ class AppRouter {
             return GarageHomePage(shell: shell);
           },
           branches: [
-            if (FeatureFlags.enableSpeedCamera)
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppPath.speedometer.path,
-                    name: AppPath.speedometer.name,
-                    builder: (context, state) => const SpeedCameraPage(),
-                  ),
-                ],
-              ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppPath.speedometer.path,
+                  name: AppPath.speedometer.name,
+                  builder: (context, state) => const SpeedCameraPage(),
+                ),
+              ],
+            ),
             StatefulShellBranch(
               routes: [
                 GoRoute(

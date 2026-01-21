@@ -8,6 +8,11 @@ class AppDocuments {
 
 ## 1. 資訊收集與使用
 
+### 位置資訊 (Location Data)
+本應用程式的「測速提醒」功能需要存取您的即時位置資訊，以便在您接近測速照相點時發出提醒。
+*   **本機處理**：位置資訊僅在您的裝置上進行即時運算。
+*   **不予上傳**：我們**不會**將您的位置資訊上傳至任何伺服器，亦不會與任何第三方分享您的行蹤。
+
 ### 車輛與維修紀錄
 您在 App 中輸入的所有數據（如加油、維修、車輛資訊）均儲存於您的裝置本地資料庫中。
 
@@ -19,6 +24,8 @@ class AppDocuments {
 ## 3. 聯絡我們
 若您對本隱私政策有任何疑問，請透過 App 內的意見回饋功能與我們聯絡。
 
+## 4. 您的權益
+您可以隨時透過裝置設定撤回位置權限，或在 App 中清除所有本地資料。
 
 ---
 
@@ -30,6 +37,10 @@ Thank you for choosing **Garage**. We value your privacy and this policy explain
 
 ## 1. Information Collection and Use
 
+### Location Data
+The "Speed Camera Warning" feature requires access to your real-time location.
+*   **Local Processing**: Location data is processed locally on your device in real-time.
+*   **No Upload**: We **do not** upload your location data to any server, nor do we share it with third parties.
 ### Vehicle and Maintenance Records
 All data you enter in the App (such as refueling, maintenance, vehicle information) is stored in your device's local database.
 
@@ -92,6 +103,9 @@ We reserve the right to modify these terms at any time.
 
 ## 3D 車輛模型 (3D Vehicle Models)
 本應用程式中的 3D 車輛模型遵循 **Creative Commons Attribution 4.0 International (CC BY 4.0)** 授權。
+*   **2018 Honda Civic Type R (Varis FK8)**
+    *   作者：[Ddiaz Design](https://sketchfab.com/3d-models/2018-honda-civic-type-r-varis-fk8-vaho-17-f2b768d4df884fd48e6ec863c9a51f9c)
+    *   來源：Sketchfab
 *   授權詳情：[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ---
@@ -100,6 +114,9 @@ We reserve the right to modify these terms at any time.
 
 ## 3D Vehicle Models
 The 3D vehicle models in this application are licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+*   **2018 Honda Civic Type R (Varis FK8)**
+    *   Author: [Ddiaz Design](https://sketchfab.com/3d-models/2018-honda-civic-type-r-varis-fk8-vaho-17-f2b768d4df884fd48e6ec863c9a51f9c)
+    *   Source: Sketchfab
 *   License details: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 ''';
 }

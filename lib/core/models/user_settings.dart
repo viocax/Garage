@@ -64,7 +64,7 @@ class UserSettings {
   const UserSettings({
     // 測速設定
     this.speedUnit = SpeedUnit.kmh,
-    this.isVoiceAlertEnabled = true,
+    this.isVoiceAlertEnabled = false,
     this.voiceVolume = 0.8,
     this.voiceSpeechRate = 0.5,
     this.alertDistance = 500,
@@ -104,7 +104,7 @@ class UserSettings {
         (e) => e.name == json['speedUnit'],
         orElse: () => SpeedUnit.kmh,
       ),
-      isVoiceAlertEnabled: json['isVoiceAlertEnabled'] ?? true,
+      isVoiceAlertEnabled: json['isVoiceAlertEnabled'] ?? false,
       voiceVolume: (json['voiceVolume'] as num?)?.toDouble() ?? 0.8,
       voiceSpeechRate: (json['voiceSpeechRate'] as num?)?.toDouble() ?? 0.5,
       alertDistance: json['alertDistance'] ?? 500,

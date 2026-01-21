@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:garage/core/config/feature_flags.dart';
 import 'package:garage/core/core.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/theme/themed_status_bar.dart';
@@ -77,17 +76,18 @@ class SettingsPage extends StatelessWidget {
                             );
                           },
                         ),
-                        if (FeatureFlags.enableSpeedCamera)
-                          SettingsItem(
-                            title: 'settings.speedDetection'.tr(),
-                            icon: Icons.radar_outlined,
-                            onTap: () {
-                              context.read<SettingsBloc>().add(
-                                const ClickSpeedSetting(),
-                              );
-                            },
-                          ),
-                        if (FeatureFlags.enableAdManagement && !state.isPro)
+
+                        // TODO: Phase2在處理
+                        // SettingsItem(
+                        //   title: 'settings.speedDetection'.tr(),
+                        //   icon: Icons.radar_outlined,
+                        //   onTap: () {
+                        //     context.read<SettingsBloc>().add(
+                        //       const ClickSpeedSetting(),
+                        //     );
+                        //   },
+                        // ),
+                        if (!state.isPro)
                           SettingsItem(
                             title: 'settings.adManagement'.tr(),
                             icon: Icons.card_giftcard,
@@ -97,30 +97,25 @@ class SettingsPage extends StatelessWidget {
                             },
                           ),
 
-                        // 資料管理
-                        if (FeatureFlags.enableCloudSync) ...[
-                          SettingsSectionHeader(title: 'settings.data'.tr()),
-                          SettingsItem(
-                            title: 'settings.cloudSync'.tr(),
-                            icon: Icons.cloud_sync_outlined,
-                            onTap: () {
-                              context.pushPathWithResult(AppPath.cloudSync);
-                            },
-                          ),
-                        ],
+                        // TODO: Phase2在處理 資料管理
+                        // SettingsSectionHeader(title: 'settings.data'.tr()),
+                        // SettingsItem(
+                        //   title: 'settings.cloudSync'.tr(),
+                        //   icon: Icons.cloud_sync_outlined,
+                        //   onTap: () {
+                        //     context.pushPathWithResult(AppPath.cloudSync);
+                        //   },
+                        // ),
 
                         // 關於
                         SettingsSectionHeader(title: 'settings.about'.tr()),
-                        if (FeatureFlags.enableLegalDocuments)
-                          SettingsItem(
-                            title: 'settings.termsOfService'.tr(),
-                            icon: Icons.description_outlined,
-                            onTap: () {
-                              context.pushPathWithResult(
-                                AppPath.termsOfService,
-                              );
-                            },
-                          ),
+                        SettingsItem(
+                          title: 'settings.termsOfService'.tr(),
+                          icon: Icons.description_outlined,
+                          onTap: () {
+                            context.pushPathWithResult(AppPath.termsOfService);
+                          },
+                        ),
                         SettingsItem(
                           title: 'settings.privacyPolicy'.tr(),
                           icon: Icons.privacy_tip_outlined,
@@ -128,16 +123,15 @@ class SettingsPage extends StatelessWidget {
                             context.pushPathWithResult(AppPath.privacyPolicy);
                           },
                         ),
-                        if (FeatureFlags.enableLegalDocuments)
-                          SettingsItem(
-                            title: 'settings.openSourceLicenses'.tr(),
-                            icon: Icons.source_outlined,
-                            onTap: () {
-                              context.pushPathWithResult(
-                                AppPath.openSourceLicenses,
-                              );
-                            },
-                          ),
+                        SettingsItem(
+                          title: 'settings.openSourceLicenses'.tr(),
+                          icon: Icons.source_outlined,
+                          onTap: () {
+                            context.pushPathWithResult(
+                              AppPath.openSourceLicenses,
+                            );
+                          },
+                        ),
                         SettingsItem(
                           title: 'settings.feedback'.tr(),
                           icon: Icons.feedback_outlined,

@@ -3,29 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:garage/core/models/speed_unit.dart';
 import 'package:garage/screen/speed/speedCamera/widgets/interval_info_widget.dart';
 import 'package:garage/theme/app_theme.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  setUpAll(() async {
-    SharedPreferences.setMockInitialValues({});
-  });
-
   Widget createWidgetUnderTest(Widget child) {
-    return EasyLocalization(
-      supportedLocales: const [Locale('zh', 'TW'), Locale('en', 'US')],
-      path: 'assets/translations',
-      fallbackLocale: const Locale('en', 'US'),
-      child: Builder(
-        builder: (context) {
-          return MaterialApp(
-            theme: ThemeData.dark(),
-            home: Scaffold(
-              body: child,
-            ),
-          );
-        },
-      ),
+    return MaterialApp(
+      theme: ThemeData.dark(),
+      home: Scaffold(body: child),
     );
   }
 

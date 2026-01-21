@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:garage/router/app_router.dart';
-import 'package:garage/core/config/feature_flags.dart';
 import 'package:garage/screen/app/launch/bloc/launch_bloc.dart';
 import 'package:garage/screen/app/launch/bloc/launch_state.dart';
 import 'package:garage/theme/app_theme.dart';
@@ -43,10 +42,7 @@ class LaunchView extends StatelessWidget {
       listener: (context, state) {
         switch (state) {
           case LaunchCompleted():
-            final destination = FeatureFlags.enableSpeedCamera
-                ? AppPath.speedometer
-                : AppPath.records;
-            context.goPath(destination);
+            context.goPath(AppPath.speedometer);
           case LaunchError(:final message):
             ScaffoldMessenger.of(
               context,
