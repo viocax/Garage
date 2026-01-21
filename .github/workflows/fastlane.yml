@@ -42,7 +42,6 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
-          working-directory: ios
 
       - name: Setup SSH for Match
         if: github.event_name == 'push'
