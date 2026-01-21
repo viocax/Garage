@@ -30,8 +30,8 @@ platform :ios do
   desc "Push a new beta build to TestFlight"
   desc "Automatically increments build number from TestFlight"
   lane :upload do
-    # 1. 讀取 pubspec.yaml 版本號
-    pubspec = YAML.load_file("../../pubspec.yaml")
+    # 1. 讀取 pubspec.yaml 版本號 (aliases: true for YAML anchors support)
+    pubspec = YAML.load_file("../../pubspec.yaml", aliases: true)
     version_number = pubspec['version'].split('+').first
 
     # 是否為 CI 環境
