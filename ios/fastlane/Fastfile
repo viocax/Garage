@@ -111,5 +111,20 @@ platform :ios do
       skip_waiting_for_build_processing: true,
       uses_non_exempt_encryption: false
     )
+
+    # Return version info for other lanes to use
+    { version: version_number, build_number: new_build }
+  end
+
+  desc "Run upload, then tag and push to git"
+  lane :release do
+    # Call upload lane and get return value
+    build_info = upload
+    
+    # Format: v1.0.1(5)
+    tag_name = "v#{build_info[:version]}(#{build_info[:build_number]})"
+    
+    add_git_tag(tag: tag_name)
+    push_to_git_remote
   end
 end
