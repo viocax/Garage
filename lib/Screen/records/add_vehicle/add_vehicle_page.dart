@@ -91,14 +91,19 @@ class _AddVehicleViewContent extends StatelessWidget {
                       child: _LicensePlateInput(),
                     ),
                     const SizedBox(height: 16),
+                    if (!isEditing)
+                      Column(
+                        children: [
+                          _InputFieldCard(
+                            stepNumber: 3,
+                            icon: Icons.speed_outlined,
+                            child: _MileageInput(),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
                     _InputFieldCard(
-                      stepNumber: 3,
-                      icon: Icons.speed_outlined,
-                      child: _MileageInput(),
-                    ),
-                    const SizedBox(height: 16),
-                    _InputFieldCard(
-                      stepNumber: 4,
+                      stepNumber: isEditing ? 3 : 4,
                       icon: Icons.build_outlined,
                       isOptional: true,
                       child: _MaintenanceIntervalInput(),
