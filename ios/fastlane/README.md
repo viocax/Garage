@@ -31,23 +31,23 @@ Run Flutter tests
 
 Compile only (No Code Signing)
 
-### ios beta
-
-```sh
-[bundle exec] fastlane ios beta
-```
-
-Push a new beta build to TestFlight
-
-Automatically increments build number from TestFlight
-
 ### ios upload
 
 ```sh
 [bundle exec] fastlane ios upload
 ```
 
-Archive and Upload (Alias for beta)
+Push a new beta build to TestFlight
+
+Uses version and build number from pubspec.yaml
+
+### ios release
+
+```sh
+[bundle exec] fastlane ios release
+```
+
+Run upload, then tag and push to git
 
 ----
 
