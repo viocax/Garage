@@ -223,12 +223,16 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
 
   @override
   Future<bool> checkPermission() async {
-    return _locationService.checkPermission();
+    final status = await _locationService.checkPermission();
+    return status == PermissionCase.enable || status == PermissionCase.once;
   }
 
   @override
-  Future<bool> requestPermission({bool background = false}) {
-    return _locationService.requestPermission(background: background);
+  Future<bool> requestPermission({bool background = false}) async {
+    final status = await _locationService.requestPermission(
+      background: background,
+    );
+    return status == PermissionCase.enable || status == PermissionCase.once;
   }
 
   @override

@@ -94,10 +94,10 @@ void main() {
       () => mockLocationService.requestPermission(
         background: any(named: 'background'),
       ),
-    ).thenAnswer((_) async => true);
+    ).thenAnswer((_) async => PermissionCase.enable);
     when(
       () => mockLocationService.checkPermission(),
-    ).thenAnswer((_) async => true);
+    ).thenAnswer((_) async => PermissionCase.enable);
     when(() => mockLocationService.updatePolicy(any())).thenAnswer((_) => {});
 
     // Mock TTS

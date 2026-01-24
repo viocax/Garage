@@ -111,12 +111,18 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                     message: 'speedCamera.permission.message'.tr(),
                     cancelText: 'common.cancel'.tr(),
                     confirmText: 'common.goToSettings'.tr(),
-                    onConfirm: () async {
+                    onConfirm: () {
                       // 開啟系統設定
-                      await Geolocator.openAppSettings();
+                      Geolocator.openAppSettings();
+                      context.read<SpeedBloc>().add(
+                        const OnClickLocationPermission(isComfirmed: true),
+                      );
                     },
                     onCancel: () {
                       // 使用者取消，可以在這裡重置狀態（如果需要）
+                      context.read<SpeedBloc>().add(
+                        const OnClickLocationPermission(isComfirmed: false),
+                      );
                     },
                   );
                 }

@@ -33,6 +33,7 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     on<StartDetection>(_onStartDetection);
     on<StopDetection>(_onStopDetection);
     on<SpeedLoading>(_onSpeedLoading);
+    on<OnClickLocationPermission>(_onClickLocationPermission);
 
     // 初始化生命週期監聽
     initLifecycleObserver();
@@ -57,6 +58,15 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
       Log.d('SpeedBloc: App 進入背景，切換至平衡定位模式');
       repository.setLocationPolicyBackground();
     }
+  }
+
+  Future<void> _onClickLocationPermission(
+    OnClickLocationPermission event,
+    Emitter<SpeedState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! SpeedData) return;
+    emit(currentState.copyWith(showPermissionAlert: false));
   }
 
   Future<void> _onSpeedLoading(
@@ -97,19 +107,21 @@ class SpeedBloc extends Bloc<SpeedEvent, SpeedState>
     final unit = settings.speedUnit;
     double newSpeed = event.currentSpeed;
     double newAvgSpeed = event.speedCameraModel.averageSpeed;
-    
+
     if (unit == SpeedUnit.mph) {
       newSpeed = newSpeed.mile;
       newAvgSpeed = newAvgSpeed.mile;
     }
 
     // 使用轉換後的速度更新 model
-    emit(currentState.copyWith(
-      model: event.speedCameraModel.copyWith(
-        currentSpeed: newSpeed,
-        averageSpeed: newAvgSpeed,
+    emit(
+      currentState.copyWith(
+        model: event.speedCameraModel.copyWith(
+          currentSpeed: newSpeed,
+          averageSpeed: newAvgSpeed,
+        ),
       ),
-    ));
+    );
   }
 
   Future<void> _onStartDetection(

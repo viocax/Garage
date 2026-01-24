@@ -55,7 +55,7 @@ void main() {
     when(
       () =>
           mockLocation.requestPermission(background: any(named: 'background')),
-    ).thenAnswer((_) async => true);
+    ).thenAnswer((_) async => PermissionCase.enable);
 
     when(() => mockTts.speak(any())).thenAnswer((_) async {});
   });

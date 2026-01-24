@@ -35,3 +35,9 @@ final class StartDetection extends SpeedEvent {
 final class StopDetection extends SpeedEvent {
   const StopDetection();
 }
+
+final class OnClickLocationPermission extends SpeedEvent {
+  final bool isComfirmed;
+
+  const OnClickLocationPermission({required this.isComfirmed});
+}

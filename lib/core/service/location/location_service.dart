@@ -29,6 +29,8 @@ class LatLng {
 
 enum LocationPolicy { best, background, hightSpeed }
 
+enum PermissionCase { enable, disable, once }
+
 class LocationService {
   LocationPolicy _currentPolicy = LocationPolicy.best;
   GeolocatorInterface? _geolocator;
@@ -140,56 +142,62 @@ class LocationService {
     _subscribeToGeolocator();
   }
 
-  Future<bool> checkPermission() async {
-    final permission = await geolocator.checkPermission();
+  PermissionCase _mapPermissionToCase(LocationPermission permission) {
     switch (permission) {
       case LocationPermission.always:
+        return PermissionCase.enable;
       case LocationPermission.whileInUse:
-        return true;
-      default:
-        return false;
+        return PermissionCase.once;
+      case LocationPermission.denied:
+      case LocationPermission.deniedForever:
+      case LocationPermission.unableToDetermine:
+        return PermissionCase.disable;
     }
   }
 
+  Future<PermissionCase> checkPermission() async {
+    final permission = await geolocator.checkPermission();
+    return _mapPermissionToCase(permission);
+  }
+
   /// 檢查並請求定位權限
-  Future<bool> requestPermission({bool background = false}) async {
+  Future<PermissionCase> requestPermission({bool background = false}) async {
     bool serviceEnabled;
     LocationPermission permission;
 
     // 檢查定位服務是否開啟
     serviceEnabled = await geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return false;
+      return PermissionCase.disable;
     }
 
     permission = await geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return false;
+        return PermissionCase.disable;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      return false;
+      return PermissionCase.disable;
     }
 
     // 如果需要背景權限（Always）
     if (background && permission != LocationPermission.always) {
       // 再次請求權限以提升至 Always
       permission = await geolocator.requestPermission();
-      return permission == LocationPermission.always;
     }
 
-    return true;
+    return _mapPermissionToCase(permission);
   }
 
   /// 取得目前位置
   ///
   /// 如果權限不足或服務未開啟，可能拋出異常或返回 null
   Future<Position?> getCurrentPosition() async {
-    final hasPermission = await requestPermission();
-    if (!hasPermission) {
+    final permissionCase = await requestPermission();
+    if (permissionCase == PermissionCase.disable) {
       return null;
     }
 

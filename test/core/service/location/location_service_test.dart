@@ -249,10 +249,7 @@ void main() {
 
     test('應該正常取得位置流', () {
       // Act & Assert
-      expect(
-        () => locationService.getPositionStream(),
-        returnsNormally,
-      );
+      expect(() => locationService.getPositionStream(), returnsNormally);
     });
 
     test('位置流應該正確處理多個位置更新', () async {
@@ -298,7 +295,10 @@ void main() {
       final receivedCount = receivedPositions.length;
       for (var i = 0; i < receivedCount; i++) {
         // 確保收到的位置是正確的順序（雖然可能跳過了一個）
-        expect(receivedPositions[i].latitude, greaterThanOrEqualTo(positions[0].latitude));
+        expect(
+          receivedPositions[i].latitude,
+          greaterThanOrEqualTo(positions[0].latitude),
+        );
       }
 
       // 清理
@@ -313,10 +313,7 @@ void main() {
       mockGeolocator.setError(Exception('定位服務檢查失敗'));
 
       // Act & Assert
-      expect(
-        () => locationService.getCurrentPosition(),
-        throwsException,
-      );
+      expect(() => locationService.getCurrentPosition(), throwsException);
     });
 
     test('應該正確處理 unableToDetermine 權限狀態', () async {
@@ -344,10 +341,46 @@ void main() {
       final result = await locationService.getCurrentPosition();
 
       // Assert
-      // unableToDetermine 不是 denied 或 deniedForever，
-      // 所以應該繼續獲取位置
-      expect(result, isNotNull);
+      // unableToDetermine mapped to disable
+      expect(result, isNull);
       expect(mockGeolocator.checkPermissionCallCount, 1);
+    });
+  });
+
+  group('LocationService - PermissionCase Mapping', () {
+    test('checkPermission 應該正確映射為 PermissionCase', () async {
+      mockGeolocator.setPermissionStatus(LocationPermission.always);
+      expect(await locationService.checkPermission(), PermissionCase.enable);
+
+      mockGeolocator.setPermissionStatus(LocationPermission.whileInUse);
+      expect(await locationService.checkPermission(), PermissionCase.once);
+
+      mockGeolocator.setPermissionStatus(LocationPermission.denied);
+      expect(await locationService.checkPermission(), PermissionCase.disable);
+
+      mockGeolocator.setPermissionStatus(LocationPermission.deniedForever);
+      expect(await locationService.checkPermission(), PermissionCase.disable);
+
+      mockGeolocator.setPermissionStatus(LocationPermission.unableToDetermine);
+      expect(await locationService.checkPermission(), PermissionCase.disable);
+    });
+
+    test('requestPermission 應該正確映射為 PermissionCase', () async {
+      mockGeolocator.setLocationServiceEnabled(true);
+
+      // Test Enable
+      mockGeolocator.setPermissionStatus(LocationPermission.always);
+      expect(await locationService.requestPermission(), PermissionCase.enable);
+
+      // Test Once
+      mockGeolocator.setPermissionStatus(LocationPermission.whileInUse);
+      expect(await locationService.requestPermission(), PermissionCase.once);
+
+      // Test Disable (Denied)
+      mockGeolocator.setPermissionStatus(LocationPermission.denied);
+      // Simulate deny even after request
+      mockGeolocator.setPermissionAfterRequest(LocationPermission.denied);
+      expect(await locationService.requestPermission(), PermissionCase.disable);
     });
   });
 }
