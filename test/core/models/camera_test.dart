@@ -33,11 +33,11 @@ void main() {
       test('應該正確從 JSON 建立物件', () {
         final json = {
           'id': 'CAM002',
-          'lim': 60,
+          'limit': 60,
           'lat': 25.0478,
           'lon': 121.5170,
           'dir': '東向西',
-          'disc': '台北市中山區中山北路',
+          'address': '台北市中山區中山北路',
           'type': 'interval',
           'zone_id': 'ZONE123',
         };
@@ -71,11 +71,11 @@ void main() {
       test('應該正確處理 null 值', () {
         final json = {
           'id': null,
-          'lim': null,
+          'limit': null,
           'lat': null,
           'lon': null,
           'dir': null,
-          'disc': null,
+          'address': null,
         };
 
         final camera = Camera.fromJson(json);
@@ -91,11 +91,11 @@ void main() {
       test('應該正確處理 int 類型的座標', () {
         final json = {
           'id': 'CAM003',
-          'lim': 70,
+          'limit': 70,
           'lat': 25, // int instead of double
           'lon': 121, // int instead of double
           'dir': '南向北',
-          'disc': '測試',
+          'address': '測試',
         };
 
         final camera = Camera.fromJson(json);
@@ -110,11 +110,11 @@ void main() {
         final json = testCamera.toJson();
 
         expect(json['id'], 'CAM001');
-        expect(json['lim'], 50);
+        expect(json['limit'], 50);
         expect(json['lat'], 25.0330);
         expect(json['lon'], 121.5654);
         expect(json['dir'], '北向南');
-        expect(json['disc'], '台北市信義區信義路四段');
+        expect(json['address'], '台北市信義區信義路四段');
       });
 
       test('序列化與反序列化應該保持一致', () {

@@ -98,8 +98,28 @@ class AppRouter {
           builder: (context, state) => const LaunchPage(),
         ),
         StatefulShellRoute.indexedStack(
-          builder: (context, state, shell) {
-            return GarageHomePage(shell: shell);
+          pageBuilder: (context, state, shell) {
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: GarageHomePage(shell: shell),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(
+                      opacity: CurveTween(
+                        curve: Curves.easeIn,
+                      ).animate(animation),
+                      child: ScaleTransition(
+                        scale: Tween<double>(begin: 0.95, end: 1.0).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutQuart,
+                          ),
+                        ),
+                        child: child,
+                      ),
+                    );
+                  },
+            );
           },
           branches: [
             StatefulShellBranch(

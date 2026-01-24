@@ -41,12 +41,12 @@ class Camera {
   factory Camera.fromJson(Map<String, dynamic> json) {
     return Camera(
       id: json['id'] as String? ?? '',
-      speedLimit: json['lim'] as int? ?? 0,
+      speedLimit: json['limit'] as int? ?? 0,
       latitude: (json['lat'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['lon'] as num?)?.toDouble() ?? 0.0,
       direction: json['dir'] as String? ?? '',
-      description: json['disc'] as String? ?? '',
-      type: json['type'] as String? ?? 'fixed',
+      description: json['address'] as String? ?? '',
+      type: (json['type'] as String? ?? 'fixed').toLowerCase(),
       zoneId: json['zone_id'] as String?,
     );
   }
@@ -55,11 +55,11 @@ class Camera {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'lim': speedLimit,
+      'limit': speedLimit,
       'lat': latitude,
       'lon': longitude,
       'dir': direction,
-      'disc': description,
+      'address': description,
       'type': type,
       'zone_id': zoneId,
     };
