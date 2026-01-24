@@ -65,3 +65,7 @@ ios/Runner.app.dSYM.zip
 
 # AI Context
 GEMINI.md
+
+# Setup documentation with sensitive info
+ADMOB_SETUP.md
+CRASHLYTICS_SETUP.md
