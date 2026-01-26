@@ -21,6 +21,9 @@ class UserSettings {
   /// 超速容忍值（km/h）
   final int speedTolerance;
 
+  /// 偵測扇形角度（度）
+  final double sectorAngle;
+
   // ===== 通知設定 =====
   /// 推送通知開關
   final bool isPushNotificationEnabled;
@@ -69,6 +72,7 @@ class UserSettings {
     this.voiceSpeechRate = 0.5,
     this.alertDistance = 500,
     this.speedTolerance = 0,
+    this.sectorAngle = 60.0,
 
     // 通知設定
     this.isPushNotificationEnabled = true,
@@ -109,6 +113,7 @@ class UserSettings {
       voiceSpeechRate: (json['voiceSpeechRate'] as num?)?.toDouble() ?? 0.5,
       alertDistance: json['alertDistance'] ?? 500,
       speedTolerance: json['speedTolerance'] ?? 0,
+      sectorAngle: (json['sectorAngle'] as num?)?.toDouble() ?? 60.0,
 
       // 通知設定
       isPushNotificationEnabled: json['isPushNotificationEnabled'] ?? true,
@@ -150,6 +155,7 @@ class UserSettings {
       'voiceSpeechRate': voiceSpeechRate,
       'alertDistance': alertDistance,
       'speedTolerance': speedTolerance,
+      'sectorAngle': sectorAngle,
 
       // 通知設定
       'isPushNotificationEnabled': isPushNotificationEnabled,
@@ -184,6 +190,7 @@ class UserSettings {
     String? voiceEngine,
     int? alertDistance,
     int? speedTolerance,
+    double? sectorAngle,
 
     // 通知設定
     bool? isPushNotificationEnabled,
@@ -213,6 +220,7 @@ class UserSettings {
       voiceSpeechRate: voiceSpeechRate ?? this.voiceSpeechRate,
       alertDistance: alertDistance ?? this.alertDistance,
       speedTolerance: speedTolerance ?? this.speedTolerance,
+      sectorAngle: sectorAngle ?? this.sectorAngle,
 
       // 通知設定
       isPushNotificationEnabled:
@@ -262,6 +270,7 @@ class UserSettings {
         other.voiceSpeechRate == voiceSpeechRate &&
         other.alertDistance == alertDistance &&
         other.speedTolerance == speedTolerance &&
+        other.sectorAngle == sectorAngle &&
         other.isPushNotificationEnabled == isPushNotificationEnabled &&
         other.isMaintenanceReminderEnabled == isMaintenanceReminderEnabled &&
         other.maintenanceReminderDays == maintenanceReminderDays &&
@@ -285,6 +294,7 @@ class UserSettings {
       voiceSpeechRate,
       alertDistance,
       speedTolerance,
+      sectorAngle,
       isPushNotificationEnabled,
       isMaintenanceReminderEnabled,
       maintenanceReminderDays,

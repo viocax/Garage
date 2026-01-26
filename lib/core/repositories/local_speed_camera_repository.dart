@@ -287,7 +287,8 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     final lat = position.latitude;
     final lon = position.longitude;
     final heading = position.heading;
-    final isHeadingValid = heading > 0 && heading < 360;
+    // heading 有效範圍：0 <= heading <= 360（0 和 360 都是正北）
+    final isHeadingValid = heading >= 0 && heading <= 360;
 
     // 1. 載入使用者設定
     final settings = await _userSettingsRepo.loadSettings();
@@ -333,6 +334,7 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
         averageSpeed: status.averageSpeed,
         remainingDistance: status.remainingDistance,
         isOverSpeed: status.isOverSpeed,
+        isInSector: true, // 區間測速時視為在偵測範圍內
       );
 
       // 檢查是否超速並播放提醒 (每 10 秒提醒一次)
@@ -368,7 +370,13 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     // 2. 如果沒有追蹤的相機，找一台新的
     if (_currentCamera == null) {
       if (isHeadingValid) {
-        _currentCamera = _findCameraInHeading(lat, lon, heading, alertDistance);
+        _currentCamera = _findCameraInHeading(
+          lat,
+          lon,
+          heading,
+          alertDistance,
+          settings.sectorAngle,
+        );
       } else {
         _currentCamera = _findNearestCamera(lat, lon, alertDistance);
       }
@@ -386,11 +394,26 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     final distance = _currentCamera!.distanceTo(lat, lon);
     final speedLimit = _currentCamera!.speedLimit;
 
+    // 判斷是否在扇形偵測範圍內
+    final isInSector = _isInSectorRange(
+      userLat: lat,
+      userLon: lon,
+      userHeading: heading,
+      cameraLat: _currentCamera!.latitude,
+      cameraLon: _currentCamera!.longitude,
+      distance: distance,
+      alertDistance: alertDistance,
+      sectorAngle: settings.sectorAngle,
+    );
+
     // 更新基礎資訊
     speedCameraModel = speedCameraModel.copyWith(
       speedLimit: speedLimit,
       distance: distance,
-      isOverSpeed: currentSpeed > speedLimit + settings.speedTolerance,
+      sectorAngle: settings.sectorAngle,
+      isOverSpeed:
+          currentSpeed > speedLimit + settings.speedTolerance, // 純粹超速判斷
+      isInSector: isInSector, // 是否在扇形偵測範圍內
     );
 
     // 4. 檢查播報閾值
@@ -529,17 +552,19 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
     return thresholds.toList()..sort((a, b) => b.compareTo(a)); // 降序排列
   }
 
-  /// 查找在使用者 heading 方向 ±10度內最近的相機
+  /// 查找在使用者 heading 方向 ±(sectorAngle/2)度內最近的相機
   ///
   /// [lat] 使用者緯度
   /// [lon] 使用者經度
   /// [heading] 使用者行駛方向（0-360度）
   /// [alertDistanceMeters] 提醒距離（公尺）
+  /// [sectorAngle] 偵測扇形角度（度）
   Camera? _findCameraInHeading(
     double lat,
     double lon,
     double heading,
     double alertDistanceMeters,
+    double sectorAngle,
   ) {
     if (_cameraQuadTree == null) return null;
 
@@ -577,14 +602,53 @@ class LocalSpeedCameraRepository implements ISpeedCameraRepository {
         angleDiff = 360 - angleDiff;
       }
 
-      // 只選擇在 heading ±10度內的相機
-      if (angleDiff <= 10 && distance < minDistance) {
+      // 只選擇在 heading ±(sectorAngle/2)度內的相機
+      final halfAngle = sectorAngle / 2;
+      if (angleDiff <= halfAngle && distance < minDistance) {
         minDistance = distance;
         nearest = camera;
       }
     }
 
     return nearest;
+  }
+
+  /// 判斷相機是否在用戶的扇形偵測範圍內
+  ///
+  /// 同時檢查距離和角度：
+  /// - 距離必須 <= alertDistance
+  /// - 相機方位角必須在用戶 heading ± (sectorAngle/2) 範圍內
+  ///
+  /// 當 heading 無效（< 0 或 >= 360）時，為向下相容返回 true
+  bool _isInSectorRange({
+    required double userLat,
+    required double userLon,
+    required double userHeading,
+    required double cameraLat,
+    required double cameraLon,
+    required double distance,
+    required double alertDistance,
+    required double sectorAngle,
+  }) {
+    // 距離檢查
+    if (distance > alertDistance) return false;
+
+    // heading 無效時，視為在範圍內（向下相容）
+    // 有效範圍：0 <= heading <= 360（360 等同於 0，都是正北）
+    if (userHeading < 0 || userHeading > 360) return true;
+
+    // 正規化 heading（將 360 轉為 0）
+    final normalizedHeading = userHeading == 360 ? 0.0 : userHeading;
+
+    // 計算相機方位角
+    final bearing = _calculateBearing(userLat, userLon, cameraLat, cameraLon);
+
+    // 計算角度差
+    var angleDiff = (normalizedHeading - bearing).abs();
+    if (angleDiff > 180) angleDiff = 360 - angleDiff;
+
+    // 檢查是否在扇形範圍內（sectorAngle/2 度）
+    return angleDiff <= sectorAngle / 2;
   }
 
   /// 計算從使用者位置到測速相機的方位角（bearing）

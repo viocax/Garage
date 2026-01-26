@@ -595,9 +595,9 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                     currentLatLng,
                     data.alertDistance.toDouble(),
                     data.model.heading,
-                    60, // 60 度扇形
+                    data.model.sectorAngle, // 使用設定的扇形角度
                   ),
-                  color: data.isOverSpeed
+                  color: data.isWarning
                       ? AppTheme.redTransparent30
                       : AppTheme.greenTransparent30,
                 ),

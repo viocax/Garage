@@ -39,6 +39,11 @@ final class SpeedData extends SpeedState {
   }
 
   bool get isOverSpeed => model.isOverSpeed;
+  bool get isInSector => model.isInSector;
+
+  /// 是否應該顯示警告（超速且在偵測範圍內）
+  bool get isWarning => isOverSpeed && isInSector;
+
   bool get isStartAnimation => model.currentSpeed > 0;
   bool get isInterval => model.isInterval;
   double get averageSpeed => model.averageSpeed;

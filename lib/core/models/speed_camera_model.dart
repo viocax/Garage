@@ -14,6 +14,10 @@ class SpeedCameraModel {
   double averageSpeed;
   double remainingDistance;
 
+  // 偵測範圍
+  double sectorAngle; // 偵測扇形角度（度）
+  bool isInSector; // 是否在扇形偵測範圍內
+
   static const double maxSpeed = 300;
 
   SpeedCameraModel({
@@ -27,6 +31,8 @@ class SpeedCameraModel {
     this.isInterval = false,
     this.averageSpeed = 0.0,
     this.remainingDistance = 0.0,
+    this.sectorAngle = 60.0,
+    this.isInSector = false,
   });
 
   SpeedCameraModel copyWith({
@@ -40,6 +46,8 @@ class SpeedCameraModel {
     bool? isInterval,
     double? averageSpeed,
     double? remainingDistance,
+    double? sectorAngle,
+    bool? isInSector,
   }) {
     return SpeedCameraModel(
       speedLimit: speedLimit ?? this.speedLimit,
@@ -52,6 +60,8 @@ class SpeedCameraModel {
       isInterval: isInterval ?? this.isInterval,
       averageSpeed: averageSpeed ?? this.averageSpeed,
       remainingDistance: remainingDistance ?? this.remainingDistance,
+      sectorAngle: sectorAngle ?? this.sectorAngle,
+      isInSector: isInSector ?? this.isInSector,
     );
   }
 
@@ -93,5 +103,4 @@ class SpeedCameraModel {
 
     return Duration(milliseconds: finalDuration.toInt());
   }
-
 }
