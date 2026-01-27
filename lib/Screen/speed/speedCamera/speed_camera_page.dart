@@ -20,6 +20,7 @@ import 'widgets/interval_info_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:garage/core/extensions/extensions.dart';
 
 class SpeedCameraPage extends StatefulWidget {
@@ -38,6 +39,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
   @override
   void initState() {
     super.initState();
+    // 啟用螢幕長亮（防止行車途中螢幕自動關閉）
+    WakelockPlus.enable();
     // 初始化道路動畫控制器（不自動播放）
     _roadAnimationController = AnimationController(
       vsync: this,
@@ -52,6 +55,8 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
 
   @override
   void dispose() {
+    // 離開頁面時停用螢幕長亮
+    WakelockPlus.disable();
     _roadAnimationController.dispose();
     _mapAnimationController.dispose();
     _mapController.dispose();
