@@ -23,6 +23,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:garage/core/extensions/extensions.dart';
 
+enum MapHeadingMode { fixedNorth, userHeading }
+
 class SpeedCameraPage extends StatefulWidget {
   const SpeedCameraPage({super.key});
 
@@ -34,7 +36,16 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     with TickerProviderStateMixin {
   late AnimationController _roadAnimationController;
   late AnimationController _mapAnimationController;
+  late AnimationController _rotateAnimationController;
   final MapController _mapController = MapController();
+  MapHeadingMode _headingMode = MapHeadingMode.fixedNorth;
+
+  // Listener references for proper cleanup
+  VoidCallback? _mapMoveListener;
+  VoidCallback? _mapRotateListener;
+
+  // Static tween to avoid rebuilding animation on every widget rebuild
+  static final _scaleTween = Tween<double>(begin: 0, end: 1);
 
   @override
   void initState() {
@@ -51,6 +62,11 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+    // 初始化旋轉動畫控制器
+    _rotateAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
   }
 
   @override
@@ -59,12 +75,19 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
     WakelockPlus.disable();
     _roadAnimationController.dispose();
     _mapAnimationController.dispose();
+    _rotateAnimationController.dispose();
     _mapController.dispose();
     super.dispose();
   }
 
   // 帶動畫的地圖移動
   void _animatedMapMove(LatLng destLocation, double destZoom) {
+    // Remove previous listener if animation was interrupted
+    if (_mapMoveListener != null) {
+      _mapAnimationController.removeListener(_mapMoveListener!);
+      _mapMoveListener = null;
+    }
+
     final camera = _mapController.camera;
     final startLocation = camera.center;
     final startZoom = camera.zoom;
@@ -91,11 +114,52 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
       );
     }
 
+    _mapMoveListener = listener;
     _mapAnimationController.addListener(listener);
 
     _mapAnimationController.forward(from: 0).whenComplete(() {
       _mapAnimationController.removeListener(listener);
+      _mapMoveListener = null;
     });
+  }
+
+  // 帶動畫的地圖旋轉
+  void _animatedMapRotate(double destRotation) {
+    // Remove previous listener if animation was interrupted
+    if (_mapRotateListener != null) {
+      _rotateAnimationController.removeListener(_mapRotateListener!);
+      _mapRotateListener = null;
+    }
+
+    final startRotation = _mapController.camera.rotation;
+    // Calculate shortest rotation path to avoid spinning the long way around
+    final adjustedEnd =
+        startRotation + _shortestAngleDifference(startRotation, destRotation);
+    final rotationTween = Tween<double>(begin: startRotation, end: adjustedEnd);
+
+    final Animation<double> animation = CurvedAnimation(
+      parent: _rotateAnimationController,
+      curve: Curves.easeInOut,
+    );
+
+    void listener() {
+      _mapController.rotate(rotationTween.evaluate(animation));
+    }
+
+    _mapRotateListener = listener;
+    _rotateAnimationController.addListener(listener);
+    _rotateAnimationController.forward(from: 0).whenComplete(() {
+      _rotateAnimationController.removeListener(listener);
+      _mapRotateListener = null;
+    });
+  }
+
+  // Calculate shortest angle difference (handles 360°/0° crossing)
+  double _shortestAngleDifference(double from, double to) {
+    double diff = (to - from) % 360;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return diff;
   }
 
   @override
@@ -175,6 +239,11 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                       ),
                       currentZoom,
                     );
+
+                    // 如果是跟隨方位模式，同時更新地圖旋轉
+                    if (_headingMode == MapHeadingMode.userHeading) {
+                      _mapController.rotate(-state.model.heading);
+                    }
                   }
               }
             },
@@ -430,6 +499,56 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
           ),
         ),
         const SizedBox(height: 16),
+        // Heading Toggle Button
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              if (_headingMode == MapHeadingMode.fixedNorth) {
+                _headingMode = MapHeadingMode.userHeading;
+                // Animate to current heading immediately
+                final currentState = context.read<SpeedBloc>().state;
+                if (currentState is SpeedData) {
+                  _animatedMapRotate(-currentState.model.heading);
+                }
+              } else {
+                _headingMode = MapHeadingMode.fixedNorth;
+                // Animate back to 0 (North)
+                _animatedMapRotate(0);
+              }
+            });
+          },
+          child: ClipOval(
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppTheme.blackTransparent30,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.whiteTransparent20,
+                    width: 1,
+                  ),
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Icon(
+                    _headingMode == MapHeadingMode.fixedNorth
+                        ? Icons.explore_off_rounded
+                        : Icons.explore_rounded,
+                    key: ValueKey(_headingMode),
+                    color: _headingMode == MapHeadingMode.fixedNorth
+                        ? AppTheme.whiteTransparent50
+                        : AppTheme.accentColor,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         // Start/Stop Toggle Button
         GestureDetector(
           onTap: () {
@@ -614,14 +733,21 @@ class _SpeedCameraPageState extends State<SpeedCameraPage>
                   point: currentLatLng,
                   width: 45,
                   height: 45,
+                  rotate:
+                      false, // Rotate with map canvas (default, but explicit for clarity)
                   child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: 1),
+                    tween:
+                        _scaleTween, // Use static tween to avoid animation replay on rebuild
                     duration: const Duration(milliseconds: 300),
                     builder: (context, value, child) {
                       return Transform.scale(scale: value, child: child);
                     },
                     child: Transform.rotate(
-                      angle: data.model.heading * (pi / 180), // 將度數轉換為弧度
+                      // Marker rotates with the map (rotate: false).
+                      // So we always set the angle to the absolute heading (relative to North).
+                      // - Fixed North: Map 0. Marker Heading. -> Points Heading.
+                      // - User Heading: Map -Heading. Marker Heading. -> Net 0 (Points Up).
+                      angle: data.model.heading * (pi / 180),
                       child: Icon(
                         Icons.navigation_rounded,
                         color: AppTheme.primaryColor,
