@@ -144,7 +144,9 @@ class _LandingPageState extends State<LandingPage> {
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 40),
       width: double.infinity,
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
       ),
       child: Column(
         children: [
@@ -266,6 +268,9 @@ class _LandingPageState extends State<LandingPage> {
           subtitle: 'Download on the',
           title: 'App Store',
           isApple: true,
+          onTap: () {
+            launchUrl(Uri.parse('https://apps.apple.com/app/id6756171380'));
+          },
         ),
         const SizedBox(height: 16),
         _buildStoreBadge(
@@ -273,6 +278,11 @@ class _LandingPageState extends State<LandingPage> {
           subtitle: 'GET IT ON',
           title: 'Google Play',
           isApple: false,
+          onTap: () {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Android 版本開發中，敬請期待')));
+          },
         ),
       ],
     );
@@ -283,52 +293,56 @@ class _LandingPageState extends State<LandingPage> {
     required String subtitle,
     required String title,
     required bool isApple,
+    VoidCallback? onTap,
   }) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: Container(
-        width: 200,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(
-              icon,
-              color: isApple
-                  ? Colors.white
-                  : const Color(0xFF3DDC84), // Android Green or White
-              size: 32,
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  subtitle,
-                  style: GoogleFonts.notoSans(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 200,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                color: isApple
+                    ? Colors.white
+                    : const Color(0xFF3DDC84), // Android Green or White
+                size: 32,
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.notoSans(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                Text(
-                  title,
-                  style: GoogleFonts.notoSans(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    height: 1.0,
+                  Text(
+                    title,
+                    style: GoogleFonts.notoSans(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      height: 1.0,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
