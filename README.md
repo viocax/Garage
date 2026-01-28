@@ -41,6 +41,25 @@ flutter pub get
 flutter run
 ```
 
+## Marketing Website
+
+This project includes a separate Flutter Web project for the marketing landing page.
+
+- **Source**: [`marketing_web/`](./marketing_web/)
+- **Branch**: `feat/marketing-web-init`
+- **Deployment Script**: [`deploy_marketing.sh`](./deploy_marketing.sh)
+- **Live URL**: [https://drakehuang81.github.io/Garage/](https://drakehuang81.github.io/Garage/)
+
+### Deployment
+
+Run the deployment script from the project root:
+
+```bash
+./deploy_marketing.sh
+```
+
+This will build the web app and push it to the `gh-pages` branch.
+
 ## Documentation
 
 詳細文件請參考 [`conductor/`](./conductor/)：
