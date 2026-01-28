@@ -9,6 +9,7 @@ echo "🚀 Starting deployment for Garage Marketing Web..."
 GITHUB_PAGES_REPO="https://github.com/drakehuang81/drakehuang81.github.io.git"
 SUBDIRECTORY="garage"
 BASE_HREF="/${SUBDIRECTORY}/"
+DEPLOY_BRANCH="garage-deploy"
 
 # Check if we are in the right directory
 if [ ! -d "marketing_web" ]; then
@@ -56,9 +57,19 @@ trap cleanup EXIT
 
 # Clone the GitHub Pages repository
 echo "📥 Cloning ${GITHUB_PAGES_REPO}..."
-git clone --depth 1 "${GITHUB_PAGES_REPO}" "${TEMP_DIR}/pages"
+git clone "${GITHUB_PAGES_REPO}" "${TEMP_DIR}/pages"
 
 cd "${TEMP_DIR}/pages"
+
+# Create or checkout the deploy branch
+echo "🌿 Switching to branch: ${DEPLOY_BRANCH}..."
+if git show-ref --quiet refs/remotes/origin/${DEPLOY_BRANCH}; then
+  # Branch exists on remote, checkout and reset to main
+  git checkout -B ${DEPLOY_BRANCH} origin/main
+else
+  # Branch doesn't exist, create from main
+  git checkout -b ${DEPLOY_BRANCH} origin/main
+fi
 
 # Remove the old subdirectory content if it exists
 if [ -d "${SUBDIRECTORY}" ]; then
@@ -79,11 +90,15 @@ git commit -m "Deploy garage marketing site: $(date '+%Y-%m-%d %H:%M:%S')" || {
   exit 0
 }
 
-echo "🚀 Pushing to GitHub..."
-git push origin main
+echo "🚀 Pushing to GitHub (branch: ${DEPLOY_BRANCH})..."
+git push -f origin ${DEPLOY_BRANCH}
 
 echo "--------------------------------------------------------"
-echo "✅ Deployed successfully!"
-echo "🌎 Your site should be live at: https://drakehuang81.github.io/${SUBDIRECTORY}/"
-echo "(Note: It might take a minute or two for GitHub to update)"
+echo "✅ Deployed to branch: ${DEPLOY_BRANCH}"
+echo ""
+echo "📋 Next step: Create a Pull Request to merge into main:"
+echo "   https://github.com/drakehuang81/drakehuang81.github.io/compare/main...${DEPLOY_BRANCH}?expand=1"
+echo ""
+echo "🌎 After merging, your site will be live at:"
+echo "   https://drakehuang81.github.io/${SUBDIRECTORY}/"
 echo "--------------------------------------------------------"

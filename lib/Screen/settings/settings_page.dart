@@ -5,6 +5,7 @@ import 'package:garage/core/core.dart';
 import 'package:garage/router/app_router.dart';
 import 'package:garage/theme/themed_status_bar.dart';
 import 'package:garage/widgets/widgets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'bloc/settings_bloc.dart';
 import 'bloc/settings_event.dart';
@@ -110,25 +111,15 @@ class SettingsPage extends StatelessWidget {
                         // 關於
                         SettingsSectionHeader(title: 'settings.about'.tr()),
                         SettingsItem(
-                          title: 'settings.termsOfService'.tr(),
-                          icon: Icons.description_outlined,
-                          onTap: () {
-                            context.pushPathWithResult(AppPath.termsOfService);
-                          },
-                        ),
-                        SettingsItem(
-                          title: 'settings.privacyPolicy'.tr(),
+                          title:
+                              "${'settings.privacyPolicy'.tr()} & ${'settings.termsOfService'.tr()}",
                           icon: Icons.privacy_tip_outlined,
                           onTap: () {
-                            context.pushPathWithResult(AppPath.privacyPolicy);
-                          },
-                        ),
-                        SettingsItem(
-                          title: 'settings.openSourceLicenses'.tr(),
-                          icon: Icons.source_outlined,
-                          onTap: () {
-                            context.pushPathWithResult(
-                              AppPath.openSourceLicenses,
+                            launchUrl(
+                              Uri.parse(
+                                'https://drakehuang81.github.io/garage/privacy.html',
+                              ),
+                              mode: LaunchMode.inAppWebView,
                             );
                           },
                         ),

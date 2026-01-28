@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garage/screen/settings/settings_page.dart';
-import 'package:garage/screen/settings/static_content_page.dart';
-import 'package:garage/core/utils/app_documents.dart';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:garage/screen/settings/speed_detection_settings/speed_detection_settings_page.dart';
 import 'package:garage/screen/settings/vehicle_management/vehicle_management_page.dart';
@@ -56,21 +55,6 @@ class AppPath {
   );
 
   static final cloudSync = AppPath(name: 'cloudSync', previous: settings);
-
-  static final termsOfService = AppPath(
-    name: 'termsOfService',
-    previous: settings,
-  );
-
-  static final privacyPolicy = AppPath(
-    name: 'privacyPolicy',
-    previous: settings,
-  );
-
-  static final openSourceLicenses = AppPath(
-    name: 'openSourceLicenses',
-    previous: settings,
-  );
 
   /// compute full path
   String get path {
@@ -222,33 +206,6 @@ class AppRouter {
                       name: AppPath.cloudSync.name,
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) => const CloudSyncPage(),
-                    ),
-                    GoRoute(
-                      path: AppPath.termsOfService.path,
-                      name: AppPath.termsOfService.name,
-                      parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => StaticContentPage(
-                        title: 'settings.termsOfService'.tr(),
-                        markdownContent: AppDocuments.termsOfService,
-                      ),
-                    ),
-                    GoRoute(
-                      path: AppPath.privacyPolicy.path,
-                      name: AppPath.privacyPolicy.name,
-                      parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => StaticContentPage(
-                        title: 'settings.privacyPolicy'.tr(),
-                        markdownContent: AppDocuments.privacyPolicy,
-                      ),
-                    ),
-                    GoRoute(
-                      path: AppPath.openSourceLicenses.path,
-                      name: AppPath.openSourceLicenses.name,
-                      parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => StaticContentPage(
-                        title: 'settings.openSourceLicenses'.tr(),
-                        markdownContent: AppDocuments.openSourceLicenses,
-                      ),
                     ),
                   ],
                 ),

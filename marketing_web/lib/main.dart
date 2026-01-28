@@ -156,7 +156,7 @@ class _LandingPageState extends State<LandingPage> {
               _buildFooterLink('隱私政策&開源授權', () {
                 launchUrl(
                   Uri.parse(
-                    'https://drakehuang81.github.io/garage-landing/privacy.html',
+                    'https://drakehuang81.github.io/garage/privacy.html',
                   ),
                 );
               }),
