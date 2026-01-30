@@ -105,6 +105,7 @@ dependencies:
   logger: ^2.5.0
   package_info_plus: ^9.0.0
   wakelock_plus: ^1.4.0
+  app_tracking_transparency: ^2.0.6+1
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:garage/core/utils/log.dart';
@@ -9,10 +10,8 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
   final TickerProvider vsync;
   late final LaunchAnimationHolder animationHolder;
 
-  LaunchBloc({
-    required this.vsync,
-    LaunchAnimationHolder? animationHolder,
-  }) : super(const LaunchInitializing()) {
+  LaunchBloc({required this.vsync, LaunchAnimationHolder? animationHolder})
+    : super(const LaunchInitializing()) {
     on<StartInitialization>(_onStartInitialization);
     this.animationHolder = animationHolder ?? LaunchAnimationHolder(vsync);
     add(const StartInitialization());
@@ -31,6 +30,18 @@ class LaunchBloc extends Bloc<LaunchEvent, LaunchState> {
     try {
       // 等待動畫完成
       await animationHolder.animationCompleted;
+
+      // 請求 App Tracking Transparency (ATT) 授權
+      // 必須在 UI 初始化完成後呼叫，這裡動畫跑完肯定 UI 已經 Ready
+      try {
+        final status =
+            await AppTrackingTransparency.requestTrackingAuthorization();
+        Log.i('AppTrackingTransparency status: $status');
+      } catch (e) {
+        // 非 iOS 平台或套件異常時忽略，不影響進入 App
+        Log.d('AppTrackingTransparency request skipped: $e');
+      }
+
       emit(const LaunchCompleted());
     } catch (e, stackTrace) {
       Log.e('LaunchBloc: 初始化失敗', e, stackTrace);
