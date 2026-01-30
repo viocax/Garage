@@ -39,6 +39,11 @@ Tracks development progress for each Phase. Each track has its own detailed plan
   - Premium Subscription, StoreKit Integration
   - Status: 📋 Planned
 
+- [ ] **Task: Restore Background Audio Permission**
+  - Re-enable `audio` in `UIBackgroundModes` (Info.plist)
+  - Removed for Phase 1 App Store submission, needed for background TTS alerts
+  - Status: 📋 Planned
+
 ---
 
 ## Phase 3: Speed Camera
